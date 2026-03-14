@@ -9,7 +9,14 @@ const commentSchema = z.object({
   content: z.string().min(5).max(1000),
 })
 
-export async function POST(request: Request) {
+export async function POST(
+  request: unknown,
+  _context: { params: Promise<Record<string, string>> }
+) {
+  if (!(request instanceof Request)) {
+    return NextResponse.json({ error: "Yêu cầu không hợp lệ." }, { status: 400 })
+  }
+
   const body = await request.json()
   const parsed = commentSchema.safeParse(body)
 

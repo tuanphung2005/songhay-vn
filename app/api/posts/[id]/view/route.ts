@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(
-  _: Request,
+  _request: unknown,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
