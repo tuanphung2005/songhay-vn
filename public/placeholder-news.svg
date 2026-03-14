@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" fill="none">
+  <rect width="1200" height="675" fill="#F4F4F5"/>
+  <rect x="120" y="130" width="960" height="415" fill="#E4E4E7"/>
+  <rect x="180" y="190" width="840" height="16" fill="#A1A1AA"/>
+  <rect x="180" y="230" width="640" height="16" fill="#A1A1AA"/>
+  <rect x="180" y="272" width="520" height="16" fill="#A1A1AA"/>
+  <circle cx="278" cy="403" r="42" fill="#E11D48"/>
+  <text x="352" y="414" fill="#3F3F46" font-family="Arial, sans-serif" font-size="36" font-weight="700">Songhay.vn</text>
+</svg>

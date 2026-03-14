@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  posts       Post[]
+}
+
+model Post {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  excerpt        String
+  content        String
+  thumbnailUrl   String?
+  videoEmbedUrl  String?
+  seoTitle       String?
+  seoDescription String?
+  ogImage        String?
+  isFeatured     Boolean  @default(false)
+  isTrending     Boolean  @default(false)
+  isPublished    Boolean  @default(true)
+  views          Int      @default(0)
+  publishedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  comments       Comment[]
+
+  @@index([categoryId])
+  @@index([isPublished, publishedAt])
+  @@index([views])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  authorName String
+  content    String
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
