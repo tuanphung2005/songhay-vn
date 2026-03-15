@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarDays, Compass, Sparkles } from "lucide-react"
+import { CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
@@ -83,25 +83,6 @@ export function DontMissWidget() {
           <span className="font-semibold">Tử vi hàng ngày</span>
         </Link>
 
-        <Link
-          href="/tu-vi"
-          className="flex items-center gap-2 rounded-md px-2 py-2 text-zinc-700 transition hover:bg-zinc-100 hover:text-rose-600"
-        >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-zinc-50">
-            <Compass className="h-4 w-4" />
-          </span>
-          <span className="font-semibold">Lập lá số tử vi</span>
-        </Link>
-
-        <Link
-          href="/"
-          className="flex items-center gap-2 rounded-md px-2 py-2 text-zinc-700 transition hover:bg-zinc-100 hover:text-rose-600"
-        >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-zinc-50">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="font-semibold">Xem thần số học miễn phí</span>
-        </Link>
       </div>
     </div>
   )

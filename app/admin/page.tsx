@@ -626,12 +626,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             </form>
 
                             <div className="flex flex-wrap gap-2">                                <Link href={`/admin/edit/${post.id}`}>
-                                  <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
-                                </Link>                              <ConfirmActionForm
-                                action={movePostToTrash}
-                                fields={[{ name: "postId", value: post.id }]}
-                                confirmMessage="Chuyển bài viết này vào thùng rác?"
-                              >
+                              <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
+                            </Link>                              <ConfirmActionForm
+                              action={movePostToTrash}
+                              fields={[{ name: "postId", value: post.id }]}
+                              confirmMessage="Chuyển bài viết này vào thùng rác?"
+                            >
                                 <Button type="submit" size="sm" variant="destructive">Chuyển vào thùng rác</Button>
                               </ConfirmActionForm>
                             </div>

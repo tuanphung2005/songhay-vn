@@ -114,7 +114,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     if (thumbnailUpload instanceof File && thumbnailUpload.size > 0) {
       const uploaded = await uploadThumbnail(thumbnailUpload)
       if (uploaded) {
-         thumbnailUrl = uploaded
+        thumbnailUrl = uploaded
       }
     } else if (!thumbnailUrlInput && post?.thumbnailUrl) {
       // Keep existing

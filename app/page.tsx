@@ -9,7 +9,6 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { TuViWidget } from "@/components/news/tu-vi-widget"
 import { NAV_CATEGORIES } from "@/lib/categories"
 import { getHomepageData, getTrendingPosts } from "@/lib/queries"
 
@@ -137,7 +136,6 @@ export default async function HomePage() {
                 categorySlug: post.category.slug,
               }))}
             />
-            <TuViWidget />
             <LunarCalendarWidget />
             <AiWeatherWidget />
           </aside>

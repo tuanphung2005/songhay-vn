@@ -13,7 +13,6 @@ import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { TuViWidget } from "@/components/news/tu-vi-widget"
 import { getCurrentUser } from "@/lib/auth"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
 
@@ -235,7 +234,6 @@ export default async function PostPage({ params }: PostPageProps) {
               categorySlug: post.category.slug,
             }))}
           />
-          <TuViWidget />
           <LunarCalendarWidget />
           <AiWeatherWidget />
         </aside>
