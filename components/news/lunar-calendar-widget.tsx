@@ -117,14 +117,12 @@ export function LunarCalendarWidget() {
 
   return (
     <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-      <div className="border-b border-zinc-200 px-4 py-3 text-center">
-        <h3 className="text-xl font-bold text-zinc-800">Âm lịch - Dương lịch</h3>
-      </div>
+      <h3 className="text-xl font-bold text-zinc-800 px-4 py-3">Âm lịch - Dương lịch</h3>
 
       <div className="space-y-3 p-4">
         <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-center">
           <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
-            {isCurrentToday ? "Hôm nay" : "Ngày đang xem"}
+            {isCurrentToday ? "Hôm nay" : ""}
           </p>
           <div className="mt-1 flex items-center justify-between">
             <button
@@ -149,7 +147,7 @@ export function LunarCalendarWidget() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-3 text-center">
+        <div className="rounded-lg bg-white p-3 text-center">
           <div className="relative mx-auto h-40 w-40">
             <Image
               src="/widget_calendar_circle.png"
@@ -167,7 +165,7 @@ export function LunarCalendarWidget() {
           <p className="mt-1 text-sm text-zinc-600">Âm lịch: {amLich}</p>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-3">
+        <div className="border-t border-zinc-200 bg-white p-3">
           <p className="text-base font-bold text-zinc-700">Giờ Hoàng Đạo (giờ tốt)</p>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
             {gioHoangDao}

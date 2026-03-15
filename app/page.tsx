@@ -76,7 +76,7 @@ export default async function HomePage() {
               </div>
 
               <section className="space-y-4">
-                <SectionHeading title="Tiện ích sức khỏe" />
+                <SectionHeading title="Đừng bỏ lỡ!" />
                 <div className="grid gap-4 md:grid-cols-2">
                   <BmiWidget />
                   <BioAgeWidget />
