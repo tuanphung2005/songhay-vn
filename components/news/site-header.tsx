@@ -5,27 +5,36 @@ import { NAV_CATEGORIES } from "@/lib/categories"
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 md:px-6">
-        <Link href="/" className="text-3xl font-black tracking-tight text-rose-600">
-          Songhay.vn
+    <header className="border-b border-zinc-200 bg-zinc-50">
+      <div className="mx-auto flex w-full max-w-7xl items-start justify-between px-4 py-5 md:px-6 md:py-6">
+        <Link href="/" className="group block">
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="inline-flex h-14 w-14 items-center justify-center bg-red-700 text-4xl font-black text-white transition group-hover:bg-red-800 md:h-16 md:w-16">
+              S
+            </span>
+            <div>
+              <p className="text-3xl font-black uppercase leading-none tracking-tight text-red-700 md:text-5xl">Sống Hay</p>
+              <p className="mt-1 text-sm font-extrabold uppercase tracking-wide text-zinc-900 md:text-xl">Kho Tàng Điều Hay</p>
+            </div>
+          </div>
         </Link>
+
         <button
           type="button"
           aria-label="Tìm kiếm"
-          className="rounded-full border border-zinc-200 p-2 text-zinc-700 transition hover:bg-zinc-100"
+          className="mt-1 rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100"
         >
           <Search className="size-5" />
         </button>
       </div>
 
-      <nav className="mx-auto w-full max-w-7xl overflow-x-auto px-4 pb-4 md:px-6">
-        <ul className="flex min-w-max items-center gap-6 text-sm font-semibold text-zinc-800">
+      <nav className="bg-red-700">
+        <ul className="mx-auto flex w-full max-w-7xl min-w-max items-center gap-8 overflow-x-auto px-4 py-3 text-xl font-bold text-white md:px-6">
           {NAV_CATEGORIES.map((item) => (
             <li key={item.slug}>
               <Link
                 href={`/${item.slug}`}
-                className="border-b-2 border-transparent pb-1 transition hover:border-rose-600 hover:text-rose-600"
+                className="border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
               >
                 {item.name}
               </Link>
