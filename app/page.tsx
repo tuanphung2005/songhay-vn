@@ -142,8 +142,8 @@ export default async function HomePage() {
               }))}
             />
             <TuViWidget />
-            <AiWeatherWidget />
             <LunarCalendarWidget />
+            <AiWeatherWidget />
           </aside>
         </div>
       </main>

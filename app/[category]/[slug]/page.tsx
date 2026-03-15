@@ -173,8 +173,8 @@ export default async function PostPage({ params }: PostPageProps) {
             }))}
           />
           <TuViWidget />
-          <AiWeatherWidget />
           <LunarCalendarWidget />
+          <AiWeatherWidget />
         </aside>
       </main>
 
