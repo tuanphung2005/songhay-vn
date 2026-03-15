@@ -23,7 +23,7 @@ export function BmiWidget() {
 
   return (
     <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4">
-      <h3 className="text-xl font-bold text-zinc-900">Đừng bỏ lỡ!</h3>
+      <h3 className="text-xl font-bold text-zinc-900">Máy tính BMI</h3>
 
       <div className="space-y-3">
         <label className="block text-sm font-medium text-zinc-700">

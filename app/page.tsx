@@ -1,12 +1,16 @@
 import Link from "next/link"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
+import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
+import { BioAgeWidget } from "@/components/news/bio-age-widget"
 import { BmiWidget } from "@/components/news/bmi-widget"
+import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { TuViWidget } from "@/components/news/tu-vi-widget"
 import { NAV_CATEGORIES } from "@/lib/categories"
 import { getHomepageData, getTrendingPosts } from "@/lib/queries"
 
@@ -43,32 +47,87 @@ export default async function HomePage() {
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 md:px-6">
         <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_330px]">
-          <div className="space-y-4">
-            {heroPost ? (
-              <article className="overflow-hidden border border-zinc-200 bg-white">
-                <PostCard
-                  href={`/${heroPost.category.slug}/${heroPost.slug}`}
-                  title={heroPost.title}
-                  excerpt={heroPost.excerpt}
-                  imageUrl={heroPost.thumbnailUrl}
-                  date={heroPost.publishedAt}
-                  categoryName={heroPost.category.name}
-                />
-              </article>
-            ) : null}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
+          <div className="space-y-8">
+            <section className="space-y-4">
+              {heroPost ? (
+                <article className="overflow-hidden border border-zinc-200 bg-white">
+                  <PostCard
+                    href={`/${heroPost.category.slug}/${heroPost.slug}`}
+                    title={heroPost.title}
+                    excerpt={heroPost.excerpt}
+                    imageUrl={heroPost.thumbnailUrl}
+                    date={heroPost.publishedAt}
+                    categoryName={heroPost.category.name}
+                  />
+                </article>
+              ) : null}
 
-            <div className="grid gap-3 border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-3">
-              {heroMini.map((post, index) => (
-                <Link
-                  key={post.id}
-                  href={`/${post.category.slug}/${post.slug}`}
-                  className="text-sm font-bold text-zinc-800 transition hover:text-rose-600"
-                >
-                  Tit{index + 1}: {post.title}
-                </Link>
-              ))}
-            </div>
+              <div className="grid gap-3 border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-3">
+                {heroMini.map((post, index) => (
+                  <Link
+                    key={post.id}
+                    href={`/${post.category.slug}/${post.slug}`}
+                    className="text-sm font-bold text-zinc-800 transition hover:text-rose-600"
+                  >
+                    Tit{index + 1}: {post.title}
+                  </Link>
+                ))}
+              </div>
+
+              <section className="space-y-4">
+                <SectionHeading title="Tiện ích sức khỏe" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <BmiWidget />
+                  <BioAgeWidget />
+                </div>
+              </section>
+            </section>
+
+            <section className="space-y-4">
+              <SectionHeading title="Tin đọc nhiều" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+                {trendingPosts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    href={`/${post.category.slug}/${post.slug}`}
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    imageUrl={post.thumbnailUrl}
+                    date={post.publishedAt}
+                    categoryName={post.category.name}
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+
+            <AdPlaceholder label="Between sections ad (Google AdSense)" className="min-h-24" />
+
+            <section className="space-y-8">
+              {categoryBlocks.map((items) => {
+                const [first] = items
+                return (
+                  <div key={first.category.slug} className="space-y-4">
+                    <SectionHeading title={first.category.name} />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {items.slice(0, 4).map((post, index) => (
+                        <PostCard
+                          key={post.id}
+                          href={`/${post.category.slug}/${post.slug}`}
+                          title={post.title}
+                          excerpt={post.excerpt}
+                          imageUrl={post.thumbnailUrl}
+                          date={post.publishedAt}
+                          categoryName={post.category.name}
+                          compact={index > 1}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </section>
           </div>
 
           <aside className="space-y-4">
@@ -82,62 +141,11 @@ export default async function HomePage() {
                 categorySlug: post.category.slug,
               }))}
             />
-            <AdPlaceholder label="Sidebar ad (Google AdSense)" />
-            <BmiWidget />
+            <TuViWidget />
+            <AiWeatherWidget />
+            <LunarCalendarWidget />
           </aside>
-        </section>
-
-        <section className="space-y-4">
-          <SectionHeading title="Trending posts" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {trendingPosts.map((post) => (
-              <PostCard
-                key={post.id}
-                href={`/${post.category.slug}/${post.slug}`}
-                title={post.title}
-                excerpt={post.excerpt}
-                imageUrl={post.thumbnailUrl}
-                date={post.publishedAt}
-                categoryName={post.category.name}
-                compact
-              />
-            ))}
-          </div>
-        </section>
-
-        <AdPlaceholder label="Between sections ad (Google AdSense)" className="min-h-24" />
-
-        <section className="space-y-8">
-          {categoryBlocks.map((items) => {
-            const [first, ...rest] = items
-            return (
-              <div key={first.category.slug} className="space-y-4">
-                <SectionHeading title={first.category.name} />
-                <div className="grid gap-4 lg:grid-cols-3">
-                  <PostCard
-                    href={`/${first.category.slug}/${first.slug}`}
-                    title={first.title}
-                    excerpt={first.excerpt}
-                    imageUrl={first.thumbnailUrl}
-                    date={first.publishedAt}
-                    categoryName={first.category.name}
-                  />
-                  {rest.slice(0, 2).map((post) => (
-                    <PostCard
-                      key={post.id}
-                      href={`/${post.category.slug}/${post.slug}`}
-                      title={post.title}
-                      excerpt={post.excerpt}
-                      imageUrl={post.thumbnailUrl}
-                      date={post.publishedAt}
-                      compact
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </section>
+        </div>
       </main>
 
       <SiteFooter />

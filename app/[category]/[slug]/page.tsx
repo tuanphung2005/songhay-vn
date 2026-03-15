@@ -4,12 +4,16 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
+import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { CommentForm } from "@/components/news/comment-form"
+import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
+import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { TuViWidget } from "@/components/news/tu-vi-widget"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
 
 export const revalidate = 300
@@ -158,19 +162,19 @@ export default async function PostPage({ params }: PostPageProps) {
         </article>
 
         <aside className="space-y-4">
-          <AdPlaceholder label="Sidebar ad (Google AdSense)" />
-          <section className="space-y-3 border border-zinc-200 bg-white p-4">
-            <h3 className="text-xl font-bold">Trending posts</h3>
-            {trendingPosts.map((item) => (
-              <Link
-                key={item.id}
-                href={`/${item.category.slug}/${item.slug}`}
-                className="block border-b border-zinc-100 pb-2 text-sm font-semibold text-zinc-800 last:border-b-0 hover:text-rose-600"
-              >
-                {item.title}
-              </Link>
-            ))}
-          </section>
+          <MostRead
+            posts={trendingPosts.map((post) => ({
+              id: post.id,
+              title: post.title,
+              thumbnailUrl: post.thumbnailUrl,
+              views: post.views,
+              slug: post.slug,
+              categorySlug: post.category.slug,
+            }))}
+          />
+          <TuViWidget />
+          <AiWeatherWidget />
+          <LunarCalendarWidget />
         </aside>
       </main>
 
