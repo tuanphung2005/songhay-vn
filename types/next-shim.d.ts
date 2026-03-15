@@ -50,6 +50,7 @@ declare module "next/image" {
 
 declare module "next/navigation" {
   export const notFound: () => never
+  export const redirect: (href: string) => never
 }
 
 declare module "next/cache" {
@@ -57,9 +58,28 @@ declare module "next/cache" {
 }
 
 declare module "next/server" {
+  export type NextRequest = Request
   export const NextResponse: {
     json: (body: unknown, init?: ResponseInit) => Response
   }
+}
+
+declare module "next/headers" {
+  export const cookies: () => Promise<{
+    get: (name: string) => { name: string; value: string } | undefined
+    set: (
+      name: string,
+      value: string,
+      options?: {
+        httpOnly?: boolean
+        sameSite?: "lax" | "strict" | "none"
+        secure?: boolean
+        path?: string
+        maxAge?: number
+      }
+    ) => void
+    delete: (name: string) => void
+  }>
 }
 
 declare module "next/font/google" {

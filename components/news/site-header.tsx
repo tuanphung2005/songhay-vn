@@ -1,9 +1,17 @@
 import Link from "next/link"
 import { Search } from "lucide-react"
 
+import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { NAV_CATEGORIES } from "@/lib/categories"
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const user = await getCurrentUser()
+
+  async function logoutAction() {
+    "use server"
+    await clearSessionCookie()
+  }
+
   return (
     <header className="border-b border-zinc-200 bg-zinc-50">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-between px-4 py-5 md:px-6 md:py-6">
@@ -19,13 +27,43 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <button
-          type="button"
-          aria-label="Tìm kiếm"
-          className="mt-1 rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100"
-        >
-          <Search className="size-5" />
-        </button>
+        <div className="mt-1 flex items-center gap-2">
+          {user ? (
+            <>
+              {user.role === "ADMIN" ? (
+                <Link
+                  href="/admin"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                >
+                  CMS
+                </Link>
+              ) : null}
+              <span className="hidden text-sm font-semibold text-zinc-700 md:inline">{user.name}</span>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                >
+                  Đăng xuất
+                </button>
+              </form>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+            >
+              Đăng nhập
+            </Link>
+          )}
+          <button
+            type="button"
+            aria-label="Tìm kiếm"
+            className="rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100"
+          >
+            <Search className="size-5" />
+          </button>
+        </div>
       </div>
 
       <nav className="bg-red-700">

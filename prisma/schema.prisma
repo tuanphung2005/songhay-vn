@@ -7,6 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         UserRole  @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  comments     Comment[]
+}
+
 model Category {
   id          String   @id @default(cuid())
   name        String
@@ -31,6 +47,8 @@ model Post {
   isFeatured     Boolean  @default(false)
   isTrending     Boolean  @default(false)
   isPublished    Boolean  @default(true)
+  isDeleted      Boolean  @default(false)
+  deletedAt      DateTime?
   views          Int      @default(0)
   publishedAt    DateTime @default(now())
   createdAt      DateTime @default(now())
@@ -41,6 +59,7 @@ model Post {
 
   @@index([categoryId])
   @@index([isPublished, publishedAt])
+  @@index([isDeleted])
   @@index([views])
 }
 
@@ -52,6 +71,9 @@ model Comment {
   createdAt  DateTime @default(now())
   postId     String
   post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([postId])
+  @@index([authorId])
 }

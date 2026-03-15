@@ -14,12 +14,67 @@ import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { TuViWidget } from "@/components/news/tu-vi-widget"
+import { getCurrentUser } from "@/lib/auth"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
 
 export const revalidate = 300
 
 type PostPageProps = {
   params: Promise<{ category: string; slug: string }>
+}
+
+function normalizeArticleHtml(rawHtml: string) {
+  return rawHtml
+    .replace(/<span([^>]*)style="([^"]*)"([^>]*)>([\s\S]*?)<\/span>/gi, (_match, _before, styleValue, _after, content) => {
+      let result = String(content)
+
+      if (/text-decoration\s*:\s*underline/i.test(styleValue)) {
+        result = `<u>${result}</u>`
+      }
+
+      if (/text-decoration\s*:\s*line-through/i.test(styleValue)) {
+        result = `<s>${result}</s>`
+      }
+
+      return result
+    })
+    .replace(/\sstyle="([^"]*)"/gi, (_match, styleValue) => {
+      const rules = String(styleValue)
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+
+      const keptRules: string[] = []
+
+      for (const rule of rules) {
+        const [rawProperty, rawValue] = rule.split(":")
+        const property = rawProperty?.trim().toLowerCase()
+        const value = rawValue?.trim().toLowerCase()
+
+        if (!property || !value) {
+          continue
+        }
+
+        if (property === "text-align" && ["left", "right", "center", "justify"].includes(value)) {
+          keptRules.push(`text-align:${value}`)
+        }
+
+        if (property === "float" && ["left", "right", "none"].includes(value)) {
+          keptRules.push(`float:${value}`)
+        }
+
+        if (
+          ["width", "max-width", "height"].includes(property) &&
+          /^(auto|\d+(\.\d+)?(px|%))$/i.test(value)
+        ) {
+          keptRules.push(`${property}:${value}`)
+        }
+      }
+
+      return keptRules.length ? ` style="${keptRules.join(";")}"` : ""
+    })
+    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?\s*>)*<\/p>/gi, "")
+    .trim()
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
@@ -57,13 +112,15 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const article = post!
 
-  const [relatedPosts, trendingPosts] = await Promise.all([
+  const [relatedPosts, trendingPosts, currentUser] = await Promise.all([
     getRelatedPosts(article.id, article.categoryId),
     getTrendingPosts(),
+    getCurrentUser(),
   ])
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
+  const articleHtml = normalizeArticleHtml(article.content)
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -110,7 +167,10 @@ export default async function PostPage({ params }: PostPageProps) {
             priority
           />
 
-          <div className="prose prose-zinc max-w-none whitespace-pre-wrap text-zinc-800">{article.content}</div>
+          <div
+            className="prose prose-zinc max-w-none text-zinc-800 [&:after]:block [&:after]:clear-both [&:after]:content-[''] [&_h1]:text-3xl [&_h1]:font-black [&_h1]:leading-tight [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:text-xl [&_h3]:font-bold [&_u]:underline [&_s]:line-through [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain [&_img]:rounded-md"
+            dangerouslySetInnerHTML={{ __html: articleHtml }}
+          />
 
           <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" />
 
@@ -141,7 +201,10 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
           </section>
 
-          <CommentForm postId={article.id} />
+          <CommentForm
+            postId={article.id}
+            currentUser={currentUser ? { id: currentUser.id, name: currentUser.name } : null}
+          />
 
           <section className="space-y-4">
             <h2 className="text-2xl font-extrabold">Related posts</h2>

@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client"
 
 import { NAV_CATEGORIES } from "../lib/categories"
+import { hashPassword } from "../lib/password"
 import { slugify } from "../lib/slug"
 
 const prisma = new PrismaClient()
@@ -279,6 +280,24 @@ const demoPosts: SeedPost[] = [
 ]
 
 async function main() {
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@songhay.vn"
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123456"
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      name: "Songhay Admin",
+      role: "ADMIN",
+      passwordHash: hashPassword(adminPassword),
+    },
+    create: {
+      email: adminEmail,
+      name: "Songhay Admin",
+      role: "ADMIN",
+      passwordHash: hashPassword(adminPassword),
+    },
+  })
+
   const categoryBySlug = new Map<string, string>()
 
   for (const category of NAV_CATEGORIES) {
