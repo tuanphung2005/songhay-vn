@@ -2,8 +2,7 @@ import Link from "next/link"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
-import { BioAgeWidget } from "@/components/news/bio-age-widget"
-import { BmiWidget } from "@/components/news/bmi-widget"
+import { DontMissWidget } from "@/components/news/dont-miss-widget"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
@@ -77,10 +76,7 @@ export default async function HomePage() {
 
               <section className="space-y-4">
                 <SectionHeading title="Đừng bỏ lỡ!" />
-                <div className="grid gap-4 md:grid-cols-2">
-                  <BmiWidget />
-                  <BioAgeWidget />
-                </div>
+                <DontMissWidget />
               </section>
             </section>
 
