@@ -1,6 +1,7 @@
 "use client"
 
 import { FormEvent, useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 
@@ -35,8 +36,14 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
 
       setContent("")
       setStatus("success")
+      toast.success("Đã gửi bình luận", {
+        description: "Bình luận sẽ được duyệt trước khi hiển thị.",
+      })
     } catch {
       setStatus("error")
+      toast.error("Gửi bình luận thất bại", {
+        description: "Vui lòng thử lại sau ít phút.",
+      })
     }
   }
 
@@ -63,8 +70,6 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
       <Button type="submit" className="rounded-none bg-rose-600 text-white hover:bg-rose-700" disabled={status === "loading"}>
         {status === "loading" ? "Đang gửi..." : "Gửi bình luận"}
       </Button>
-      {status === "success" ? <p className="text-sm text-emerald-600">Đã gửi bình luận. Chờ duyệt trước khi hiển thị.</p> : null}
-      {status === "error" ? <p className="text-sm text-rose-600">Gửi bình luận thất bại. Vui lòng thử lại.</p> : null}
     </form>
   )
 }

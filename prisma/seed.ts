@@ -300,11 +300,11 @@ async function main() {
 
   const categoryBySlug = new Map<string, string>()
 
-  for (const category of NAV_CATEGORIES) {
+  for (const [index, category] of NAV_CATEGORIES.entries()) {
     const result = await prisma.category.upsert({
       where: { slug: category.slug },
-      update: { name: category.name },
-      create: { slug: category.slug, name: category.name },
+      update: { name: category.name, sortOrder: index + 1 },
+      create: { slug: category.slug, name: category.name, sortOrder: index + 1 },
     })
 
     categoryBySlug.set(category.slug, result.id)

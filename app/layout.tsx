@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
 
 import "./globals.css"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
 const fontSans = Be_Vietnam_Pro({
@@ -54,7 +55,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontSans.variable, fontSerif.variable)}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster />
+      </body>
     </html>
   )
 }

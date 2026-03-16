@@ -1,11 +1,11 @@
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { ArrowRight, Search } from "lucide-react"
 
 import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
-import { NAV_CATEGORIES } from "@/lib/categories"
+import { getNavCategories } from "@/lib/queries"
 
 export async function SiteHeader() {
-  const user = await getCurrentUser()
+  const [user, navCategories] = await Promise.all([getCurrentUser(), getNavCategories()])
 
   async function logoutAction() {
     "use server"
@@ -59,7 +59,7 @@ export async function SiteHeader() {
 
       <nav className="bg-red-700">
         <ul className="mx-auto flex w-full max-w-7xl min-w-max items-center gap-8 overflow-x-auto px-4 py-3 text-xl font-bold text-white md:px-6">
-          {NAV_CATEGORIES.map((item) => (
+          {navCategories.map((item) => (
             <li key={item.slug}>
               <Link
                 href={`/${item.slug}`}

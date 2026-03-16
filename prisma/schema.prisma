@@ -27,6 +27,7 @@ model Category {
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
+  sortOrder   Int      @default(0)
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -54,7 +55,7 @@ model Post {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   categoryId     String
-  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   comments       Comment[]
 
   @@index([categoryId])

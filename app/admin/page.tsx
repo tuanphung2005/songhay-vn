@@ -1,8 +1,10 @@
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
-import { Activity, FolderKanban, LayoutDashboard, MessageSquareMore, Newspaper, PenSquare, ShieldCheck, Trash2 } from "lucide-react"
+import { Activity, ArrowDown, ArrowUp, FolderKanban, LayoutDashboard, MessageSquareMore, Newspaper, PenSquare, ShieldCheck, Trash2 } from "lucide-react"
+import { redirect } from "next/navigation"
 
+import { AdminActionToast } from "@/components/admin/action-toast"
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { RichTextField } from "@/components/admin/rich-text-field"
 import { Badge } from "@/components/ui/badge"
@@ -39,6 +41,21 @@ function getPlainTextFromHtml(value: string) {
     .trim()
 }
 
+async function uniqueCategorySlug(baseName: string, currentId?: string) {
+  const base = slugify(baseName)
+  let candidate = base
+  let index = 1
+
+  while (true) {
+    const found = await prisma.category.findUnique({ where: { slug: candidate }, select: { id: true } })
+    if (!found || found.id === currentId) {
+      return candidate
+    }
+    candidate = `${base}-${index}`
+    index += 1
+  }
+}
+
 async function uniquePostSlug(baseTitle: string) {
   const base = slugify(baseTitle)
   let candidate = base
@@ -71,7 +88,7 @@ async function uploadThumbnail(file: File | null) {
 }
 
 type AdminPageProps = {
-  searchParams?: Promise<{ tab?: string }>
+  searchParams?: Promise<{ tab?: string; toast?: string; moved?: string; direction?: string }>
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -79,12 +96,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const tabFromQuery = resolvedSearchParams?.tab
+  const movedCategoryId = resolvedSearchParams?.moved
+  const movedDirection = resolvedSearchParams?.direction
   const activeTab: AdminTab = ADMIN_TABS.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
     : "overview"
 
   const [categories, posts, trashedPosts, pendingComments] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.category.findMany({
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      include: { _count: { select: { posts: true } } },
+    }),
     prisma.post.findMany({
       where: { isDeleted: false },
       include: { category: true },
@@ -108,26 +130,34 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function createCategory(formData: FormData) {
     "use server"
 
+    await requireAdminUser()
+
     const name = String(formData.get("name") || "").trim()
     const description = String(formData.get("description") || "").trim()
 
     if (!name) {
-      return
+      redirect("/admin?tab=categories&toast=category_delete_failed")
     }
 
-    const slug = slugify(name)
+    const maxSortOrder = await prisma.category.aggregate({ _max: { sortOrder: true } })
+    const nextSortOrder = (maxSortOrder._max.sortOrder || 0) + 1
+
+    const slug = await uniqueCategorySlug(name)
     await prisma.category.upsert({
       where: { slug },
-      update: { name, description },
-      create: { name, slug, description },
+      update: { name, description, sortOrder: nextSortOrder },
+      create: { name, slug, description, sortOrder: nextSortOrder },
     })
 
     revalidatePath("/")
     revalidatePath("/admin")
+    redirect("/admin?tab=categories&toast=category_created")
   }
 
   async function createPost(formData: FormData) {
     "use server"
+
+    await requireAdminUser()
 
     const title = String(formData.get("title") || "").trim()
     const excerpt = String(formData.get("excerpt") || "").trim()
@@ -179,6 +209,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function updatePostFlags(formData: FormData) {
     "use server"
 
+    await requireAdminUser()
+
     const postId = String(formData.get("postId") || "")
     const isFeatured = formData.get("isFeatured") === "on"
     const isTrending = formData.get("isTrending") === "on"
@@ -210,6 +242,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   async function movePostToTrash(formData: FormData) {
     "use server"
+
+    await requireAdminUser()
 
     const postId = String(formData.get("postId") || "")
     if (!postId) {
@@ -252,6 +286,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function restorePostFromTrash(formData: FormData) {
     "use server"
 
+    await requireAdminUser()
+
     const postId = String(formData.get("postId") || "")
     if (!postId) {
       return
@@ -272,6 +308,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function deletePostPermanently(formData: FormData) {
     "use server"
 
+    await requireAdminUser()
+
     const postId = String(formData.get("postId") || "")
     if (!postId) {
       return
@@ -285,6 +323,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   async function moderateComment(formData: FormData) {
     "use server"
+
+    await requireAdminUser()
 
     const commentId = String(formData.get("commentId") || "")
     const action = String(formData.get("action") || "")
@@ -302,6 +342,145 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     }
 
     revalidatePath("/admin")
+  }
+
+  async function updateCategory(formData: FormData) {
+    "use server"
+
+    await requireAdminUser()
+
+    const categoryId = String(formData.get("categoryId") || "")
+    const name = String(formData.get("name") || "").trim()
+    const description = String(formData.get("description") || "").trim()
+
+    if (!categoryId || !name) {
+      redirect("/admin?tab=categories&toast=category_delete_failed")
+    }
+
+    const existingCategory = await prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { id: true, slug: true },
+    })
+
+    if (!existingCategory) {
+      redirect("/admin?tab=categories&toast=category_delete_failed")
+    }
+
+    const slug = await uniqueCategorySlug(name, categoryId)
+
+    await prisma.category.update({
+      where: { id: categoryId },
+      data: { name, description, slug },
+    })
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+    revalidatePath(`/${existingCategory.slug}`)
+    revalidatePath(`/${slug}`)
+    redirect("/admin?tab=categories&toast=category_updated")
+  }
+
+  async function reorderCategory(formData: FormData) {
+    "use server"
+
+    await requireAdminUser()
+
+    const categoryId = String(formData.get("categoryId") || "")
+    const direction = String(formData.get("direction") || "")
+
+    if (!categoryId || !["up", "down"].includes(direction)) {
+      redirect("/admin?tab=categories&toast=category_reorder_failed")
+    }
+
+    const orderedCategories = await prisma.category.findMany({
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { id: true, sortOrder: true, slug: true },
+    })
+
+    const currentIndex = orderedCategories.findIndex((item) => item.id === categoryId)
+    if (currentIndex < 0) {
+      redirect("/admin?tab=categories&toast=category_reorder_failed")
+    }
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= orderedCategories.length) {
+      redirect("/admin?tab=categories&toast=category_reorder_failed")
+    }
+
+    const swapped = [...orderedCategories]
+    const currentItem = swapped[currentIndex]
+    const targetItem = swapped[targetIndex]
+    swapped[currentIndex] = targetItem
+    swapped[targetIndex] = currentItem
+
+    await prisma.$transaction(
+      swapped.map((item, index) =>
+        prisma.category.update({
+          where: { id: item.id },
+          data: { sortOrder: index + 1 },
+        })
+      )
+    )
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+    revalidatePath(`/${currentItem.slug}`)
+    revalidatePath(`/${targetItem.slug}`)
+    redirect(`/admin?tab=categories&toast=category_reordered&moved=${currentItem.id}&direction=${direction}`)
+  }
+
+  async function deleteCategory(formData: FormData) {
+    "use server"
+
+    await requireAdminUser()
+
+    const categoryId = String(formData.get("categoryId") || "")
+    const moveToCategoryId = String(formData.get("moveToCategoryId") || "")
+
+    if (!categoryId) {
+      redirect("/admin?tab=categories&toast=category_delete_failed")
+    }
+
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { id: true, slug: true, _count: { select: { posts: true } } },
+    })
+
+    if (!category) {
+      redirect("/admin?tab=categories&toast=category_delete_failed")
+    }
+
+    if (category._count.posts > 0) {
+      if (!moveToCategoryId || moveToCategoryId === categoryId) {
+        redirect("/admin?tab=categories&toast=category_delete_failed")
+      }
+
+      const targetCategory = await prisma.category.findUnique({
+        where: { id: moveToCategoryId },
+        select: { id: true, slug: true },
+      })
+
+      if (!targetCategory) {
+        redirect("/admin?tab=categories&toast=category_delete_failed")
+      }
+
+      await prisma.$transaction([
+        prisma.post.updateMany({
+          where: { categoryId },
+          data: { categoryId: targetCategory.id },
+        }),
+        prisma.category.delete({ where: { id: categoryId } }),
+      ])
+
+      revalidatePath(`/${targetCategory.slug}`)
+    } else {
+      await prisma.category.delete({ where: { id: categoryId } })
+    }
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+    revalidatePath(`/${category.slug}`)
+    redirect("/admin?tab=categories&toast=category_deleted")
   }
 
   const activeTabMeta = ADMIN_TABS.find((item) => item.key === activeTab) || ADMIN_TABS[0]
@@ -336,6 +515,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   return (
     <main className="min-h-screen bg-muted/30">
+      <AdminActionToast />
       <header className="border-b bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/80">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6">
           <div>
@@ -448,25 +628,136 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           ) : null}
 
           {activeTab === "categories" ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tạo chuyên mục</CardTitle>
-                <CardDescription>Tạo hoặc cập nhật chuyên mục bằng slug tự động.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form action={createCategory} className="max-w-xl space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="categoryName">Tên chuyên mục</Label>
-                    <Input id="categoryName" name="name" placeholder="Ví dụ: Sống khỏe" required />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="categoryDesc">Mô tả</Label>
-                    <Textarea id="categoryDesc" name="description" placeholder="Mô tả ngắn cho chuyên mục" />
-                  </div>
-                  <Button type="submit">Lưu chuyên mục</Button>
-                </form>
-              </CardContent>
-            </Card>
+            <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tạo chuyên mục</CardTitle>
+                  <CardDescription>Tạo mới chuyên mục với slug tự động.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form action={createCategory} className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="categoryName">Tên chuyên mục</Label>
+                      <Input id="categoryName" name="name" placeholder="Ví dụ: Sống khỏe" required />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="categoryDesc">Mô tả</Label>
+                      <Textarea id="categoryDesc" name="description" placeholder="Mô tả ngắn cho chuyên mục" />
+                    </div>
+                    <Button type="submit" className="w-full">Tạo chuyên mục</Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quản lý chuyên mục</CardTitle>
+                  <CardDescription>
+                    Có thể sửa hoặc xóa chuyên mục. Khi xóa chuyên mục có bài viết, bắt buộc chuyển bài sang chuyên mục khác.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {categories.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">Chưa có chuyên mục nào.</p>
+                  ) : (
+                    categories.map((category, index) => (
+                      <div
+                        key={category.id}
+                        className={cn(
+                          "rounded-lg border p-3 transition-all duration-300",
+                          movedCategoryId === category.id ? "animate-pulse border-rose-300 ring-2 ring-rose-200" : ""
+                        )}
+                      >
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">/{category.slug}</p>
+                            <Badge variant="secondary">#{index + 1}</Badge>
+                            {movedCategoryId === category.id ? (
+                              <Badge variant="outline" className="text-rose-700">
+                                {movedDirection === "up" ? "Vừa đẩy lên" : "Vừa đẩy xuống"}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <form action={reorderCategory}>
+                              <input type="hidden" name="categoryId" value={category.id} />
+                              <input type="hidden" name="direction" value="up" />
+                              <Button
+                                type="submit"
+                                size="icon"
+                                variant="outline"
+                                className="size-8 transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                                disabled={index === 0}
+                              >
+                                <ArrowUp className="size-4" />
+                              </Button>
+                            </form>
+                            <form action={reorderCategory}>
+                              <input type="hidden" name="categoryId" value={category.id} />
+                              <input type="hidden" name="direction" value="down" />
+                              <Button
+                                type="submit"
+                                size="icon"
+                                variant="outline"
+                                className="size-8 transition-transform hover:translate-y-0.5 active:translate-y-0"
+                                disabled={index === categories.length - 1}
+                              >
+                                <ArrowDown className="size-4" />
+                              </Button>
+                            </form>
+                            <Badge variant="outline">{category._count.posts} bài viết</Badge>
+                          </div>
+                        </div>
+
+                        <form action={updateCategory} className="space-y-2">
+                          <input type="hidden" name="categoryId" value={category.id} />
+                          <div className="grid gap-2 md:grid-cols-2">
+                            <Input name="name" defaultValue={category.name} placeholder="Tên chuyên mục" required />
+                            <Input name="description" defaultValue={category.description || ""} placeholder="Mô tả" />
+                          </div>
+                          <Button type="submit" size="sm" variant="outline">Lưu thay đổi</Button>
+                        </form>
+
+                        <ConfirmActionForm
+                          action={deleteCategory}
+                          className="mt-3 space-y-2"
+                          fields={[{ name: "categoryId", value: category.id }]}
+                          confirmMessage={
+                            category._count.posts > 0
+                              ? `Xóa chuyên mục ${category.name}? ${category._count.posts} bài viết sẽ được chuyển sang chuyên mục đã chọn.`
+                              : `Xóa chuyên mục ${category.name}?`
+                          }
+                        >
+                          {category._count.posts > 0 ? (
+                            <div className="space-y-1">
+                              <Label htmlFor={`moveTo-${category.id}`}>Chuyển {category._count.posts} bài sang chuyên mục</Label>
+                              <Select id={`moveTo-${category.id}`} name="moveToCategoryId" required>
+                                <option value="">Chọn chuyên mục đích</option>
+                                {categories
+                                  .filter((item) => item.id !== category.id)
+                                  .map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                      {item.name}
+                                    </option>
+                                  ))}
+                              </Select>
+                            </div>
+                          ) : null}
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant="destructive"
+                            disabled={categories.length <= 1 || (category._count.posts > 0 && categories.length <= 1)}
+                          >
+                            Xóa chuyên mục
+                          </Button>
+                        </ConfirmActionForm>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           ) : null}
 
           {activeTab === "write" ? (

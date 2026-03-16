@@ -75,7 +75,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   }
 
   const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   })
 
   async function updatePost(formData: FormData) {

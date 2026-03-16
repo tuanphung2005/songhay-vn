@@ -9,15 +9,15 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { NAV_CATEGORIES } from "@/lib/categories"
-import { getHomepageData, getTrendingPosts } from "@/lib/queries"
+import { getHomepageData, getNavCategories, getTrendingPosts } from "@/lib/queries"
 
 export const revalidate = 300
 
 export default async function HomePage() {
-  const [{ featuredPosts, latest, mostRead }, trendingPosts] = await Promise.all([
+  const [{ featuredPosts, latest, mostRead }, trendingPosts, navCategories] = await Promise.all([
     getHomepageData(),
     getTrendingPosts(),
+    getNavCategories(),
   ])
 
   const heroPost = featuredPosts[0]
@@ -32,7 +32,7 @@ export default async function HomePage() {
     return acc
   }, {})
 
-  const categoryBlocks = NAV_CATEGORIES.filter((category) =>
+  const categoryBlocks = navCategories.filter((category) =>
     ["song-khoe", "meo-hay", "doi-song", "goc-stress", "tu-vi", "video"].includes(category.slug)
   )
     .map((category) => groupedByCategory[category.slug])
@@ -142,7 +142,26 @@ export default async function HomePage() {
         </div>
       </main>
 
+      <nav className="bg-red-700">
+        <ul className="mx-auto flex w-full max-w-7xl min-w-max items-center gap-8 overflow-x-auto px-4 py-3 text-xl font-bold text-white md:px-6">
+          {navCategories.map((item) => (
+            <li key={`bottom-${item.slug}`}>
+              <Link
+                href={`/${item.slug}`}
+                className="border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       <SiteFooter />
+
+      <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
+        <AdPlaceholder label="Bottom page ad (Google AdSense)" className="min-h-24" />
+      </div>
     </div>
   )
 }

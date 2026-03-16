@@ -90,3 +90,10 @@ export const getTrendingPosts = cache(async () => {
     take: 6,
   })
 })
+
+export const getNavCategories = cache(async () => {
+  return prisma.category.findMany({
+    select: { name: true, slug: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  })
+})
