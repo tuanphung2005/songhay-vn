@@ -4,12 +4,11 @@ import { redirect } from "next/navigation"
 
 import { RichTextField } from "@/components/admin/rich-text-field"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { requireAdminUser } from "@/lib/auth"
 import { uploadImageToCloudinary } from "@/lib/cloudinary"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
@@ -64,7 +63,6 @@ interface EditPostPageProps {
 }
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
-  await requireAdminUser()
   const { id } = await params
 
   const post = await prisma.post.findUnique({
@@ -82,7 +80,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
   async function updatePost(formData: FormData) {
     "use server"
-    await requireAdminUser()
 
     const postId = formData.get("postId") as string
     if (!postId) return

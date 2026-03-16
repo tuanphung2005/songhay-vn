@@ -5,7 +5,6 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { prisma } from "@/lib/prisma"
-import { hashPassword, verifyPassword } from "@/lib/password"
 
 const SESSION_COOKIE_NAME = "songhay_session"
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
@@ -118,7 +117,7 @@ export async function requireAdminUser() {
   const user = await getCurrentUser()
 
   if (!user) {
-    redirect("/login")
+    redirect("/login?admin=1")
   }
 
   if (user.role !== "ADMIN") {

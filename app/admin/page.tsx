@@ -1,5 +1,7 @@
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
+import type { LucideIcon } from "lucide-react"
+import { Activity, FolderKanban, LayoutDashboard, MessageSquareMore, Newspaper, PenSquare, ShieldCheck, Trash2 } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { RichTextField } from "@/components/admin/rich-text-field"
@@ -11,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
-import { clearSessionCookie, requireAdminUser } from "@/lib/auth"
+import { requireAdminUser } from "@/lib/auth"
 import { uploadImageToCloudinary } from "@/lib/cloudinary"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
@@ -21,13 +23,13 @@ export const revalidate = 0
 
 type AdminTab = "overview" | "write" | "categories" | "comments" | "posts" | "trash"
 
-const ADMIN_TABS: Array<{ key: AdminTab; label: string }> = [
-  { key: "overview", label: "Tổng quan" },
-  { key: "write", label: "Viết bài" },
-  { key: "categories", label: "Chuyên mục" },
-  { key: "comments", label: "Bình luận" },
-  { key: "posts", label: "Kho bài" },
-  { key: "trash", label: "Thùng rác" },
+const ADMIN_TABS: Array<{ key: AdminTab; label: string; description: string; icon: LucideIcon }> = [
+  { key: "overview", label: "Tổng quan", description: "Bức tranh tổng quan trạng thái CMS", icon: LayoutDashboard },
+  { key: "write", label: "Viết bài", description: "Soạn và xuất bản nội dung mới", icon: PenSquare },
+  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban },
+  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore },
+  { key: "posts", label: "Kho bài", description: "Chỉnh sửa và tối ưu nội dung", icon: Newspaper },
+  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
 ]
 
 function getPlainTextFromHtml(value: string) {
@@ -73,7 +75,8 @@ type AdminPageProps = {
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const admin = await requireAdminUser()
+  await requireAdminUser()
+
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const tabFromQuery = resolvedSearchParams?.tab
   const activeTab: AdminTab = ADMIN_TABS.some((item) => item.key === tabFromQuery)
@@ -102,16 +105,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     }),
   ])
 
-  async function logoutAction() {
-    "use server"
-    await requireAdminUser()
-    await clearSessionCookie()
-  }
-
   async function createCategory(formData: FormData) {
     "use server"
-
-    await requireAdminUser()
 
     const name = String(formData.get("name") || "").trim()
     const description = String(formData.get("description") || "").trim()
@@ -133,8 +128,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   async function createPost(formData: FormData) {
     "use server"
-
-    await requireAdminUser()
 
     const title = String(formData.get("title") || "").trim()
     const excerpt = String(formData.get("excerpt") || "").trim()
@@ -186,8 +179,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function updatePostFlags(formData: FormData) {
     "use server"
 
-    await requireAdminUser()
-
     const postId = String(formData.get("postId") || "")
     const isFeatured = formData.get("isFeatured") === "on"
     const isTrending = formData.get("isTrending") === "on"
@@ -219,8 +210,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   async function movePostToTrash(formData: FormData) {
     "use server"
-
-    await requireAdminUser()
 
     const postId = String(formData.get("postId") || "")
     if (!postId) {
@@ -263,8 +252,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function restorePostFromTrash(formData: FormData) {
     "use server"
 
-    await requireAdminUser()
-
     const postId = String(formData.get("postId") || "")
     if (!postId) {
       return
@@ -285,8 +272,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   async function deletePostPermanently(formData: FormData) {
     "use server"
 
-    await requireAdminUser()
-
     const postId = String(formData.get("postId") || "")
     if (!postId) {
       return
@@ -300,8 +285,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   async function moderateComment(formData: FormData) {
     "use server"
-
-    await requireAdminUser()
 
     const commentId = String(formData.get("commentId") || "")
     const action = String(formData.get("action") || "")
@@ -322,50 +305,83 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const activeTabMeta = ADMIN_TABS.find((item) => item.key === activeTab) || ADMIN_TABS[0]
+  const ActiveTabIcon = activeTabMeta.icon
+
+  const overviewStats = [
+    {
+      key: "posts",
+      label: "Bài viết",
+      value: posts.length,
+      note: "Bài gần nhất trong hệ thống",
+      icon: Newspaper,
+      tone: "text-sky-600",
+    },
+    {
+      key: "categories",
+      label: "Chuyên mục",
+      value: categories.length,
+      note: "Danh mục đang hoạt động",
+      icon: FolderKanban,
+      tone: "text-violet-600",
+    },
+    {
+      key: "comments",
+      label: "Comment chờ duyệt",
+      value: pendingComments.length,
+      note: "Cần xử lý bởi admin",
+      icon: MessageSquareMore,
+      tone: pendingComments.length > 0 ? "text-amber-600" : "text-zinc-900",
+    },
+  ]
 
   return (
     <main className="min-h-screen bg-muted/30">
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-3 md:px-6">
-          <div className="space-y-1">
+      <header className="border-b bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/80">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6">
+          <div>
             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.2em]">Songhay CMS</p>
+            <h1 className="mt-1 text-xl font-black text-zinc-900 md:text-2xl">Bảng điều khiển quản trị</h1>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="hidden md:inline-flex">
-              {admin.name}
-            </Badge>
-            <form action={logoutAction}>
-              <Button type="submit" variant="ghost">Đăng xuất</Button>
-            </form>
-          </div>
+          <Badge variant="secondary" className="hidden h-7 items-center gap-1.5 px-3 md:inline-flex">
+            <ShieldCheck className="size-3.5" />
+            Quyền quản trị
+          </Badge>
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-[1600px] gap-4 p-4 md:grid-cols-[250px_1fr] md:p-6">
+      <div className="mx-auto grid w-full max-w-7xl gap-4 p-4 md:grid-cols-[280px_1fr] md:p-6">
         <aside className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Điều hướng CMS</CardTitle>
-              <CardDescription>Tách theo từng tab để thao tác rõ ràng và nhanh hơn.</CardDescription>
+              <CardDescription>Chuyển nhanh theo nghiệp vụ quản trị.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-1">
+            <CardContent className="space-y-1.5">
               {ADMIN_TABS.map((tab) => (
-                <Button
-                  key={tab.key}
-                  asChild
-                  className="w-full justify-start"
-                  variant={activeTab === tab.key ? "secondary" : "ghost"}
-                >
-                  <Link href={`/admin?tab=${tab.key}`}>{tab.label}</Link>
-                </Button>
+                (() => {
+                  const TabIcon = tab.icon
+                  return (
+                    <Button
+                      key={tab.key}
+                      asChild
+                      className="h-10 w-full justify-start gap-2.5"
+                      variant={activeTab === tab.key ? "secondary" : "ghost"}
+                    >
+                      <Link href={`/admin?tab=${tab.key}`}>
+                        <TabIcon className="size-4" />
+                        {tab.label}
+                      </Link>
+                    </Button>
+                  )
+                })()
               ))}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Thống kê nhanh</CardTitle>
+              <CardTitle>Snapshot hệ thống</CardTitle>
+              <CardDescription>Những chỉ số cần theo dõi mỗi ngày.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
@@ -390,40 +406,44 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
         <section className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>{activeTabMeta.label}</CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <ActiveTabIcon className="size-5 text-zinc-700" />
+                  {activeTabMeta.label}
+                </CardTitle>
+                <CardDescription>{activeTabMeta.description}</CardDescription>
+              </div>
+              <Badge variant="outline" className="hidden md:inline-flex">
+                <Activity className="mr-1.5 size-3.5" />
+                Live data
+              </Badge>
             </CardHeader>
           </Card>
 
           {activeTab === "overview" ? (
             <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Bài viết</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-black">{posts.length}</p>
-                  <p className="text-muted-foreground text-sm">Bài gần nhất trong hệ thống</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Chuyên mục</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-black">{categories.length}</p>
-                  <p className="text-muted-foreground text-sm">Danh mục đang hoạt động</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Comment chờ duyệt</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={cn("text-3xl font-black", pendingComments.length > 0 ? "text-amber-600" : "text-zinc-900")}>{pendingComments.length}</p>
-                  <p className="text-muted-foreground text-sm">Cần xử lý bởi admin</p>
-                </CardContent>
-              </Card>
+              {overviewStats.map((item) => {
+                const ItemIcon = item.icon
+                return (
+                  <Card key={item.key}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">{item.label}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <p className={cn("text-3xl font-black", item.tone)}>{item.value}</p>
+                          <p className="text-muted-foreground text-sm">{item.note}</p>
+                        </div>
+                        <div className="rounded-md border bg-zinc-50 p-2">
+                          <ItemIcon className={cn("size-5", item.tone)} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           ) : null}
 
@@ -542,7 +562,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Bình luận chờ duyệt</CardTitle>
-                <CardDescription>Chỉ người dùng đã đăng nhập mới gửi được bình luận, tại đây admin duyệt hoặc xóa.</CardDescription>
+                <CardDescription>Người dùng có thể gửi bình luận tự do, tại đây admin duyệt hoặc xóa.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {pendingComments.length === 0 ? (
@@ -625,13 +645,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                               <Button type="submit" size="sm" variant="outline">Cập nhật</Button>
                             </form>
 
-                            <div className="flex flex-wrap gap-2">                                <Link href={`/admin/edit/${post.id}`}>
-                              <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
-                            </Link>                              <ConfirmActionForm
-                              action={movePostToTrash}
-                              fields={[{ name: "postId", value: post.id }]}
-                              confirmMessage="Chuyển bài viết này vào thùng rác?"
-                            >
+                            <div className="flex flex-wrap gap-2">
+                              <Link href={`/admin/edit/${post.id}`}>
+                                <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
+                              </Link>
+                              <ConfirmActionForm
+                                action={movePostToTrash}
+                                fields={[{ name: "postId", value: post.id }]}
+                                confirmMessage="Chuyển bài viết này vào thùng rác?"
+                              >
                                 <Button type="submit" size="sm" variant="destructive">Chuyển vào thùng rác</Button>
                               </ConfirmActionForm>
                             </div>

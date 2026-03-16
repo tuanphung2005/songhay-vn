@@ -28,16 +28,14 @@ export async function SiteHeader() {
         </Link>
 
         <div className="mt-1 flex items-center gap-2">
-          {user ? (
+          {user?.role === "ADMIN" ? (
             <>
-              {user.role === "ADMIN" ? (
-                <Link
-                  href="/admin"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
-                >
-                  CMS
-                </Link>
-              ) : null}
+              <Link
+                href="/admin"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+              >
+                CMS
+              </Link>
               <span className="hidden text-sm font-semibold text-zinc-700 md:inline">{user.name}</span>
               <form action={logoutAction}>
                 <button
@@ -48,14 +46,7 @@ export async function SiteHeader() {
                 </button>
               </form>
             </>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
-            >
-              Đăng nhập
-            </Link>
-          )}
+          ) : null}
           <button
             type="button"
             aria-label="Tìm kiếm"
