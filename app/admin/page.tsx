@@ -13,6 +13,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination"
 import { Select } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
@@ -33,6 +40,7 @@ export const metadata: Metadata = {
 }
 
 type AdminTab = "overview" | "write" | "categories" | "comments" | "posts" | "trash"
+const POSTS_PAGE_SIZE = 12
 
 const ADMIN_TABS: Array<{ key: AdminTab; label: string; description: string; icon: LucideIcon }> = [
   { key: "overview", label: "Tổng quan", description: "Bức tranh tổng quan trạng thái CMS", icon: LayoutDashboard },
@@ -42,6 +50,29 @@ const ADMIN_TABS: Array<{ key: AdminTab; label: string; description: string; ico
   { key: "posts", label: "Kho bài", description: "Chỉnh sửa và tối ưu nội dung", icon: Newspaper },
   { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
 ]
+
+function buildPaginationItems(currentPage: number, totalPages: number) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
+
+  const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1])
+  const validPages = [...pages].filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b)
+
+  const withGaps: Array<number | "ellipsis"> = []
+  for (let index = 0; index < validPages.length; index += 1) {
+    const page = validPages[index]
+    const previous = validPages[index - 1]
+
+    if (typeof previous === "number" && page - previous > 1) {
+      withGaps.push("ellipsis")
+    }
+
+    withGaps.push(page)
+  }
+
+  return withGaps
+}
 
 function getPlainTextFromHtml(value: string) {
   return value
@@ -97,7 +128,7 @@ async function uploadThumbnail(file: File | null) {
 }
 
 type AdminPageProps = {
-  searchParams?: Promise<{ tab?: string; toast?: string; moved?: string; direction?: string }>
+  searchParams?: Promise<{ tab?: string; toast?: string; moved?: string; direction?: string; q?: string; page?: string }>
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -107,6 +138,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const tabFromQuery = resolvedSearchParams?.tab
   const movedCategoryId = resolvedSearchParams?.moved
   const movedDirection = resolvedSearchParams?.direction
+  const postsQuery = (resolvedSearchParams?.q || "").trim().slice(0, 120)
+  const rawPostsPage = Number.parseInt(resolvedSearchParams?.page || "1", 10)
+  const requestedPostsPage = Number.isFinite(rawPostsPage) && rawPostsPage > 0 ? rawPostsPage : 1
   const activeTab: AdminTab = ADMIN_TABS.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
     : "overview"
@@ -140,15 +174,49 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       })
       : []
 
-  const posts =
+  const postsWhere = {
+    isDeleted: false,
+    ...(postsQuery.length > 0
+      ? {
+        OR: [
+          { title: { contains: postsQuery, mode: "insensitive" as const } },
+          { slug: { contains: postsQuery, mode: "insensitive" as const } },
+          { excerpt: { contains: postsQuery, mode: "insensitive" as const } },
+          { category: { name: { contains: postsQuery, mode: "insensitive" as const } } },
+        ],
+      }
+      : {}),
+  }
+
+  const postsData =
     activeTab === "posts"
-      ? await prisma.post.findMany({
-        where: { isDeleted: false },
-        include: { category: true },
-        orderBy: { createdAt: "desc" },
-        take: 30,
-      })
-      : []
+      ? await (async () => {
+        const totalCount = await prisma.post.count({ where: postsWhere })
+        const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PAGE_SIZE))
+        const currentPage = Math.min(requestedPostsPage, totalPages)
+
+        const posts = await prisma.post.findMany({
+          where: postsWhere,
+          include: { category: true },
+          orderBy: { createdAt: "desc" },
+          skip: (currentPage - 1) * POSTS_PAGE_SIZE,
+          take: POSTS_PAGE_SIZE,
+        })
+
+        return {
+          posts,
+          totalCount,
+          totalPages,
+          currentPage,
+        }
+      })()
+      : {
+        posts: [],
+        totalCount: 0,
+        totalPages: 1,
+        currentPage: 1,
+      }
+  const postsPaginationItems = buildPaginationItems(postsData.currentPage, postsData.totalPages)
 
   const trashedPosts =
     activeTab === "trash"
@@ -954,9 +1022,27 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Kho bài viết</CardTitle>
-                <CardDescription>Quản lý trạng thái bài viết và SEO trực tiếp trên bảng.</CardDescription>
+                <CardDescription>
+                  Quản lý trạng thái bài viết và SEO trực tiếp trên bảng. Tổng kết quả: {postsData.totalCount.toLocaleString("vi-VN")}.
+                </CardDescription>
               </CardHeader>
               <CardContent>
+                <form method="get" className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input type="hidden" name="tab" value="posts" />
+                  <Input
+                    name="q"
+                    defaultValue={postsQuery}
+                    placeholder="Tìm theo tiêu đề, slug, mô tả hoặc danh mục..."
+                    className="sm:max-w-md"
+                  />
+                  <div className="flex gap-2">
+                    <Button type="submit" variant="outline">Tìm kiếm</Button>
+                    <Link href="/admin?tab=posts">
+                      <Button type="button" variant="ghost">Xóa lọc</Button>
+                    </Link>
+                  </div>
+                </form>
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -968,7 +1054,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {posts.map((post) => (
+                    {postsData.posts.map((post) => (
                       <TableRow key={post.id}>
                         <TableCell>
                           <p className="font-semibold">{post.title}</p>
@@ -1021,6 +1107,58 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     ))}
                   </TableBody>
                 </Table>
+
+                {postsData.posts.length === 0 ? (
+                  <p className="text-muted-foreground mt-4 text-sm">Không tìm thấy bài viết phù hợp.</p>
+                ) : null}
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+                  <p className="text-muted-foreground text-sm">
+                    Trang {postsData.currentPage}/{postsData.totalPages}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {postsData.currentPage > 1 ? (
+                      <Link
+                        href={`/admin?tab=posts${postsQuery ? `&q=${encodeURIComponent(postsQuery)}` : ""}&page=${postsData.currentPage - 1}`}
+                      >
+                        <Button type="button" size="sm" variant="outline">Trang trước</Button>
+                      </Link>
+                    ) : (
+                      <Button type="button" size="sm" variant="outline" disabled>Trang trước</Button>
+                    )}
+
+                    {postsData.currentPage < postsData.totalPages ? (
+                      <Link
+                        href={`/admin?tab=posts${postsQuery ? `&q=${encodeURIComponent(postsQuery)}` : ""}&page=${postsData.currentPage + 1}`}
+                      >
+                        <Button type="button" size="sm">Trang sau</Button>
+                      </Link>
+                    ) : (
+                      <Button type="button" size="sm" disabled>Trang sau</Button>
+                    )}
+                  </div>
+                </div>
+
+                {postsData.totalPages > 1 ? (
+                  <Pagination className="mt-3 justify-start">
+                    <PaginationContent>
+                      {postsPaginationItems.map((item, index) => (
+                        <PaginationItem key={`page-${index}-${String(item)}`}>
+                          {item === "ellipsis" ? (
+                            <PaginationEllipsis />
+                          ) : (
+                            <PaginationLink
+                              href={`/admin?tab=posts${postsQuery ? `&q=${encodeURIComponent(postsQuery)}` : ""}&page=${item}`}
+                              isActive={item === postsData.currentPage}
+                            >
+                              {item}
+                            </PaginationLink>
+                          )}
+                        </PaginationItem>
+                      ))}
+                    </PaginationContent>
+                  </Pagination>
+                ) : null}
               </CardContent>
             </Card>
           ) : null}
