@@ -1,13 +1,14 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 
+import { GoodDayFullReport } from "@/components/news/good-day-full-report"
 import { GoodDayByAgeTool } from "@/components/news/good-day-by-age-tool"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 
 export const metadata: Metadata = {
-  title: "Xem ngày tốt xấu theo tuổi",
-  description: "Công cụ xem ngày tốt xấu theo tuổi để tham khảo nhanh.",
+  title: "Xem ngày tốt xấu đầy đủ theo lịch âm",
+  description:
+    "Xem ngày tốt xấu đầy đủ: hoàng đạo, trực, nạp âm, giờ tốt, tuổi xung khắc, sao tốt xấu và đánh giá theo ngày.",
   alternates: {
     canonical: "/ngay-tot-xau",
   },
@@ -26,6 +27,8 @@ export default function GoodDayPage() {
         <section className="rounded-lg border border-zinc-200 bg-white p-4">
           <GoodDayByAgeTool showUtilityLinks />
         </section>
+
+        <GoodDayFullReport />
       </main>
       <SiteFooter />
     </div>
