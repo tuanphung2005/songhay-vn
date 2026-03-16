@@ -1,0 +1,46 @@
+"use client"
+
+import Link from "next/link"
+import { Gift, X } from "lucide-react"
+import { useState } from "react"
+
+export function FloatingGiftButton() {
+  const [isVisible, setIsVisible] = useState(true)
+
+  if (!isVisible) {
+    return null
+  }
+
+  return (
+    <div className="fixed right-3 top-1/2 z-[70] -translate-y-1/2 md:right-5">
+      <button
+        type="button"
+        aria-label="Tắt nút nhận quà"
+        onClick={() => setIsVisible(false)}
+        className="absolute -right-1 -top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-100"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+
+      <Link
+        href="https://s.shopee.vn/1Lb1mLK7V1"
+        target="_blank"
+        rel="noreferrer nofollow sponsored"
+        aria-label="Nhận quà ưu đãi"
+        className="group relative flex h-24 w-24 items-center justify-center rounded-full border-4 border-amber-200 bg-[radial-gradient(circle_at_30%_20%,#fef08a_0%,#f59e0b_48%,#dc2626_100%)] text-center shadow-[0_12px_30px_rgba(217,70,70,0.42)] transition-transform hover:scale-105"
+      >
+        <span className="pointer-events-none absolute inset-[-8px] rounded-full border border-amber-300/70" />
+        <span className="pointer-events-none absolute inset-[-12px] animate-pulse rounded-full border border-rose-300/40" />
+
+        <span className="absolute -top-1.5 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full bg-amber-200/90" />
+        <span className="absolute left-1/2 top-1 h-14 w-1.5 -translate-x-1/2 rounded-full bg-amber-100/80" />
+
+        <span className="relative flex flex-col items-center gap-0.5 text-white drop-shadow-sm">
+          <Gift className="h-5 w-5" />
+          <span className="text-[10px] font-black uppercase tracking-wide">Nhận quà</span>
+          <span className="text-[9px] font-bold">Ưu đãi</span>
+        </span>
+      </Link>
+    </div>
+  )
+}

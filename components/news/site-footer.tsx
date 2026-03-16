@@ -1,11 +1,17 @@
 import Link from "next/link"
-import { Facebook, Linkedin, Youtube } from "lucide-react"
+import { Facebook, Youtube } from "lucide-react"
 
 function TikTokIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="size-5">
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.17V2h-3.36v13.48a2.88 2.88 0 1 1-2.88-2.88 2.8 2.8 0 0 1 .86.14V9.33a6.2 6.2 0 0 0-.86-.06A6.24 6.24 0 1 0 15.82 15V8.16a8.17 8.17 0 0 0 4.77 1.54V6.69h-1Z" />
     </svg>
+  )
+}
+
+function ThreadsIcon() {
+  return (
+    <span aria-hidden="true" className="text-base font-black">@</span>
   )
 }
 
@@ -24,15 +30,15 @@ const socials = [
   },
   {
     name: "TikTok",
-    href: "https://tiktok.com",
+    href: "https://www.tiktok.com/@songhayvn",
     icon: TikTokIcon,
     buttonClass: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-700 hover:text-white",
   },
   {
-    name: "LinkedIn",
-    href: "https://linkedin.com",
-    icon: Linkedin,
-    buttonClass: "border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-700 hover:text-white",
+    name: "Threads",
+    href: "https://www.threads.com/@songhayvn",
+    icon: ThreadsIcon,
+    buttonClass: "border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-900 hover:text-white",
   },
 ]
 
@@ -46,7 +52,7 @@ export function SiteFooter() {
           <p className="text-zinc-600">Đặt banner, booking bài PR, tài trợ chuyên mục và hợp tác nội dung thương hiệu.</p>
           <div className="space-y-1.5 rounded-lg border border-zinc-200 bg-white p-4">
             <p>
-              Email: <a href="mailto:ads@songhay.vn" className="font-semibold text-rose-700">ads@songhay.vn</a>
+              Email: <a href="mailto:lienhesonghay@gmail.com" className="font-semibold text-rose-700">lienhesonghay@gmail.com</a>
             </p>
             <p>
               Hotline / Zalo: <a href="tel:0967402295" className="font-semibold text-rose-700">0967 402 295</a>
