@@ -20,18 +20,6 @@ function toPlainText(html: string) {
     .trim()
 }
 
-const STARTER_TEMPLATE = `<h2>Tieu de bai viet</h2>
-<p>Nhap doan mo dau tai day...</p>
-
-<h3>Noi dung chinh</h3>
-<p>Viet noi dung HTML thuong tai day.</p>
-
-<ul>
-  <li>Y 1</li>
-  <li>Y 2</li>
-</ul>
-`
-
 const COMPLETION_ITEMS: Array<{ label: string; insertText: string; documentation: string }> = [
   {
     label: "article-shell",

@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
 
 import "./globals.css"
 import { JsonLd } from "@/components/seo/json-ld"
+import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
@@ -18,30 +19,55 @@ const fontSerif = Merriweather({
   variable: "--font-serif",
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
+const siteUrl = getSiteUrl()
+const defaultDescription =
+  "Songhay.vn - cổng thông tin phong cách sống Việt Nam với tin tức song hay, sống khỏe, mẹo hay, đời sống, góc stress, tử vi và video."
+const defaultOgImage = toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH)
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Songhay.vn | Kho tàng điều hay",
-    template: "%s | Songhay.vn",
+    default: `${SITE_NAME} | Kho tàng điều hay`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "Songhay.vn - cổng thông tin phong cách sống Việt Nam với tin tức song hay, sống khỏe, mẹo hay, đời sống, góc stress, tử vi và video.",
+  description: defaultDescription,
+  alternates: {
+    canonical: "/",
+  },
+  keywords: ["Songhay", "tin tuc", "song khoe", "meo hay", "doi song", "tu vi", "video"],
+  authors: [{ name: SITE_NAME }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
-    title: "Songhay.vn | Kho tàng điều hay",
-    description:
-      "Tin tức và tiện ích mỗi ngày: song hay, sống khỏe, mẹo hay, đời sống, góc stress, tử vi, video.",
+    title: `${SITE_NAME} | Kho tàng điều hay`,
+    description: defaultDescription,
     type: "website",
     url: siteUrl,
-    siteName: "Songhay.vn",
+    siteName: SITE_NAME,
     locale: "vi_VN",
+    images: [
+      {
+        url: defaultOgImage,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} - Kho tàng điều hay`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Songhay.vn | Kho tàng điều hay",
-    description:
-      "Tin tức và tiện ích mỗi ngày: song hay, sống khỏe, mẹo hay, đời sống, góc stress, tử vi, video.",
+    title: `${SITE_NAME} | Kho tàng điều hay`,
+    description: defaultDescription,
+    images: [defaultOgImage],
   },
 }
 
@@ -54,11 +80,11 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${siteUrl}#organization`,
-    name: "Songhay.vn",
+    name: SITE_NAME,
     url: siteUrl,
     logo: {
       "@type": "ImageObject",
-      url: `${siteUrl}/placeholder-news.svg`,
+      url: defaultOgImage,
     },
   }
 
@@ -67,7 +93,7 @@ export default function RootLayout({
     "@type": "WebSite",
     "@id": `${siteUrl}#website`,
     url: siteUrl,
-    name: "Songhay.vn",
+    name: SITE_NAME,
     publisher: {
       "@id": `${siteUrl}#organization`,
     },

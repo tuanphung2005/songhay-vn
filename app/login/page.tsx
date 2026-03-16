@@ -1,9 +1,18 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { clearSessionCookie, setSessionCookie } from "@/lib/auth"
 import { verifyPassword } from "@/lib/password"
 import { prisma } from "@/lib/prisma"
+
+export const metadata: Metadata = {
+  title: "Đăng nhập quản trị",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 type LoginPageProps = {
   searchParams?: Promise<{ admin?: string; error?: string }>

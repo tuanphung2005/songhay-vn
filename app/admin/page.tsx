@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
+import type { Metadata } from "next"
 import type { LucideIcon } from "lucide-react"
 import { Activity, ArrowDown, ArrowUp, FolderKanban, LayoutDashboard, MessageSquareMore, Newspaper, PenSquare, ShieldCheck, Trash2 } from "lucide-react"
 import { redirect } from "next/navigation"
@@ -23,6 +24,13 @@ import { slugify } from "@/lib/slug"
 import { cn } from "@/lib/utils"
 
 export const revalidate = 0
+export const metadata: Metadata = {
+  title: "CMS Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 type AdminTab = "overview" | "write" | "categories" | "comments" | "posts" | "trash"
 

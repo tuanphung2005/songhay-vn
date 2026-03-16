@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { RichTextField } from "@/components/admin/rich-text-field"
@@ -14,6 +15,13 @@ import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 
 export const revalidate = 0
+export const metadata: Metadata = {
+  title: "Chỉnh sửa bài viết",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 function getPlainTextFromHtml(value: string) {
   return value

@@ -15,6 +15,7 @@ import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
+import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
 
@@ -79,6 +80,7 @@ function normalizeArticleHtml(rawHtml: string) {
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { category, slug } = await params
   const post = await getPostByCategoryAndSlug(category, slug)
+  const siteUrl = getSiteUrl()
 
   if (!post) {
     return {
@@ -88,15 +90,31 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const title = post.seoTitle || post.title
   const description = post.seoDescription || post.excerpt
+  const canonicalPath = `/${post.category.slug}/${post.slug}`
+  const canonicalUrl = `${siteUrl}${canonicalPath}`
+  const imageUrl = toAbsoluteUrl(post.ogImage || post.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
 
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title,
       description,
       type: "article",
-      images: post.ogImage || post.thumbnailUrl ? [post.ogImage || post.thumbnailUrl || ""] : [],
+      url: canonicalUrl,
+      images: [imageUrl],
+      publishedTime: post.publishedAt.toISOString(),
+      modifiedTime: post.updatedAt.toISOString(),
+      section: post.category.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
     },
   }
 }
@@ -116,10 +134,10 @@ export default async function PostPage({ params }: PostPageProps) {
     getTrendingPosts(),
   ])
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
+  const siteUrl = getSiteUrl()
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
   const articleHtml = normalizeArticleHtml(article.content)
-  const articleImage = article.ogImage || article.thumbnailUrl || `${siteUrl}/placeholder-news.svg`
+  const articleImage = toAbsoluteUrl(article.ogImage || article.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -145,7 +163,7 @@ export default async function PostPage({ params }: PostPageProps) {
       "@id": `${siteUrl}#organization`,
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/placeholder-news.svg`,
+        url: toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH),
       },
     },
   }

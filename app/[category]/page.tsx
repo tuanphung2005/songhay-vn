@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { JsonLd } from "@/components/seo/json-ld"
 import { getCategoryBySlug, getPostsByCategory } from "@/lib/queries"
+import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
 
@@ -17,6 +18,7 @@ type CategoryPageProps = {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params
   const foundCategory = await getCategoryBySlug(category)
+  const siteUrl = getSiteUrl()
 
   if (!foundCategory) {
     return { title: "Không tìm thấy chuyên mục" }
@@ -24,14 +26,27 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
   const title = `${foundCategory.name} | Songhay.vn`
   const description = foundCategory.description || `Khám phá bài viết mới nhất thuộc chuyên mục ${foundCategory.name}.`
+  const canonicalPath = `/${foundCategory.slug}`
+  const canonicalUrl = `${siteUrl}${canonicalPath}`
 
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title,
       description,
       type: "website",
+      url: canonicalUrl,
+      images: [toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH)],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH)],
     },
   }
 }
@@ -48,7 +63,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   const currentCategory = foundCategory!
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
+  const siteUrl = getSiteUrl()
   const categoryUrl = `${siteUrl}/${currentCategory.slug}`
 
   const breadcrumbJsonLd = {

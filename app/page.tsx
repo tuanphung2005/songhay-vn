@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
@@ -9,9 +10,37 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { JsonLd } from "@/components/seo/json-ld"
 import { getHomepageData, getNavCategories, getTrendingPosts } from "@/lib/queries"
+import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
+
+const siteUrl = getSiteUrl()
+const canonicalUrl = siteUrl
+const defaultOgImage = toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH)
+const homeDescription = "Tin tức và tiện ích mỗi ngày: sống khỏe, mẹo hay, đời sống, góc stress, tử vi, video."
+
+export const metadata: Metadata = {
+  title: `${SITE_NAME} | Kho tàng điều hay`,
+  description: homeDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: `${SITE_NAME} | Kho tàng điều hay`,
+    description: homeDescription,
+    type: "website",
+    url: canonicalUrl,
+    images: [defaultOgImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | Kho tàng điều hay`,
+    description: homeDescription,
+    images: [defaultOgImage],
+  },
+}
 
 export default async function HomePage() {
   const [{ featuredPosts, latest, mostRead }, trendingPosts, navCategories] = await Promise.all([
@@ -38,8 +67,22 @@ export default async function HomePage() {
     .map((category) => groupedByCategory[category.slug])
     .filter((items): items is typeof latest => Boolean(items && items.length > 0))
 
+  const homepageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${canonicalUrl}#webpage`,
+    url: canonicalUrl,
+    name: `${SITE_NAME} | Kho tàng điều hay`,
+    description: homeDescription,
+    inLanguage: "vi-VN",
+    isPartOf: {
+      "@id": `${siteUrl}#website`,
+    },
+  }
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
+      <JsonLd data={homepageJsonLd} />
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 md:px-6">

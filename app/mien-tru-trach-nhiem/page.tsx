@@ -1,9 +1,19 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { DEFAULT_OG_IMAGE_PATH, toAbsoluteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Miễn trừ trách nhiệm",
   description: "Thông tin miễn trừ trách nhiệm khi sử dụng nội dung trên Songhay.vn.",
+  alternates: {
+    canonical: "/mien-tru-trach-nhiem",
+  },
+  openGraph: {
+    title: "Miễn trừ trách nhiệm | Songhay.vn",
+    description: "Thông tin miễn trừ trách nhiệm khi sử dụng nội dung trên Songhay.vn.",
+    type: "article",
+    images: [toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH)],
+  },
 }
 
 export default function DisclaimerPage() {
