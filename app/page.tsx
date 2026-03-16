@@ -105,13 +105,13 @@ export default async function HomePage() {
               ) : null}
 
               <div className="grid gap-3 border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-3">
-                {heroMini.map((post, index) => (
+                {heroMini.map((post) => (
                   <Link
                     key={post.id}
                     href={`/${post.category.slug}/${post.slug}`}
                     className="text-sm font-bold text-zinc-800 transition hover:text-rose-600"
                   >
-                    Tit{index + 1}: {post.title}
+                    {post.title}
                   </Link>
                 ))}
               </div>
