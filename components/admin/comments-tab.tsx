@@ -1,0 +1,58 @@
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+type PendingComment = {
+  id: string
+  authorName: string
+  content: string
+  post: {
+    slug: string
+    category: {
+      slug: string
+    }
+  }
+}
+
+type CommentsTabProps = {
+  pendingComments: PendingComment[]
+  moderateComment: (formData: FormData) => Promise<void>
+}
+
+export function CommentsTab({ pendingComments, moderateComment }: CommentsTabProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Bình luận chờ duyệt</CardTitle>
+        <CardDescription>Người dùng có thể gửi bình luận tự do, tại đây admin duyệt hoặc xóa.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {pendingComments.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Không có bình luận chờ duyệt.</p>
+        ) : (
+          pendingComments.map((comment) => (
+            <div key={comment.id} className="rounded-lg border p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold">{comment.authorName}</p>
+                <Badge variant="outline">/{comment.post.category.slug}/{comment.post.slug}</Badge>
+              </div>
+              <p className="mt-2 text-sm text-zinc-700">{comment.content}</p>
+              <div className="mt-3 flex gap-2">
+                <form action={moderateComment}>
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <input type="hidden" name="action" value="approve" />
+                  <Button type="submit" size="sm">Duyệt</Button>
+                </form>
+                <form action={moderateComment}>
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <input type="hidden" name="action" value="delete" />
+                  <Button type="submit" size="sm" variant="destructive">Xóa</Button>
+                </form>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  )
+}
