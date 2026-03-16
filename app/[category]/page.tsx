@@ -5,6 +5,7 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { JsonLd } from "@/components/seo/json-ld"
 import { getCategoryBySlug, getPostsByCategory } from "@/lib/queries"
 
 export const revalidate = 300
@@ -47,9 +48,43 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   const currentCategory = foundCategory!
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
+  const categoryUrl = `${siteUrl}/${currentCategory.slug}`
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Trang chu",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: currentCategory.name,
+        item: categoryUrl,
+      },
+    ],
+  }
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: currentCategory.name,
+    description: currentCategory.description || `Chuyen muc ${currentCategory.name} cua Songhay.vn`,
+    url: categoryUrl,
+    inLanguage: "vi-VN",
+    isPartOf: {
+      "@id": `${siteUrl}#website`,
+    },
+  }
 
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       <SiteHeader />
       <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
         <SectionHeading title={currentCategory.name} />

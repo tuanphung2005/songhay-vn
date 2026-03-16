@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
 
 import "./globals.css"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 
@@ -49,6 +50,37 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}#organization`,
+    name: "Songhay.vn",
+    url: siteUrl,
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteUrl}/placeholder-news.svg`,
+    },
+  }
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    url: siteUrl,
+    name: "Songhay.vn",
+    publisher: {
+      "@id": `${siteUrl}#organization`,
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  }
+
   return (
     <html
       lang="vi"
@@ -56,6 +88,7 @@ export default function RootLayout({
       className={cn("antialiased", fontSans.variable, fontSerif.variable)}
     >
       <body>
+        <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
         {children}
         <Toaster />
       </body>

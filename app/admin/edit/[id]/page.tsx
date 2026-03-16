@@ -188,7 +188,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
               <RichTextField
                 name="content"
                 defaultValue={post.content}
-                placeholder="Viết nội dung bài báo tại đây..."
               />
             </div>
 

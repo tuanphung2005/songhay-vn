@@ -9,6 +9,7 @@ import { CommentForm } from "@/components/news/comment-form"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
+import { JsonLd } from "@/components/seo/json-ld"
 import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
@@ -118,24 +119,60 @@ export default async function PostPage({ params }: PostPageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
   const articleHtml = normalizeArticleHtml(article.content)
+  const articleImage = article.ogImage || article.thumbnailUrl || `${siteUrl}/placeholder-news.svg`
 
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
+    "@id": `${fullUrl}#article`,
     headline: article.title,
     description: article.excerpt,
     datePublished: article.publishedAt.toISOString(),
     dateModified: article.updatedAt.toISOString(),
-    mainEntityOfPage: fullUrl,
-    image: article.ogImage || article.thumbnailUrl || `${siteUrl}/placeholder-news.svg`,
-    publisher: {
+    inLanguage: "vi-VN",
+    articleSection: article.category.name,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": fullUrl,
+    },
+    image: [articleImage],
+    author: {
       "@type": "Organization",
+      "@id": `${siteUrl}#organization`,
       name: "Songhay.vn",
+    },
+    publisher: {
+      "@id": `${siteUrl}#organization`,
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/logo.png`,
+        url: `${siteUrl}/placeholder-news.svg`,
       },
     },
+  }
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Trang chu",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: article.category.name,
+        item: `${siteUrl}/${article.category.slug}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+        item: fullUrl,
+      },
+    ],
   }
 
   return (
@@ -145,7 +182,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">
         <article className="space-y-6">
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+          <JsonLd data={[articleJsonLd, breadcrumbJsonLd]} />
           <header className="space-y-3">
             <Link href={`/${article.category.slug}`} className="text-sm font-bold text-rose-600">
               {article.category.name}
