@@ -13,7 +13,6 @@ import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { getCurrentUser } from "@/lib/auth"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
 
 export const revalidate = 300
@@ -111,10 +110,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const article = post!
 
-  const [relatedPosts, trendingPosts, currentUser] = await Promise.all([
+  const [relatedPosts, trendingPosts] = await Promise.all([
     getRelatedPosts(article.id, article.categoryId),
     getTrendingPosts(),
-    getCurrentUser(),
   ])
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://songhay.vn"
@@ -200,10 +198,7 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
           </section>
 
-          <CommentForm
-            postId={article.id}
-            currentUser={currentUser ? { id: currentUser.id, name: currentUser.name } : null}
-          />
+          <CommentForm postId={article.id} currentUser={null} />
 
           <section className="space-y-4">
             <h2 className="text-2xl font-extrabold">Related posts</h2>

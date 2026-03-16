@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { requireAdminUser } from "@/lib/auth"
 import { uploadImageToCloudinary } from "@/lib/cloudinary"
+import { clearDataCache } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 import { cn } from "@/lib/utils"
@@ -102,30 +103,58 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     ? (tabFromQuery as AdminTab)
     : "overview"
 
-  const [categories, posts, trashedPosts, pendingComments] = await Promise.all([
-    prisma.category.findMany({
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      include: { _count: { select: { posts: true } } },
-    }),
-    prisma.post.findMany({
-      where: { isDeleted: false },
-      include: { category: true },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    }),
-    prisma.post.findMany({
-      where: { isDeleted: true },
-      include: { category: true },
-      orderBy: [{ deletedAt: "desc" }, { updatedAt: "desc" }],
-      take: 30,
-    }),
-    prisma.comment.findMany({
-      where: { isApproved: false },
-      include: { post: { include: { category: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
+  const [postCount, categoryCount, pendingCommentCount, trashedPostCount] = await Promise.all([
+    prisma.post.count({ where: { isDeleted: false } }),
+    prisma.category.count(),
+    prisma.comment.count({ where: { isApproved: false } }),
+    prisma.post.count({ where: { isDeleted: true } }),
   ])
+
+  const categoriesForManage =
+    activeTab === "categories"
+      ? await prisma.category.findMany({
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        include: { _count: { select: { posts: true } } },
+      })
+      : []
+
+  const categoriesForWrite =
+    activeTab === "write"
+      ? await prisma.category.findMany({
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: { id: true, name: true },
+      })
+      : []
+
+  const posts =
+    activeTab === "posts"
+      ? await prisma.post.findMany({
+        where: { isDeleted: false },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+        take: 30,
+      })
+      : []
+
+  const trashedPosts =
+    activeTab === "trash"
+      ? await prisma.post.findMany({
+        where: { isDeleted: true },
+        include: { category: true },
+        orderBy: [{ deletedAt: "desc" }, { updatedAt: "desc" }],
+        take: 30,
+      })
+      : []
+
+  const pendingComments =
+    activeTab === "comments"
+      ? await prisma.comment.findMany({
+        where: { isApproved: false },
+        include: { post: { include: { category: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      })
+      : []
 
   async function createCategory(formData: FormData) {
     "use server"
@@ -151,6 +180,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
     revalidatePath("/")
     revalidatePath("/admin")
+    clearDataCache()
     redirect("/admin?tab=categories&toast=category_created")
   }
 
@@ -204,6 +234,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
     revalidatePath("/")
     revalidatePath("/admin")
+    clearDataCache()
   }
 
   async function updatePostFlags(formData: FormData) {
@@ -238,6 +269,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revalidatePath("/admin")
     revalidatePath(`/${updatedPost.category.slug}`)
     revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
+    clearDataCache()
   }
 
   async function movePostToTrash(formData: FormData) {
@@ -281,6 +313,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revalidatePath("/admin")
     revalidatePath(`/${existingPost.category.slug}`)
     revalidatePath(`/${existingPost.category.slug}/${existingPost.slug}`)
+    clearDataCache()
   }
 
   async function restorePostFromTrash(formData: FormData) {
@@ -303,6 +336,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
     revalidatePath("/")
     revalidatePath("/admin")
+    clearDataCache()
   }
 
   async function deletePostPermanently(formData: FormData) {
@@ -319,6 +353,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
     revalidatePath("/")
     revalidatePath("/admin")
+    clearDataCache()
   }
 
   async function moderateComment(formData: FormData) {
@@ -342,6 +377,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     }
 
     revalidatePath("/admin")
+    clearDataCache()
   }
 
   async function updateCategory(formData: FormData) {
@@ -377,6 +413,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revalidatePath("/admin")
     revalidatePath(`/${existingCategory.slug}`)
     revalidatePath(`/${slug}`)
+    clearDataCache()
     redirect("/admin?tab=categories&toast=category_updated")
   }
 
@@ -426,6 +463,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revalidatePath("/admin")
     revalidatePath(`/${currentItem.slug}`)
     revalidatePath(`/${targetItem.slug}`)
+    clearDataCache()
     redirect(`/admin?tab=categories&toast=category_reordered&moved=${currentItem.id}&direction=${direction}`)
   }
 
@@ -480,6 +518,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revalidatePath("/")
     revalidatePath("/admin")
     revalidatePath(`/${category.slug}`)
+    clearDataCache()
     redirect("/admin?tab=categories&toast=category_deleted")
   }
 
@@ -490,7 +529,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     {
       key: "posts",
       label: "Bài viết",
-      value: posts.length,
+      value: postCount,
       note: "Bài gần nhất trong hệ thống",
       icon: Newspaper,
       tone: "text-sky-600",
@@ -498,7 +537,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     {
       key: "categories",
       label: "Chuyên mục",
-      value: categories.length,
+      value: categoryCount,
       note: "Danh mục đang hoạt động",
       icon: FolderKanban,
       tone: "text-violet-600",
@@ -506,10 +545,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     {
       key: "comments",
       label: "Comment chờ duyệt",
-      value: pendingComments.length,
+      value: pendingCommentCount,
       note: "Cần xử lý bởi admin",
       icon: MessageSquareMore,
-      tone: pendingComments.length > 0 ? "text-amber-600" : "text-zinc-900",
+      tone: pendingCommentCount > 0 ? "text-amber-600" : "text-zinc-900",
     },
   ]
 
@@ -566,19 +605,19 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <CardContent className="grid gap-2 text-sm">
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
                 <span className="text-muted-foreground">Bài viết</span>
-                <span className="font-semibold">{posts.length}</span>
+                <span className="font-semibold">{postCount}</span>
               </div>
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
                 <span className="text-muted-foreground">Chuyên mục</span>
-                <span className="font-semibold">{categories.length}</span>
+                <span className="font-semibold">{categoryCount}</span>
               </div>
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
                 <span className="text-muted-foreground">Comment chờ duyệt</span>
-                <span className="font-semibold">{pendingComments.length}</span>
+                <span className="font-semibold">{pendingCommentCount}</span>
               </div>
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
                 <span className="text-muted-foreground">Thùng rác</span>
-                <span className="font-semibold">{trashedPosts.length}</span>
+                <span className="font-semibold">{trashedPostCount}</span>
               </div>
             </CardContent>
           </Card>
@@ -657,10 +696,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {categories.length === 0 ? (
+                  {categoriesForManage.length === 0 ? (
                     <p className="text-muted-foreground text-sm">Chưa có chuyên mục nào.</p>
                   ) : (
-                    categories.map((category, index) => (
+                    categoriesForManage.map((category, index) => (
                       <div
                         key={category.id}
                         className={cn(
@@ -700,7 +739,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                 size="icon"
                                 variant="outline"
                                 className="size-8 transition-transform hover:translate-y-0.5 active:translate-y-0"
-                                disabled={index === categories.length - 1}
+                                disabled={index === categoriesForManage.length - 1}
                               >
                                 <ArrowDown className="size-4" />
                               </Button>
@@ -733,7 +772,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                               <Label htmlFor={`moveTo-${category.id}`}>Chuyển {category._count.posts} bài sang chuyên mục</Label>
                               <Select id={`moveTo-${category.id}`} name="moveToCategoryId" required>
                                 <option value="">Chọn chuyên mục đích</option>
-                                {categories
+                                {categoriesForManage
                                   .filter((item) => item.id !== category.id)
                                   .map((item) => (
                                     <option key={item.id} value={item.id}>
@@ -747,7 +786,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             type="submit"
                             size="sm"
                             variant="destructive"
-                            disabled={categories.length <= 1 || (category._count.posts > 0 && categories.length <= 1)}
+                            disabled={categoriesForManage.length <= 1 || (category._count.posts > 0 && categoriesForManage.length <= 1)}
                           >
                             Xóa chuyên mục
                           </Button>
@@ -788,7 +827,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       <Label htmlFor="categorySelect">Danh mục chính</Label>
                       <Select id="categorySelect" name="categoryId" required>
                         <option value="">Chọn chuyên mục</option>
-                        {categories.map((category) => (
+                        {categoriesForWrite.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}
                           </option>

@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,40 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
   const [authorName, setAuthorName] = useState(currentUser?.name || "")
   const [content, setContent] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+
+  useEffect(() => {
+    if (currentUser?.name) {
+      return
+    }
+
+    let isMounted = true
+
+    void fetch("/api/me", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          return null
+        }
+
+        return response.json() as Promise<{ user?: { name?: string } }>
+      })
+      .then((data) => {
+        if (!isMounted) {
+          return
+        }
+
+        const suggestedName = data?.user?.name?.trim()
+        if (suggestedName) {
+          setAuthorName(suggestedName)
+        }
+      })
+      .catch(() => {
+        // Best-effort prefill only; keep form usable on any error.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [currentUser?.name])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
