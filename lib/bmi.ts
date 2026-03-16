@@ -1,23 +1,31 @@
+export type BmiGender = "male" | "female"
+
 export type BmiResult = {
   bmi: number
   category: string
+  genderLabel: string
 }
 
-export function calculateBmi(heightCm: number, weightKg: number): BmiResult {
+export function calculateBmi(heightCm: number, weightKg: number, gender: BmiGender): BmiResult {
   const heightM = heightCm / 100
   const bmi = weightKg / (heightM * heightM)
 
-  if (bmi < 18.5) {
-    return { bmi, category: "Thiếu cân" }
+  const genderLabel = gender === "male" ? "Nam" : "Nữ"
+  const underweight = gender === "male" ? 20 : 19
+  const normalUpper = gender === "male" ? 25 : 24
+  const overweightUpper = gender === "male" ? 30 : 29
+
+  if (bmi < underweight) {
+    return { bmi, category: "Thiếu cân", genderLabel }
   }
 
-  if (bmi < 25) {
-    return { bmi, category: "Bình thường" }
+  if (bmi < normalUpper) {
+    return { bmi, category: "Bình thường", genderLabel }
   }
 
-  if (bmi < 30) {
-    return { bmi, category: "Thừa cân" }
+  if (bmi < overweightUpper) {
+    return { bmi, category: "Thừa cân", genderLabel }
   }
 
-  return { bmi, category: "Béo phì" }
+  return { bmi, category: "Béo phì", genderLabel }
 }

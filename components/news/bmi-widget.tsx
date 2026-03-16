@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { calculateBmi } from "@/lib/bmi"
+import { calculateBmi, type BmiGender } from "@/lib/bmi"
 
 export function BmiWidget() {
+  const [gender, setGender] = useState<BmiGender>("male")
   const [height, setHeight] = useState("")
   const [weight, setWeight] = useState("")
   const [submitted, setSubmitted] = useState(false)
@@ -18,14 +19,26 @@ export function BmiWidget() {
       return null
     }
 
-    return calculateBmi(h, w)
-  }, [height, weight])
+    return calculateBmi(h, w, gender)
+  }, [gender, height, weight])
 
   return (
     <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4">
       <h3 className="text-xl font-bold text-zinc-900">Máy tính BMI</h3>
 
       <div className="space-y-3">
+        <label className="block text-sm font-medium text-zinc-700">
+          Giới tính
+          <select
+            value={gender}
+            onChange={(event) => setGender(event.target.value as BmiGender)}
+            className="mt-1 w-full border border-zinc-300 px-3 py-2"
+          >
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+          </select>
+        </label>
+
         <label className="block text-sm font-medium text-zinc-700">
           Chiều cao (cm)
           <input
@@ -63,7 +76,7 @@ export function BmiWidget() {
         <div className="border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           {result ? (
             <p>
-              BMI: <strong>{result.bmi.toFixed(1)}</strong> - {result.category}
+              BMI ({result.genderLabel}): <strong>{result.bmi.toFixed(1)}</strong> - {result.category}
             </p>
           ) : (
             <p>Vui lòng nhập chiều cao và cân nặng hợp lệ.</p>
