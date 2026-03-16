@@ -111,12 +111,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     ? (tabFromQuery as AdminTab)
     : "overview"
 
-  const [postCount, categoryCount, pendingCommentCount, trashedPostCount] = await Promise.all([
+  const [postCount, categoryCount, pendingCommentCount, trashedPostCount, postViewAggregate] = await Promise.all([
     prisma.post.count({ where: { isDeleted: false } }),
     prisma.category.count(),
     prisma.comment.count({ where: { isApproved: false } }),
     prisma.post.count({ where: { isDeleted: true } }),
+    prisma.post.aggregate({
+      where: { isDeleted: false },
+      _sum: { views: true },
+    }),
   ])
+
+  const totalPostViews = postViewAggregate._sum.views || 0
 
   const categoriesForManage =
     activeTab === "categories"
@@ -558,6 +564,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       icon: MessageSquareMore,
       tone: pendingCommentCount > 0 ? "text-amber-600" : "text-zinc-900",
     },
+    {
+      key: "views",
+      label: "Tổng lượt xem",
+      value: totalPostViews,
+      note: "Tổng view của các bài chưa xóa",
+      icon: Activity,
+      tone: "text-emerald-600",
+    },
   ]
 
   return (
@@ -627,6 +641,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 <span className="text-muted-foreground">Thùng rác</span>
                 <span className="font-semibold">{trashedPostCount}</span>
               </div>
+              <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                <span className="text-muted-foreground">Tổng lượt xem</span>
+                <span className="font-semibold">{totalPostViews.toLocaleString("vi-VN")}</span>
+              </div>
             </CardContent>
           </Card>
         </aside>
@@ -649,7 +667,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </Card>
 
           {activeTab === "overview" ? (
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {overviewStats.map((item) => {
                 const ItemIcon = item.icon
                 return (
@@ -944,6 +962,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <TableRow>
                       <TableHead>Tiêu đề</TableHead>
                       <TableHead>Danh mục</TableHead>
+                      <TableHead className="text-right">Lượt xem</TableHead>
                       <TableHead>SEO</TableHead>
                       <TableHead>Thiết lập</TableHead>
                     </TableRow>
@@ -956,6 +975,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           <p className="text-muted-foreground text-xs">/{post.category.slug}/{post.slug}</p>
                         </TableCell>
                         <TableCell>{post.category.name}</TableCell>
+                        <TableCell className="text-right font-medium">{post.views.toLocaleString("vi-VN")}</TableCell>
                         <TableCell>
                           <p className="max-w-xs truncate text-sm">{post.seoTitle || "Chưa có SEO title"}</p>
                           <p className="text-muted-foreground max-w-xs truncate text-xs">{post.seoDescription || "Chưa có SEO description"}</p>
