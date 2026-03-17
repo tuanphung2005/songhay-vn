@@ -1,10 +1,12 @@
 import type { Prisma } from "@prisma/client"
 
+import { memoizeWithTtl } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 
 export type AdminTab = "overview" | "write" | "categories" | "comments" | "posts" | "trash"
 
 const POSTS_PAGE_SIZE = 12
+const ADMIN_CACHE_TTL_SECONDS = 20
 
 function buildPaginationItems(currentPage: number, totalPages: number) {
   if (totalPages <= 7) {
@@ -59,33 +61,49 @@ export async function getAdminPageData({
   postsQuery: string
   requestedPostsPage: number
 }) {
-  const [postCount, categoryCount, pendingCommentCount, trashedPostCount, postViewAggregate] = await Promise.all([
-    prisma.post.count({ where: { isDeleted: false } }),
-    prisma.category.count(),
-    prisma.comment.count({ where: { isApproved: false } }),
-    prisma.post.count({ where: { isDeleted: true } }),
-    prisma.post.aggregate({
-      where: { isDeleted: false },
-      _sum: { views: true },
-    }),
-  ])
+  const { postCount, categoryCount, pendingCommentCount, trashedPostCount, totalPostViews } = await memoizeWithTtl(
+    "admin:snapshot",
+    ADMIN_CACHE_TTL_SECONDS,
+    async () => {
+      const [postCount, categoryCount, pendingCommentCount, trashedPostCount, postViewAggregate] = await Promise.all([
+        prisma.post.count({ where: { isDeleted: false } }),
+        prisma.category.count(),
+        prisma.comment.count({ where: { isApproved: false } }),
+        prisma.post.count({ where: { isDeleted: true } }),
+        prisma.post.aggregate({
+          where: { isDeleted: false },
+          _sum: { views: true },
+        }),
+      ])
 
-  const totalPostViews = postViewAggregate._sum.views || 0
+      return {
+        postCount,
+        categoryCount,
+        pendingCommentCount,
+        trashedPostCount,
+        totalPostViews: postViewAggregate._sum.views || 0,
+      }
+    }
+  )
 
   const categoriesForManage =
     activeTab === "categories"
-      ? await prisma.category.findMany({
-        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-        include: { _count: { select: { posts: true } } },
-      })
+      ? await memoizeWithTtl("admin:categories:manage", ADMIN_CACHE_TTL_SECONDS, async () =>
+        prisma.category.findMany({
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+          include: { _count: { select: { posts: true } } },
+        })
+      )
       : []
 
   const categoriesForWrite =
     activeTab === "write"
-      ? await prisma.category.findMany({
-        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-        select: { id: true, name: true },
-      })
+      ? await memoizeWithTtl("admin:categories:write", ADMIN_CACHE_TTL_SECONDS, async () =>
+        prisma.category.findMany({
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+          select: { id: true, name: true },
+        })
+      )
       : []
 
   const postsWhere: Prisma.PostWhereInput = {
@@ -111,7 +129,23 @@ export async function getAdminPageData({
 
         const posts = await prisma.post.findMany({
           where: postsWhere,
-          include: { category: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            views: true,
+            isFeatured: true,
+            isTrending: true,
+            isPublished: true,
+            seoTitle: true,
+            seoDescription: true,
+            category: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
           orderBy: { createdAt: "desc" },
           skip: (currentPage - 1) * POSTS_PAGE_SIZE,
           take: POSTS_PAGE_SIZE,
@@ -135,27 +169,55 @@ export async function getAdminPageData({
 
   const trashedPosts =
     activeTab === "trash"
-      ? await prisma.post.findMany({
-        where: { isDeleted: true },
-        include: { category: true },
-        orderBy: [{ deletedAt: "desc" }, { updatedAt: "desc" }],
-        take: 30,
-      })
+      ? await memoizeWithTtl("admin:trash:posts", ADMIN_CACHE_TTL_SECONDS, async () =>
+        prisma.post.findMany({
+          where: { isDeleted: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            deletedAt: true,
+            category: {
+              select: {
+                slug: true,
+              },
+            },
+          },
+          orderBy: [{ deletedAt: "desc" }, { updatedAt: "desc" }],
+          take: 30,
+        })
+      )
       : []
 
   const pendingComments =
     activeTab === "comments"
-      ? await prisma.comment.findMany({
-        where: { isApproved: false },
-        include: { post: { include: { category: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      })
+      ? await memoizeWithTtl("admin:comments:pending", ADMIN_CACHE_TTL_SECONDS, async () =>
+        prisma.comment.findMany({
+          where: { isApproved: false },
+          select: {
+            id: true,
+            authorName: true,
+            content: true,
+            post: {
+              select: {
+                slug: true,
+                category: {
+                  select: {
+                    slug: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        })
+      )
       : []
 
   const overviewAnalytics =
     activeTab === "overview"
-      ? await (async () => {
+      ? await memoizeWithTtl("admin:overview:analytics", ADMIN_CACHE_TTL_SECONDS, async () => {
         const todayStart = startOfDay(new Date())
         const tomorrowStart = new Date(todayStart)
         tomorrowStart.setDate(tomorrowStart.getDate() + 1)
@@ -244,7 +306,7 @@ export async function getAdminPageData({
           todayApprovedComments,
           todayTopPosts,
         }
-      })()
+      })
       : {
         daily: [] as Array<{ label: string; views: number; comments: number; posts: number }>,
         todayViews: 0,
