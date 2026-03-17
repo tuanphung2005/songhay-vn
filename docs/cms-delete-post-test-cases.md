@@ -117,7 +117,7 @@
 
 13. Editor to post lifecycle
 - Steps:
-  1. Create a post using TinyMCE with image + formatting.
+  1. Create a post using CKEditor with text formatting.
   2. Verify render on public page.
   3. Move that post to trash.
   4. Restore post.

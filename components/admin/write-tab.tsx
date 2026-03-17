@@ -1,4 +1,7 @@
-import { RichTextField } from "@/components/admin/rich-text-field"
+'use client'
+import dynamic from "next/dynamic"
+const RichTextField = dynamic(() => import("@/components/admin/rich-text-field").then(m => m.RichTextField), { ssr: false })
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,7 +24,7 @@ export function WriteTab({ categoriesForWrite, createPost }: WriteTabProps) {
     <Card>
       <CardHeader>
         <CardTitle>Viết bài mới</CardTitle>
-        <CardDescription>Editor rich-text đã được thêm để soạn bài tử tế hơn textarea thường.</CardDescription>
+        <CardDescription></CardDescription>
       </CardHeader>
       <CardContent>
         <form action={createPost} className="space-y-3">

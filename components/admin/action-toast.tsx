@@ -34,6 +34,11 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Thao tác sắp xếp không hợp lệ. Vui lòng thử lại.",
     type: "error",
   },
+  post_created: {
+    title: "Đăng bài thành công",
+    description: "Bài viết đã được lưu và chuyển sang kho bài.",
+    type: "success",
+  },
 }
 
 export function AdminActionToast() {

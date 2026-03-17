@@ -63,6 +63,29 @@ function normalizeArticleHtml(rawHtml: string) {
           keptRules.push(`float:${value}`)
         }
 
+        if (property === "color" && /^#[0-9a-f]{3,8}$|^rgb\([\d\s,.%]+\)$|^rgba\([\d\s,.%]+\)$|^[a-z-]+$/i.test(value)) {
+          keptRules.push(`color:${value}`)
+        }
+
+        if (
+          property === "background-color" &&
+          /^#[0-9a-f]{3,8}$|^rgb\([\d\s,.%]+\)$|^rgba\([\d\s,.%]+\)$|^[a-z-]+$/i.test(value)
+        ) {
+          keptRules.push(`background-color:${value}`)
+        }
+
+        if (property === "font-size" && /^(\d+(\.\d+)?(px|em|rem|%)|small|medium|large|x-large|xx-large)$/i.test(value)) {
+          keptRules.push(`font-size:${value}`)
+        }
+
+        if (property === "font-family" && /^[a-z0-9\s\-,'\"]+$/i.test(value)) {
+          keptRules.push(`font-family:${value}`)
+        }
+
+        if (property === "text-decoration" && /^(underline|line-through|none)$/i.test(value)) {
+          keptRules.push(`text-decoration:${value}`)
+        }
+
         if (
           ["width", "max-width", "height"].includes(property) &&
           /^(auto|\d+(\.\d+)?(px|%))$/i.test(value)
@@ -220,7 +243,7 @@ export default async function PostPage({ params }: PostPageProps) {
           />
 
           <div
-            className="prose prose-zinc max-w-none text-zinc-800 [&:after]:block [&:after]:clear-both [&:after]:content-[''] [&_h1]:text-3xl [&_h1]:font-black [&_h1]:leading-tight [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:text-xl [&_h3]:font-bold [&_u]:underline [&_s]:line-through [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain [&_img]:rounded-md"
+            className="article-content ck-content max-w-none text-zinc-800"
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 

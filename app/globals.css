@@ -136,3 +136,96 @@
     @apply font-serif;
   }
 }
+
+@layer components {
+  .article-content.ck-content {
+    --ck-content-font-family: var(--font-sans);
+    --ck-content-font-size: 1rem;
+    --ck-content-line-height: 1.75;
+    @apply text-zinc-800;
+  }
+
+  .article-content.ck-content :is(h1, h2, h3, h4) {
+    @apply font-serif text-zinc-900;
+  }
+
+  .article-content.ck-content p {
+    margin: 1rem 0 !important;
+  }
+
+  .article-content.ck-content ul,
+  .article-content.ck-content ol {
+    margin: 1rem 0 !important;
+    padding-left: 1.5rem !important;
+  }
+
+  .article-content.ck-content ul {
+    list-style: disc !important;
+  }
+
+  .article-content.ck-content ol {
+    list-style: decimal !important;
+  }
+
+  .article-content.ck-content blockquote {
+    margin: 1.25rem 0 !important;
+    border-left: 4px solid oklch(0.87 0 0) !important;
+    padding-left: 1rem !important;
+    color: oklch(0.45 0 0) !important;
+  }
+
+  .article-content.ck-content table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 1.25rem 0 !important;
+  }
+
+  .article-content.ck-content :is(th, td) {
+    border: 1px solid oklch(0.87 0 0) !important;
+    padding: 0.5rem !important;
+  }
+
+  .article-content.ck-content figure {
+    margin: 1.25rem 0 !important;
+  }
+
+  .article-content.ck-content figcaption {
+    margin-top: 0.5rem !important;
+    text-align: center !important;
+    font-size: 0.875rem !important;
+    color: oklch(0.55 0 0) !important;
+  }
+
+  .article-content.ck-content pre {
+    overflow-x: auto;
+    margin: 1.25rem 0 !important;
+    border-radius: 0.5rem;
+    background: oklch(0.22 0 0) !important;
+    color: oklch(0.97 0 0) !important;
+    padding: 1rem !important;
+  }
+
+  .article-content.ck-content code {
+    border-radius: 0.25rem;
+    background: oklch(0.95 0 0);
+    padding: 0.125rem 0.35rem;
+    font-size: 0.875rem;
+  }
+
+  .article-content.ck-content pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  .article-content.ck-content img,
+  .article-content.ck-content iframe,
+  .article-content.ck-content video {
+    @apply h-auto max-w-full;
+  }
+
+  .article-content.ck-content iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}

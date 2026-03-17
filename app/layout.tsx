@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
 
 import "./globals.css"
+import "ckeditor5/ckeditor5-content.css"
 import { FloatingGiftButton } from "@/components/news/floating-gift-button"
 import { JsonLd } from "@/components/seo/json-ld"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"

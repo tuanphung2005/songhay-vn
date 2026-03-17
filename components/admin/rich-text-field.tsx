@@ -1,7 +1,66 @@
 "use client"
 
+import { CKEditor } from "@ckeditor/ckeditor5-react"
 import Editor from "@monaco-editor/react"
-import { Editor as TinyMCEEditor } from "@tinymce/tinymce-react"
+import {
+  Alignment,
+  AutoLink,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  Code,
+  CodeBlock,
+  Essentials,
+  FindAndReplace,
+  FontBackgroundColor,
+  FontColor,
+  FontFamily,
+  FontSize,
+  GeneralHtmlSupport,
+  Heading,
+  Highlight,
+  HorizontalLine,
+  HtmlEmbed,
+  Image,
+  ImageCaption,
+  ImageInsertViaUrl,
+  ImageResize,
+  ImageStyle,
+  ImageToolbar,
+  Indent,
+  IndentBlock,
+  Italic,
+  Link,
+  ListProperties,
+  MediaEmbed,
+  Mention,
+  List,
+  Paragraph,
+  PasteFromOffice,
+  RemoveFormat,
+  ShowBlocks,
+  SpecialCharacters,
+  SpecialCharactersArrows,
+  SpecialCharactersCurrency,
+  SpecialCharactersEssentials,
+  SpecialCharactersLatin,
+  SpecialCharactersMathematical,
+  SpecialCharactersText,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Table,
+  TableCaption,
+  TableCellProperties,
+  TableColumnResize,
+  TableProperties,
+  TableToolbar,
+  TextPartLanguage,
+  TodoList,
+  Underline,
+} from "ckeditor5"
+import type { EditorConfig } from "ckeditor5"
+import "ckeditor5/ckeditor5-editor.css"
 import type { editor as MonacoEditor, IDisposable } from "monaco-editor"
 import { useMemo, useRef, useState } from "react"
 
@@ -51,9 +110,163 @@ export function RichTextField({ name, placeholder = "Nhập nội dung bài vi�
   const completionProviderRef = useRef<IDisposable | null>(null)
   const [mode, setMode] = useState<EditorMode>("classic")
   const [html, setHtml] = useState(defaultValue)
-  const tinyMceApiKey = process.env.NEXT_PUBLIC_TINYMCE_API_KEY
 
   const isEmpty = useMemo(() => toPlainText(html).length === 0, [html])
+  const classicConfig = useMemo(
+    () =>
+      ({
+        licenseKey: "GPL",
+        plugins: [
+          Essentials,
+          Paragraph,
+          Heading,
+          Alignment,
+          Bold,
+          Italic,
+          Underline,
+          Strikethrough,
+          Subscript,
+          Superscript,
+          Code,
+          CodeBlock,
+          RemoveFormat,
+          FontFamily,
+          FontSize,
+          FontColor,
+          FontBackgroundColor,
+          Highlight,
+          Link,
+          AutoLink,
+          List,
+          ListProperties,
+          TodoList,
+          Indent,
+          IndentBlock,
+          BlockQuote,
+          HorizontalLine,
+          ShowBlocks,
+          FindAndReplace,
+          PasteFromOffice,
+          SpecialCharacters,
+          SpecialCharactersEssentials,
+          SpecialCharactersArrows,
+          SpecialCharactersCurrency,
+          SpecialCharactersLatin,
+          SpecialCharactersMathematical,
+          SpecialCharactersText,
+          TextPartLanguage,
+          Table,
+          TableToolbar,
+          TableCaption,
+          TableCellProperties,
+          TableColumnResize,
+          TableProperties,
+          Image,
+          ImageCaption,
+          ImageResize,
+          ImageStyle,
+          ImageToolbar,
+          ImageInsertViaUrl,
+          MediaEmbed,
+          HtmlEmbed,
+          GeneralHtmlSupport,
+          Mention,
+        ],
+        toolbar: {
+          items: [
+            "undo",
+            "redo",
+            "|",
+            "heading",
+            "|",
+            "fontFamily",
+            "fontSize",
+            "fontColor",
+            "fontBackgroundColor",
+            "highlight",
+            "|",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "subscript",
+            "superscript",
+            "code",
+            "removeFormat",
+            "|",
+            "link",
+            "insertImageViaUrl",
+            "mediaEmbed",
+            "insertTable",
+            "blockQuote",
+            "codeBlock",
+            "htmlEmbed",
+            "specialCharacters",
+            "horizontalLine",
+            "|",
+            "alignment",
+            "bulletedList",
+            "numberedList",
+            "todoList",
+            "outdent",
+            "indent",
+            "|",
+            "showBlocks",
+            "findAndReplace",
+          ],
+          shouldNotGroupWhenFull: true,
+        },
+        heading: {
+          options: [
+            { model: "paragraph", title: "Paragraph", class: "ck-heading_paragraph" },
+            { model: "heading2", view: "h2", title: "Heading 2", class: "ck-heading_heading2" },
+            { model: "heading3", view: "h3", title: "Heading 3", class: "ck-heading_heading3" },
+          ],
+        },
+        link: {
+          addTargetToExternalLinks: true,
+        },
+        image: {
+          toolbar: [
+            "toggleImageCaption",
+            "imageTextAlternative",
+            "|",
+            "imageStyle:inline",
+            "imageStyle:block",
+            "imageStyle:side",
+            "|",
+            "resizeImage",
+          ],
+        },
+        mediaEmbed: {
+          previewsInData: true,
+        },
+        htmlSupport: {
+          allow: [
+            {
+              name: /.*/,
+              attributes: true,
+              classes: true,
+              styles: true,
+            },
+          ],
+        },
+        mention: {
+          feeds: [
+            {
+              marker: "@",
+              feed: ["admin", "editor", "reviewer", "seo"],
+              minimumCharacters: 1,
+            },
+          ],
+        },
+        table: {
+          contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "tableProperties", "tableCellProperties"],
+        },
+        placeholder,
+      }) satisfies EditorConfig,
+    [placeholder],
+  )
 
   function handleEditorMount(editor: MonacoEditor.IStandaloneCodeEditor, monaco: typeof import("monaco-editor")) {
     if (completionProviderRef.current) {
@@ -111,73 +324,12 @@ export function RichTextField({ name, placeholder = "Nhập nội dung bài vi�
       </div>
 
       {mode === "classic" ? (
-        <div className="overflow-hidden rounded-md border border-zinc-300 bg-white">
-          <TinyMCEEditor
-            apiKey={tinyMceApiKey}
-            value={html}
-            onEditorChange={(content) => setHtml(content)}
-            init={{
-              height: 620,
-              menubar: "file edit view insert format tools table help",
-              toolbar_sticky: true,
-              branding: false,
-              resize: true,
-              convert_urls: false,
-              browser_spellcheck: true,
-              contextmenu: "link image table",
-              plugins: [
-                "advlist",
-                "anchor",
-                "autolink",
-                "autosave",
-                "charmap",
-                "code",
-                "codesample",
-                "directionality",
-                "emoticons",
-                "fullscreen",
-                "help",
-                "image",
-                "insertdatetime",
-                "link",
-                "lists",
-                "media",
-                "preview",
-                "searchreplace",
-                "table",
-                "visualblocks",
-                "wordcount",
-              ],
-              toolbar:
-                "undo redo | restoredraft | blocks fontfamily fontsize | bold italic underline strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link unlink anchor image media table | removeformat | charmap emoticons | ltr rtl | searchreplace visualblocks code preview fullscreen help",
-              quickbars_selection_toolbar:
-                "bold italic underline | blocks | forecolor backcolor | quicklink blockquote",
-              image_title: true,
-              automatic_uploads: true,
-              file_picker_types: "image",
-              images_upload_handler: async (blobInfo) => {
-                const formData = new FormData()
-                formData.append("file", blobInfo.blob(), blobInfo.filename())
-
-                const response = await fetch("/api/uploads/image", {
-                  method: "POST",
-                  body: formData,
-                })
-
-                if (!response.ok) {
-                  throw new Error("Upload ảnh thất bại")
-                }
-
-                const payload = (await response.json()) as { url?: string }
-                if (!payload.url) {
-                  throw new Error("Không nhận được URL ảnh")
-                }
-
-                return payload.url
-              },
-              content_style:
-                "body { font-family: Be Vietnam Pro, Arial, sans-serif; font-size: 16px; line-height: 1.7; } img { max-width: 100%; height: auto; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #d4d4d8; padding: 8px; }",
-            }}
+        <div className="ck-full-editor overflow-hidden rounded-md border border-zinc-300 bg-white">
+          <CKEditor
+            editor={ClassicEditor}
+            data={html}
+            config={classicConfig}
+            onChange={(_event, editor) => setHtml(editor.getData())}
           />
         </div>
       ) : (
@@ -213,6 +365,22 @@ export function RichTextField({ name, placeholder = "Nhập nội dung bài vi�
       )}
 
       {isEmpty ? <p className="text-xs text-amber-600">Nội dung bài viết đang trống.</p> : null}
+
+      <style jsx global>{`
+        .ck-full-editor .ck.ck-toolbar {
+          border-left: 0;
+          border-right: 0;
+          border-top: 0;
+        }
+
+        .ck-full-editor .ck.ck-editor__main > .ck-editor__editable {
+          min-height: 620px;
+          max-height: 70vh;
+          padding: 20px;
+          font-size: 16px;
+          line-height: 1.75;
+        }
+      `}</style>
     </div>
   )
 }

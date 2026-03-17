@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { uploadImageToCloudinary } from "@/lib/cloudinary"
+import { clearDataCache } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 
@@ -126,7 +127,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       thumbnailUrl = post.thumbnailUrl
     }
 
-    await prisma.post.update({
+    const currentPost = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { category: true },
+    })
+
+    if (!currentPost) {
+      return
+    }
+
+    const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: {
         title,
@@ -144,10 +154,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         thumbnailUrl,
         updatedAt: new Date(),
       },
+      include: { category: true },
     })
 
     revalidatePath("/")
     revalidatePath("/admin")
+    revalidatePath(`/${currentPost.category.slug}`)
+    revalidatePath(`/${updatedPost.category.slug}`)
+    revalidatePath(`/${currentPost.category.slug}/${currentPost.slug}`)
+    revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
+    clearDataCache()
     redirect("/admin?tab=posts")
   }
 

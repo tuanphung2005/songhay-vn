@@ -137,6 +137,7 @@ export async function createPost(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
+  redirect("/admin?tab=posts&toast=post_created")
 }
 
 export async function updatePostFlags(formData: FormData) {

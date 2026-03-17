@@ -7,6 +7,8 @@ type UploadParams = {
   folder?: string
 }
 
+type UploadResourceType = "image" | "video" | "raw"
+
 type CloudinaryUploadResponse = {
   secure_url?: string
   error?: {
@@ -48,9 +50,15 @@ function toSignature(params: Record<string, string | number>, apiSecret: string)
     .digest("hex")
 }
 
-export async function uploadImageToCloudinary({ buffer, filename, mimeType, folder = "songhay" }: UploadParams) {
+async function uploadAssetToCloudinary({
+  buffer,
+  filename,
+  mimeType,
+  folder = "songhay",
+  resourceType,
+}: UploadParams & { resourceType: UploadResourceType }) {
   const { cloudName, apiKey, apiSecret, uploadPreset } = getCloudinaryConfig()
-  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`
   const formData = new FormData()
   const fileBytes = new Uint8Array(buffer)
 
@@ -79,4 +87,24 @@ export async function uploadImageToCloudinary({ buffer, filename, mimeType, fold
   }
 
   return payload.secure_url
+}
+
+export async function uploadImageToCloudinary({ buffer, filename, mimeType, folder = "songhay" }: UploadParams) {
+  return uploadAssetToCloudinary({
+    buffer,
+    filename,
+    mimeType,
+    folder,
+    resourceType: "image",
+  })
+}
+
+export async function uploadVideoToCloudinary({ buffer, filename, mimeType, folder = "songhay" }: UploadParams) {
+  return uploadAssetToCloudinary({
+    buffer,
+    filename,
+    mimeType,
+    folder,
+    resourceType: "video",
+  })
 }

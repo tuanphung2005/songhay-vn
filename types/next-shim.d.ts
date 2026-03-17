@@ -51,6 +51,7 @@ declare module "next/image" {
 declare module "next/navigation" {
   export const notFound: () => never
   export const redirect: (href: string) => never
+  export const usePathname: () => string
 }
 
 declare module "next/cache" {

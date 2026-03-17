@@ -3,11 +3,18 @@
 import Link from "next/link"
 import { Gift, X } from "lucide-react"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 
 export function FloatingGiftButton() {
+  const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(true)
 
-  if (!isVisible) {
+  const hiddenPrefixes = ["/admin", "/login"]
+  const shouldHideOnRoute = hiddenPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+
+  if (!isVisible || shouldHideOnRoute) {
     return null
   }
 
