@@ -55,7 +55,12 @@ export default function DisclaimerPage() {
         <h2 className="text-xl font-bold text-zinc-900">Liên hệ</h2>
         <p>
           Nếu bạn cần làm rõ nội dung hoặc phản hồi liên quan đến bài viết, vui lòng gửi email tới
-          <a href="mailto:ads@songhay.vn" className="ml-1 font-semibold text-rose-700">ads@songhay.vn</a>.
+          <a href="mailto:lienhesonghay@gmail.com" className="ml-1 font-semibold text-rose-700">lienhesonghay@gmail.com</a>.
+        </p>
+        <p>
+          Chúng tôi luôn cố gắng chọn lọc và cung cấp thông tin từ các nguồn đáng tin cậy, nhưng không tránh khỏi khả năng có thông
+          tin chưa thật sự chính xác. Nếu bạn phát hiện bất kỳ thông tin không chính xác nào hoặc bạn có bất kỳ góp ý nào về thông
+          tin mà chúng tôi cung cấp, rất mong bạn liên hệ với chúng tôi để chúng tôi có thể sửa đổi và cập nhật thông tin đó.
         </p>
       </section>
 

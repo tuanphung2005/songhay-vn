@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
 
@@ -109,9 +110,20 @@ export default async function HomePage() {
                   <Link
                     key={post.id}
                     href={`/${post.category.slug}/${post.slug}`}
-                    className="text-sm font-bold text-zinc-800 transition hover:text-rose-600"
+                    className="group overflow-hidden rounded-md border border-zinc-200 bg-white transition hover:border-rose-200"
                   >
-                    {post.title}
+                    <div className="h-28 w-full overflow-hidden">
+                      <Image
+                        src={post.thumbnailUrl || "/placeholder-news.svg"}
+                        alt={post.title}
+                        width={480}
+                        height={270}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-2">
+                      <p className="line-clamp-2 text-sm font-bold text-zinc-800 transition group-hover:text-rose-600">{post.title}</p>
+                    </div>
                   </Link>
                 ))}
               </div>
