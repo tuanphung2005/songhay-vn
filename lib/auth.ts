@@ -127,4 +127,14 @@ export async function requireAdminUser() {
   return user
 }
 
+export async function requireCmsUser() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login?admin=1")
+  }
+
+  return user
+}
+
 export const authCookieName = SESSION_COOKIE_NAME

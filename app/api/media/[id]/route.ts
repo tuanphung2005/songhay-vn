@@ -1,0 +1,55 @@
+import { NextResponse } from "next/server"
+
+import { authCookieName, decodeSession } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
+function readCookie(raw: string | null, name: string) {
+  if (!raw) {
+    return null
+  }
+
+  const chunks = raw.split(";")
+  for (const chunk of chunks) {
+    const [key, ...rest] = chunk.trim().split("=")
+    if (key === name) {
+      return decodeURIComponent(rest.join("="))
+    }
+  }
+
+  return null
+}
+
+export async function DELETE(request: unknown, context: RouteContext) {
+  const incomingRequest = request as Request
+  const { id } = await context.params
+
+  const token = readCookie(incomingRequest.headers.get("cookie"), authCookieName)
+  const session = decodeSession(token)
+
+  if (!session) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  }
+
+  const asset = await prisma.mediaAsset.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      uploaderId: true,
+    },
+  })
+
+  if (!asset) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 })
+  }
+
+  if (session.role !== "ADMIN" && asset.uploaderId !== session.userId) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  }
+
+  await prisma.mediaAsset.delete({ where: { id: asset.id } })
+  return NextResponse.json({ ok: true })
+}

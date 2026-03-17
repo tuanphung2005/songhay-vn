@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, Search } from "lucide-react"
+import { Search } from "lucide-react"
 
 import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { getNavCategories } from "@/lib/queries"
@@ -28,7 +28,7 @@ export async function SiteHeader() {
         </Link>
 
         <div className="mt-1 flex items-center gap-2">
-          {user?.role === "ADMIN" ? (
+          {user ? (
             <>
               <Link
                 href="/admin"

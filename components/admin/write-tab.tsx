@@ -15,11 +15,20 @@ type CategoryWriteRow = {
 }
 
 type WriteTabProps = {
+  isAdmin: boolean
   categoriesForWrite: CategoryWriteRow[]
+  mediaAssets: Array<{
+    id: string
+    assetType: "IMAGE" | "VIDEO"
+    visibility: "PRIVATE" | "SHARED"
+    url: string
+    displayName: string | null
+    filename: string
+  }>
   createPost: (formData: FormData) => Promise<void>
 }
 
-export function WriteTab({ categoriesForWrite, createPost }: WriteTabProps) {
+export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
   return (
     <Card>
       <CardHeader>
@@ -40,7 +49,11 @@ export function WriteTab({ categoriesForWrite, createPost }: WriteTabProps) {
 
           <div className="space-y-1.5">
             <Label>Nội dung</Label>
-            <RichTextField name="content" placeholder="Viết nội dung bài báo tại đây..." />
+            <RichTextField
+              name="content"
+              placeholder="Viết nội dung bài báo tại đây..."
+              mediaAssets={mediaAssets}
+            />
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -99,7 +112,7 @@ export function WriteTab({ categoriesForWrite, createPost }: WriteTabProps) {
             </label>
             <label className="inline-flex items-center gap-2">
               <input className="size-4 rounded border-input" name="isPublished" type="checkbox" defaultChecked />
-              Xuất bản ngay
+              {isAdmin ? "Xuất bản ngay" : "Gửi chờ duyệt"}
             </label>
           </div>
 

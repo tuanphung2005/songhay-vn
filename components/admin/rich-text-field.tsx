@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { CKEditor } from "@ckeditor/ckeditor5-react"
@@ -68,6 +69,14 @@ type RichTextFieldProps = {
   name: string
   placeholder?: string
   defaultValue?: string
+  mediaAssets?: Array<{
+    id: string
+    assetType: "IMAGE" | "VIDEO"
+    visibility: "PRIVATE" | "SHARED"
+    url: string
+    displayName: string | null
+    filename: string
+  }>
 }
 
 type EditorMode = "classic" | "code"
@@ -106,10 +115,18 @@ const COMPLETION_ITEMS: Array<{ label: string; insertText: string; documentation
   },
 ]
 
-export function RichTextField({ name, placeholder = "Nhập nội dung bài viết...", defaultValue = "" }: RichTextFieldProps) {
+export function RichTextField({
+  name,
+  placeholder = "Nhập nội dung bài viết...",
+  defaultValue = "",
+  mediaAssets = [],
+}: RichTextFieldProps) {
   const completionProviderRef = useRef<IDisposable | null>(null)
   const [mode, setMode] = useState<EditorMode>("classic")
   const [html, setHtml] = useState(defaultValue)
+  const [showMediaPicker, setShowMediaPicker] = useState(false)
+  const [mediaType, setMediaType] = useState<"ALL" | "IMAGE" | "VIDEO">("IMAGE")
+  const [searchTerm, setSearchTerm] = useState("")
 
   const isEmpty = useMemo(() => toPlainText(html).length === 0, [html])
   const classicConfig = useMemo(
@@ -298,6 +315,30 @@ export function RichTextField({ name, placeholder = "Nhập nội dung bài vi�
     })
   }
 
+  function insertMedia(asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }) {
+    const mediaName = asset.displayName || asset.filename
+    const snippet =
+      asset.assetType === "IMAGE"
+        ? `\n<figure>\n  <img src="${asset.url}" alt="${mediaName}" loading="lazy" />\n  <figcaption>${mediaName}</figcaption>\n</figure>\n`
+        : `\n<div class="video-wrap">\n  <video controls src="${asset.url}" title="${mediaName}"></video>\n</div>\n`
+
+    setHtml((previous) => `${previous}${snippet}`)
+    setShowMediaPicker(false)
+  }
+
+  const filteredMedia = mediaAssets.filter((asset) => {
+    if (mediaType !== "ALL" && asset.assetType !== mediaType) {
+      return false
+    }
+
+    if (!searchTerm.trim()) {
+      return true
+    }
+
+    const text = `${asset.displayName || ""} ${asset.filename} ${asset.url}`.toLowerCase()
+    return text.includes(searchTerm.trim().toLowerCase())
+  })
+
   return (
     <div className="space-y-2">
       <input type="hidden" name={name} value={html} />
@@ -320,8 +361,79 @@ export function RichTextField({ name, placeholder = "Nhập nội dung bài vi�
           >
             HTML Code
           </button>
+          <button
+            type="button"
+            onClick={() => setShowMediaPicker(true)}
+            className="rounded bg-zinc-900 px-2 py-1 font-semibold text-white transition hover:bg-zinc-700"
+          >
+            Chọn từ kho dữ liệu
+          </button>
         </div>
       </div>
+
+      {showMediaPicker ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[85vh] w-full max-w-4xl overflow-hidden rounded-lg border bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold">Chọn media đã upload</p>
+                <p className="text-muted-foreground text-xs">Ảnh theo user, video shared cho toàn bộ CMS.</p>
+              </div>
+              <button
+                type="button"
+                className="rounded border px-2 py-1 text-xs font-semibold"
+                onClick={() => setShowMediaPicker(false)}
+              >
+                Đóng
+              </button>
+            </div>
+            <div className="grid gap-3 border-b px-4 py-3 md:grid-cols-[180px_1fr]">
+              <select
+                className="h-9 rounded-md border border-input px-3 text-sm"
+                value={mediaType}
+                onChange={(event) => setMediaType(event.target.value as "ALL" | "IMAGE" | "VIDEO")}
+              >
+                <option value="ALL">Tất cả</option>
+                <option value="IMAGE">Ảnh</option>
+                <option value="VIDEO">Video</option>
+              </select>
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-9 rounded-md border border-input px-3 text-sm"
+                placeholder="Tìm theo tên file hoặc URL..."
+              />
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-4">
+              {filteredMedia.length === 0 ? <p className="text-muted-foreground text-sm">Không tìm thấy media phù hợp.</p> : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                {filteredMedia.map((asset) => (
+                  <div key={asset.id} className="rounded-md border p-3">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 text-sm font-semibold">{asset.displayName || asset.filename}</p>
+                      <span className="rounded border px-1.5 py-0.5 text-[11px]">
+                        {asset.assetType === "IMAGE" ? "Ảnh" : "Video"}
+                      </span>
+                    </div>
+                    {asset.assetType === "IMAGE" ? (
+                      <img src={asset.url} alt={asset.filename} className="h-28 w-full rounded border object-cover" loading="lazy" />
+                    ) : (
+                      <video src={asset.url} controls className="h-28 w-full rounded border bg-black/80 object-cover" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => insertMedia(asset)}
+                      className="mt-2 w-full rounded bg-zinc-900 px-2 py-1.5 text-xs font-semibold text-white"
+                    >
+                      Chèn vào nội dung
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {mode === "classic" ? (
         <div className="ck-full-editor overflow-hidden rounded-md border border-zinc-300 bg-white">

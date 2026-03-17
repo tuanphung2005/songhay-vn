@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { MediaAssetType } from "@prisma/client"
 
-import { requireAdminUser } from "@/lib/auth"
-import { uploadImageToCloudinary } from "@/lib/cloudinary"
+import { requireAdminUser, requireCmsUser } from "@/lib/auth"
+import { uploadImageToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
+
+const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024
 
 function getPlainTextFromHtml(value: string) {
   return value
@@ -89,7 +92,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function createPost(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
 
   const title = String(formData.get("title") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
@@ -102,7 +105,7 @@ export async function createPost(formData: FormData) {
   const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
   const isFeatured = formData.get("isFeatured") === "on"
   const isTrending = formData.get("isTrending") === "on"
-  const isPublished = formData.get("isPublished") === "on"
+  const requestedPublished = formData.get("isPublished") === "on"
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
@@ -116,6 +119,10 @@ export async function createPost(formData: FormData) {
       ? await uploadThumbnail(thumbnailUpload)
       : thumbnailUrlInput || null
 
+  const isAdmin = currentUser.role === "ADMIN"
+  const editorialStatus = isAdmin && requestedPublished ? "PUBLISHED" : "PENDING_REVIEW"
+  const isPublished = editorialStatus === "PUBLISHED"
+
   await prisma.post.create({
     data: {
       title,
@@ -123,6 +130,7 @@ export async function createPost(formData: FormData) {
       excerpt,
       content,
       categoryId,
+      authorId: currentUser.id,
       seoTitle,
       seoDescription,
       ogImage,
@@ -130,6 +138,7 @@ export async function createPost(formData: FormData) {
       isFeatured,
       isTrending,
       isPublished,
+      editorialStatus,
       thumbnailUrl,
     },
   })
@@ -137,7 +146,120 @@ export async function createPost(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
-  redirect("/admin?tab=posts&toast=post_created")
+  if (isPublished) {
+    redirect("/admin?tab=posts&toast=post_created")
+  }
+
+  redirect("/admin?tab=pending-posts&toast=post_submitted_review")
+}
+
+export async function approvePendingPost(formData: FormData) {
+  await requireAdminUser()
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "PUBLISHED",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=pending-posts&toast=post_approved")
+}
+
+export async function rejectPendingPost(formData: FormData) {
+  await requireAdminUser()
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "REJECTED",
+      isPublished: false,
+    },
+  })
+
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=pending-posts&toast=post_rejected")
+}
+
+export async function uploadMediaAsset(formData: FormData) {
+  const currentUser = await requireCmsUser()
+
+  const file = formData.get("file")
+  const assetTypeInput = String(formData.get("assetType") || "").trim().toLowerCase()
+
+  if (!(file instanceof File) || file.size === 0) {
+    redirect("/admin?tab=media-library&toast=media_upload_failed")
+  }
+
+  const isVideo = assetTypeInput === "video"
+  const selectedType = isVideo ? MediaAssetType.VIDEO : MediaAssetType.IMAGE
+
+  if (selectedType === MediaAssetType.IMAGE && !file.type.startsWith("image/")) {
+    redirect("/admin?tab=media-library&toast=media_upload_failed")
+  }
+
+  if (selectedType === MediaAssetType.VIDEO && !file.type.startsWith("video/")) {
+    redirect("/admin?tab=media-library&toast=media_upload_failed")
+  }
+
+  if (selectedType === MediaAssetType.VIDEO && file.size > MAX_VIDEO_UPLOAD_BYTES) {
+    redirect("/admin?tab=media-library&toast=media_upload_failed")
+  }
+
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+
+  const url =
+    selectedType === MediaAssetType.IMAGE
+      ? await uploadImageToCloudinary({
+        buffer,
+        filename: file.name,
+        mimeType: file.type || "image/jpeg",
+        folder: "songhay/editor",
+      })
+      : await uploadVideoToCloudinary({
+        buffer,
+        filename: file.name,
+        mimeType: file.type || "video/mp4",
+        folder: "songhay/editor/videos",
+      })
+
+  await prisma.mediaAsset.create({
+    data: {
+      assetType: selectedType,
+      visibility: selectedType === MediaAssetType.VIDEO ? "SHARED" : "PRIVATE",
+      url,
+      filename: file.name,
+      mimeType: file.type || "application/octet-stream",
+      sizeBytes: file.size,
+      uploaderId: currentUser.id,
+    },
+  })
+
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=media-library&toast=media_uploaded")
+}
+
+export async function updatePasswordMock() {
+  await requireCmsUser()
+  redirect("/admin?tab=settings-password&toast=password_mock_saved")
 }
 
 export async function updatePostFlags(formData: FormData) {

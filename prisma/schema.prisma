@@ -12,6 +12,22 @@ enum UserRole {
   USER
 }
 
+enum EditorialStatus {
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+enum MediaAssetType {
+  IMAGE
+  VIDEO
+}
+
+enum MediaAssetVisibility {
+  PRIVATE
+  SHARED
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -21,6 +37,8 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   comments     Comment[]
+  posts        Post[]
+  mediaAssets  MediaAsset[]
 }
 
 model Category {
@@ -48,6 +66,7 @@ model Post {
   isFeatured     Boolean  @default(false)
   isTrending     Boolean  @default(false)
   isPublished    Boolean  @default(true)
+  editorialStatus EditorialStatus @default(PUBLISHED)
   isDeleted      Boolean  @default(false)
   deletedAt      DateTime?
   views          Int      @default(0)
@@ -55,13 +74,35 @@ model Post {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   categoryId     String
+  authorId       String?
   category       Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author         User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   comments       Comment[]
 
   @@index([categoryId])
+  @@index([authorId])
   @@index([isPublished, publishedAt])
+  @@index([editorialStatus])
   @@index([isDeleted])
   @@index([views])
+}
+
+model MediaAsset {
+  id          String               @id @default(cuid())
+  assetType   MediaAssetType
+  visibility  MediaAssetVisibility @default(PRIVATE)
+  url         String
+  displayName String?
+  filename    String
+  mimeType    String
+  sizeBytes   Int
+  uploadedAt  DateTime             @default(now())
+  uploaderId  String
+  uploader    User                 @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@index([uploaderId, assetType])
+  @@index([visibility, assetType])
+  @@index([uploadedAt])
 }
 
 model Comment {

@@ -1,17 +1,33 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 import type { LucideIcon } from "lucide-react"
-import { Activity, FolderKanban, LayoutDashboard, MessageSquareMore, Newspaper, PenSquare, ShieldCheck, Trash2 } from "lucide-react"
+import {
+  Activity,
+  Clock3,
+  FolderKanban,
+  KeyRound,
+  LayoutDashboard,
+  LibraryBig,
+  MessageSquareMore,
+  Newspaper,
+  PenSquare,
+  ShieldCheck,
+  Trash2,
+  UserSquare2,
+} from "lucide-react"
 
 import {
+  approvePendingPost,
   createCategory,
   createPost,
   deleteCategory,
   deletePostPermanently,
   moderateComment,
   movePostToTrash,
+  rejectPendingPost,
   reorderCategory,
   restorePostFromTrash,
+  updatePasswordMock,
   updateCategory,
   updatePostFlags,
 } from "@/app/admin/actions"
@@ -19,14 +35,18 @@ import { type AdminTab, getAdminPageData } from "@/app/admin/data"
 import { AdminActionToast } from "@/components/admin/action-toast"
 import { CategoriesTab } from "@/components/admin/categories-tab"
 import { CommentsTab } from "@/components/admin/comments-tab"
+import { MediaLibraryTab } from "@/components/admin/media-library-tab"
 import { OverviewTab } from "@/components/admin/overview-tab"
+import { PendingPostsTab } from "@/components/admin/pending-posts-tab"
+import { PersonalArchiveTab } from "@/components/admin/personal-archive-tab"
 import { PostsTab } from "@/components/admin/posts-tab"
+import { SettingsPasswordTab } from "@/components/admin/settings-password-tab"
 import { TrashTab } from "@/components/admin/trash-tab"
 import { WriteTab } from "@/components/admin/write-tab"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { requireAdminUser } from "@/lib/auth"
+import { requireCmsUser } from "@/lib/auth"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -37,13 +57,34 @@ export const metadata: Metadata = {
   },
 }
 
-const ADMIN_TABS: Array<{ key: AdminTab; label: string; description: string; icon: LucideIcon }> = [
-  { key: "overview", label: "Tổng quan", description: "Bức tranh tổng quan trạng thái CMS", icon: LayoutDashboard },
-  { key: "write", label: "Viết bài", description: "Soạn và xuất bản nội dung mới", icon: PenSquare },
-  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban },
-  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore },
-  { key: "posts", label: "Kho bài", description: "Chỉnh sửa và tối ưu nội dung", icon: Newspaper },
-  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
+type NavLeaf = {
+  key: AdminTab
+  label: string
+  description: string
+  icon: LucideIcon
+  adminOnly?: boolean
+}
+
+const OVERVIEW_TAB: NavLeaf = {
+  key: "overview",
+  label: "Tổng quan",
+  description: "Bức tranh tổng quan trạng thái CMS",
+  icon: LayoutDashboard,
+}
+
+const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
+  { key: "write", label: "Viết bài mới", description: "Soạn nội dung và gửi duyệt/xuất bản", icon: PenSquare },
+  { key: "pending-posts", label: "Kho bài chờ duyệt", description: "Admin duyệt, CTV theo dõi trạng thái", icon: Clock3 },
+  { key: "media-library", label: "Kho dữ liệu", description: "Tái sử dụng ảnh/video đã upload", icon: LibraryBig },
+  { key: "personal-archive", label: "Lưu trữ cá nhân", description: "Bài viết theo tài khoản đăng nhập", icon: UserSquare2 },
+  { key: "posts", label: "Kho bài", description: "Kho bài đã xuất bản", icon: Newspaper, adminOnly: true },
+  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2, adminOnly: true },
+]
+
+const SETTINGS_TABS: NavLeaf[] = [
+  { key: "settings-password", label: "Đổi mật khẩu", description: "Mock UI đổi mật khẩu", icon: KeyRound },
+  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban, adminOnly: true },
+  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore, adminOnly: true },
 ]
 
 type AdminPageProps = {
@@ -51,7 +92,12 @@ type AdminPageProps = {
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  const isAdmin = currentUser.role === "ADMIN"
+
+  const contentTabs = CONTENT_MANAGEMENT_TABS.filter((item) => (item.adminOnly ? isAdmin : true))
+  const settingsTabs = SETTINGS_TABS.filter((item) => (item.adminOnly ? isAdmin : true))
+  const visibleTabs: NavLeaf[] = [OVERVIEW_TAB, ...contentTabs, ...settingsTabs]
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const tabFromQuery = resolvedSearchParams?.tab
@@ -61,7 +107,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const rawPostsPage = Number.parseInt(resolvedSearchParams?.page || "1", 10)
   const requestedPostsPage = Number.isFinite(rawPostsPage) && rawPostsPage > 0 ? rawPostsPage : 1
 
-  const activeTab: AdminTab = ADMIN_TABS.some((item) => item.key === tabFromQuery)
+  const activeTab: AdminTab = visibleTabs.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
     : "overview"
 
@@ -75,6 +121,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     categoriesForWrite,
     postsData,
     postsPaginationItems,
+    pendingPostsData,
+    personalPostsData,
+    mediaLibraryData,
     trashedPosts,
     pendingComments,
     overviewAnalytics,
@@ -82,9 +131,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeTab,
     postsQuery,
     requestedPostsPage,
+    currentUser: {
+      id: currentUser.id,
+      role: currentUser.role,
+    },
   })
 
-  const activeTabMeta = ADMIN_TABS.find((item) => item.key === activeTab) || ADMIN_TABS[0]
+  const activeTabMeta = visibleTabs.find((item) => item.key === activeTab) || visibleTabs[0]
   const ActiveTabIcon = activeTabMeta.icon
 
   const overviewStats = [
@@ -133,7 +186,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
           <Badge variant="secondary" className="hidden h-7 items-center gap-1.5 px-3 md:inline-flex">
             <ShieldCheck className="size-3.5" />
-            Quyền quản trị
+            {isAdmin ? "Quyền quản trị" : "Quyền cộng tác viên"}
           </Badge>
         </div>
       </header>
@@ -145,23 +198,57 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <CardTitle>Điều hướng CMS</CardTitle>
               <CardDescription>Chuyển nhanh theo nghiệp vụ quản trị.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              {ADMIN_TABS.map((tab) => {
-                const TabIcon = tab.icon
-                return (
-                  <Button
-                    key={tab.key}
-                    asChild
-                    className="h-10 w-full justify-start gap-2.5"
-                    variant={activeTab === tab.key ? "secondary" : "ghost"}
-                  >
-                    <Link href={`/admin?tab=${tab.key}`}>
-                      <TabIcon className="size-4" />
-                      {tab.label}
-                    </Link>
-                  </Button>
-                )
-              })}
+            <CardContent className="space-y-3">
+              <Button
+                asChild
+                className="h-10 w-full justify-start gap-2.5"
+                variant={activeTab === OVERVIEW_TAB.key ? "secondary" : "ghost"}
+              >
+                <Link href={`/admin?tab=${OVERVIEW_TAB.key}`}>
+                  <OVERVIEW_TAB.icon className="size-4" />
+                  {OVERVIEW_TAB.label}
+                </Link>
+              </Button>
+
+              <div className="space-y-1.5 rounded-md border p-2">
+                <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Quản lý tin</p>
+                {contentTabs.map((tab) => {
+                  const TabIcon = tab.icon
+                  return (
+                    <Button
+                      key={tab.key}
+                      asChild
+                      className="h-9 w-full justify-start gap-2.5"
+                      variant={activeTab === tab.key ? "secondary" : "ghost"}
+                    >
+                      <Link href={`/admin?tab=${tab.key}`}>
+                        <TabIcon className="size-4" />
+                        {tab.label}
+                      </Link>
+                    </Button>
+                  )
+                })}
+              </div>
+
+              <div className="space-y-1.5 rounded-md border p-2">
+                <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Settings</p>
+                {settingsTabs.map((tab) => {
+                  const TabIcon = tab.icon
+                  return (
+                    <Button
+                      key={tab.key}
+                      asChild
+                      className="h-9 w-full justify-start gap-2.5"
+                      variant={activeTab === tab.key ? "secondary" : "ghost"}
+                    >
+                      <Link href={`/admin?tab=${tab.key}`}>
+                        <TabIcon className="size-4" />
+                        {tab.label}
+                      </Link>
+                    </Button>
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
 
@@ -199,10 +286,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeTab === "overview" ? <OverviewTab overviewStats={overviewStats} overviewAnalytics={overviewAnalytics} /> : null}
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}
-          {activeTab === "write" ? <WriteTab categoriesForWrite={categoriesForWrite} createPost={createPost} /> : null}
+          {activeTab === "write" ? <WriteTab isAdmin={isAdmin} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
+          {activeTab === "pending-posts" ? <PendingPostsTab isAdmin={isAdmin} rows={pendingPostsData} approvePendingPost={approvePendingPost} rejectPendingPost={rejectPendingPost} /> : null}
+          {activeTab === "media-library" ? <MediaLibraryTab rows={mediaLibraryData} /> : null}
+          {activeTab === "personal-archive" ? <PersonalArchiveTab rows={personalPostsData} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}
           {activeTab === "posts" ? <PostsTab postsData={postsData} postsQuery={postsQuery} postsPaginationItems={postsPaginationItems} updatePostFlags={updatePostFlags} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "trash" ? <TrashTab trashedPosts={trashedPosts} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
+          {activeTab === "settings-password" ? <SettingsPasswordTab updatePasswordMock={updatePasswordMock} /> : null}
         </section>
       </div>
     </main>

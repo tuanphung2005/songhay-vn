@@ -3,7 +3,17 @@ import type { Prisma } from "@prisma/client"
 import { memoizeWithTtl } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 
-export type AdminTab = "overview" | "write" | "categories" | "comments" | "posts" | "trash"
+export type AdminTab =
+  | "overview"
+  | "write"
+  | "pending-posts"
+  | "media-library"
+  | "personal-archive"
+  | "categories"
+  | "comments"
+  | "posts"
+  | "trash"
+  | "settings-password"
 
 const POSTS_PAGE_SIZE = 12
 const ADMIN_CACHE_TTL_SECONDS = 20
@@ -56,10 +66,15 @@ export async function getAdminPageData({
   activeTab,
   postsQuery,
   requestedPostsPage,
+  currentUser,
 }: {
   activeTab: AdminTab
   postsQuery: string
   requestedPostsPage: number
+  currentUser: {
+    id: string
+    role: "ADMIN" | "USER"
+  }
 }) {
   const { postCount, categoryCount, pendingCommentCount, trashedPostCount, totalPostViews } = await memoizeWithTtl(
     "admin:snapshot",
@@ -108,6 +123,7 @@ export async function getAdminPageData({
 
   const postsWhere: Prisma.PostWhereInput = {
     isDeleted: false,
+    editorialStatus: "PUBLISHED",
     ...(postsQuery.length > 0
       ? {
         OR: [
@@ -137,8 +153,15 @@ export async function getAdminPageData({
             isFeatured: true,
             isTrending: true,
             isPublished: true,
+            editorialStatus: true,
             seoTitle: true,
             seoDescription: true,
+            author: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
             category: {
               select: {
                 name: true,
@@ -164,6 +187,93 @@ export async function getAdminPageData({
         totalPages: 1,
         currentPage: 1,
       }
+
+  const pendingPostsData =
+    activeTab === "pending-posts"
+      ? await prisma.post.findMany({
+        where: {
+          isDeleted: false,
+          editorialStatus: "PENDING_REVIEW",
+          ...(currentUser.role === "ADMIN" ? {} : { authorId: currentUser.id }),
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+          category: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: [{ createdAt: "desc" }],
+        take: 40,
+      })
+      : []
+
+  const personalPostsData =
+    activeTab === "personal-archive"
+      ? await prisma.post.findMany({
+        where: {
+          isDeleted: false,
+          authorId: currentUser.id,
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          editorialStatus: true,
+          isPublished: true,
+          updatedAt: true,
+          category: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: [{ updatedAt: "desc" }],
+        take: 60,
+      })
+      : []
+
+  const mediaLibraryData =
+    activeTab === "media-library" || activeTab === "write"
+      ? await prisma.mediaAsset.findMany({
+        where: {
+          OR: [{ uploaderId: currentUser.id }, { visibility: "SHARED", assetType: "VIDEO" }],
+        },
+        select: {
+          id: true,
+          assetType: true,
+          visibility: true,
+          url: true,
+          displayName: true,
+          filename: true,
+          mimeType: true,
+          sizeBytes: true,
+          uploadedAt: true,
+          uploader: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: [{ uploadedAt: "desc" }],
+        take: 200,
+      })
+      : []
 
   const postsPaginationItems = buildPaginationItems(postsData.currentPage, postsData.totalPages)
 
@@ -325,6 +435,9 @@ export async function getAdminPageData({
     categoriesForWrite,
     postsData,
     postsPaginationItems,
+    pendingPostsData,
+    personalPostsData,
+    mediaLibraryData,
     trashedPosts,
     pendingComments,
     overviewAnalytics,

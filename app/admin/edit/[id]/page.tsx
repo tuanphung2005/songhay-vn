@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { revalidatePath } from "next/cache"
 import Link from "next/link"
 import type { Metadata } from "next"
@@ -12,6 +13,7 @@ import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { uploadImageToCloudinary } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
+import { requireCmsUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 
@@ -73,6 +75,8 @@ interface EditPostPageProps {
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params
+  const currentUser = await requireCmsUser()
+  const isAdmin = currentUser.role === "ADMIN"
 
   const post = await prisma.post.findUnique({
     where: { id },
@@ -83,8 +87,28 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     redirect("/admin?tab=posts")
   }
 
+  if (!isAdmin && post.authorId !== currentUser.id) {
+    redirect("/admin?tab=personal-archive")
+  }
+
   const categories = await prisma.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  })
+
+  const mediaAssets = await prisma.mediaAsset.findMany({
+    where: {
+      OR: [{ uploaderId: currentUser.id }, { visibility: "SHARED", assetType: "VIDEO" }],
+    },
+    select: {
+      id: true,
+      assetType: true,
+      visibility: true,
+      url: true,
+      displayName: true,
+      filename: true,
+    },
+    orderBy: [{ uploadedAt: "desc" }],
+    take: 200,
   })
 
   async function updatePost(formData: FormData) {
@@ -105,7 +129,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const isFeatured = formData.get("isFeatured") === "on"
     const isTrending = formData.get("isTrending") === "on"
-    const isPublished = formData.get("isPublished") === "on"
+    const requestedPublished = formData.get("isPublished") === "on"
 
     const thumbnailUpload = formData.get("thumbnailUpload")
     const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
@@ -127,6 +151,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       thumbnailUrl = post.thumbnailUrl
     }
 
+    const editorialStatus = isAdmin && requestedPublished ? "PUBLISHED" : "PENDING_REVIEW"
+    const isPublished = editorialStatus === "PUBLISHED"
+
     const currentPost = await prisma.post.findUnique({
       where: { id: postId },
       include: { category: true },
@@ -144,6 +171,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         excerpt,
         content,
         categoryId,
+        authorId: currentPost.authorId || currentUser.id,
         seoTitle,
         seoDescription,
         ogImage,
@@ -151,6 +179,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         isFeatured,
         isTrending,
         isPublished,
+        editorialStatus,
         thumbnailUrl,
         updatedAt: new Date(),
       },
@@ -164,7 +193,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     revalidatePath(`/${currentPost.category.slug}/${currentPost.slug}`)
     revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
     clearDataCache()
-    redirect("/admin?tab=posts")
+    redirect(isPublished ? "/admin?tab=posts" : "/admin?tab=pending-posts")
   }
 
   return (
@@ -212,6 +241,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
               <RichTextField
                 name="content"
                 defaultValue={post.content}
+                mediaAssets={mediaAssets}
               />
             </div>
 

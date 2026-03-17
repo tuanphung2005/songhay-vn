@@ -39,6 +39,46 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Bài viết đã được lưu và chuyển sang kho bài.",
     type: "success",
   },
+  post_submitted_review: {
+    title: "Đã gửi chờ duyệt",
+    description: "Bài viết của bạn đã vào kho chờ duyệt.",
+    type: "success",
+  },
+  post_approved: {
+    title: "Đã duyệt bài",
+    description: "Bài viết đã được xuất bản.",
+    type: "success",
+  },
+  post_rejected: {
+    title: "Đã từ chối bài",
+    description: "Bài viết đã được chuyển sang trạng thái từ chối.",
+    type: "success",
+  },
+  media_uploaded: {
+    title: "Đã tải media",
+    description: "Media đã được lưu vào kho dữ liệu.",
+    type: "success",
+  },
+  media_upload_failed: {
+    title: "Upload thất bại",
+    description: "Vui lòng kiểm tra định dạng hoặc dung lượng tệp.",
+    type: "error",
+  },
+  media_deleted: {
+    title: "Đã xóa media",
+    description: "Media đã được xóa khỏi kho dữ liệu.",
+    type: "success",
+  },
+  media_delete_failed: {
+    title: "Xóa media thất bại",
+    description: "Bạn không có quyền hoặc media không còn tồn tại.",
+    type: "error",
+  },
+  password_mock_saved: {
+    title: "Mock đổi mật khẩu",
+    description: "Đã ghi nhận thao tác mock. Chưa có logic đổi mật khẩu thật.",
+    type: "success",
+  },
 }
 
 export function AdminActionToast() {
