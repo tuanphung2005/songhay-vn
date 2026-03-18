@@ -78,23 +78,23 @@ export function PostsTab({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form method="get" className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <form method="get" className="mb-4 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-start">
           <input type="hidden" name="tab" value="posts" />
           <input type="hidden" name="postsPage" value="1" />
           <Input
             name="postsQ"
             defaultValue={filters.query}
             placeholder="Tìm theo tiêu đề, slug, mô tả hoặc danh mục..."
-            className="sm:max-w-md"
+            className="w-full lg:max-w-md"
           />
-          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-            <Select name="postsApproval" defaultValue={filters.approval} className="w-full md:w-42.5">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <Select name="postsApproval" defaultValue={filters.approval} className="w-full">
               <option value="all">Tất cả trạng thái duyệt</option>
               <option value="approved">Đã có người duyệt</option>
               <option value="unapproved">Chưa có người duyệt</option>
             </Select>
 
-            <Select name="postsAuthor" defaultValue={filters.authorId || "all"} className="w-full md:w-55">
+            <Select name="postsAuthor" defaultValue={filters.authorId || "all"} className="w-full">
               <option value="all">Tất cả người viết</option>
               {postsData.filterOptions.map((author) => (
                 <option key={author.id} value={author.id}>
@@ -103,10 +103,10 @@ export function PostsTab({
               ))}
             </Select>
 
-            <Input name="postsFrom" type="date" defaultValue={filters.fromDate} className="md:w-40" />
-            <Input name="postsTo" type="date" defaultValue={filters.toDate} className="md:w-40" />
+            <Input name="postsFrom" type="date" defaultValue={filters.fromDate} className="w-full" />
+            <Input name="postsTo" type="date" defaultValue={filters.toDate} className="w-full" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
             <Button type="submit" variant="outline">Tìm kiếm</Button>
             <Link href="/admin?tab=posts">
               <Button type="button" variant="ghost">Xóa lọc</Button>
