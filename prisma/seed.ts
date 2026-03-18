@@ -283,7 +283,7 @@ async function main() {
   const adminEmail = process.env.ADMIN_EMAIL || "admin@songhay.vn"
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123456"
 
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {
       name: "Songhay Admin",
@@ -295,6 +295,31 @@ async function main() {
       name: "Songhay Admin",
       role: "ADMIN",
       passwordHash: hashPassword(adminPassword),
+    },
+  })
+
+  // ── Editor / contributor accounts ───────────────────────────────────────
+  const editorPassword = "Editor@123456"
+
+  const editor1 = await prisma.user.upsert({
+    where: { email: "editor1@songhay.vn" },
+    update: { name: "Nguyễn Thị Lan (BTV)", role: "USER", passwordHash: hashPassword(editorPassword) },
+    create: {
+      email: "editor1@songhay.vn",
+      name: "Nguyễn Thị Lan (BTV)",
+      role: "USER",
+      passwordHash: hashPassword(editorPassword),
+    },
+  })
+
+  const editor2 = await prisma.user.upsert({
+    where: { email: "editor2@songhay.vn" },
+    update: { name: "Trần Minh Khoa (BTV)", role: "USER", passwordHash: hashPassword(editorPassword) },
+    create: {
+      email: "editor2@songhay.vn",
+      name: "Trần Minh Khoa (BTV)",
+      role: "USER",
+      passwordHash: hashPassword(editorPassword),
     },
   })
 
@@ -310,6 +335,7 @@ async function main() {
     categoryBySlug.set(category.slug, result.id)
   }
 
+  // ── Admin demo posts ─────────────────────────────────────────────────────
   for (const [index, post] of demoPosts.entries()) {
     const categoryId = categoryBySlug.get(post.categorySlug)
 
@@ -381,7 +407,179 @@ async function main() {
       })
     }
   }
+
+  // ── Editor-authored posts (published — approved by admin) ────────────────
+  const editorPublishedPosts = [
+    {
+      author: editor1,
+      categorySlug: "song-khoe",
+      title: "BTV Lan: Cach giu dang dep sau sinh cho phu nu boi ban",
+      excerpt: "Nhung bai tap nhe nhang va che do dinh duong phu hop cho mama sau sinh.",
+      content:
+        "Bai viet cua bien tap vien Nguyen Thi Lan, chia se kinh nghiem giu dang sau sinh. Tap trung vao cac bai tap core nhe, uong du nuoc va ngu du giac de phuc hoi nang luong.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=80",
+      views: 840,
+    },
+    {
+      author: editor2,
+      categorySlug: "meo-hay",
+      title: "BTV Khoa: 7 ung dung productivity mien phi tot nhat 2026",
+      excerpt: "Danh sach cac cong cu giup ban lam viec hieu qua hon ma khong ton mot dong.",
+      content:
+        "Bien tap vien khoa chia se 7 ung dung mien phi dang dung hang ngay: Notion, Obsidian, Toggl, Canva, Trello, Grammarly va Google Keep. Moi ung dung duoc giai thich ro use-case va cach cai dat.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=1400&q=80",
+      views: 1120,
+    },
+  ]
+
+  for (const [index, post] of editorPublishedPosts.entries()) {
+    const categoryId = categoryBySlug.get(post.categorySlug)
+    if (!categoryId) continue
+
+    const slug = slugify(post.title)
+    const publishedAt = new Date(Date.now() - (index + 1) * 3 * 60 * 60 * 1000)
+
+    await prisma.post.upsert({
+      where: { slug },
+      update: {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        thumbnailUrl: post.thumbnailUrl,
+        categoryId,
+        authorId: post.author.id,
+        approverId: admin.id,
+        approvedAt: publishedAt,
+        isPublished: true,
+        isDraft: false,
+        editorialStatus: "PUBLISHED",
+        views: post.views,
+        publishedAt,
+      },
+      create: {
+        slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        thumbnailUrl: post.thumbnailUrl,
+        categoryId,
+        authorId: post.author.id,
+        approverId: admin.id,
+        approvedAt: publishedAt,
+        isPublished: true,
+        isDraft: false,
+        editorialStatus: "PUBLISHED",
+        views: post.views,
+        publishedAt,
+      },
+    })
+  }
+
+  // ── Editor-authored posts (pending review) ───────────────────────────────
+  const editorPendingPosts = [
+    {
+      author: editor1,
+      categorySlug: "doi-song",
+      title: "BTV Lan [PENDING]: Xu huong nuoi thu cung healthy cho dan van phong 2026",
+      excerpt: "Nuoi thu cung khong chi giam stress ma con giup chu nhan song lanh manh hon.",
+      content:
+        "Bai viet dang cho duyet. Bien tap vien Lan chia se nghien cuu ve moi lien he giua viec nuoi thu cung va suc khoe tinh than. Bao gom khao sat 500 nguoi va goi y 3 loai thu cung phu hop cho can ho nho.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1400&q=80",
+    },
+    {
+      author: editor2,
+      categorySlug: "goc-stress",
+      title: "BTV Khoa [PENDING]: Ky nang quan ly cam xuc khi bi sếp chi trich tren hop",
+      excerpt: "Phan ung binh tinh va hieu qua truoc phe binh cong khai la ky nang co the hoc.",
+      content:
+        "Dang cho admin duyet. Bai viet de cap den cac ky nang EQ thuc te giup ban xu ly phe binh trong hop ma khong mat binh tinh: det lao, tra loi cau hoi, khong tu bien ho, va follow up rieng voi sep sau do.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80",
+    },
+  ]
+
+  for (const [index, post] of editorPendingPosts.entries()) {
+    const categoryId = categoryBySlug.get(post.categorySlug)
+    if (!categoryId) continue
+
+    const slug = slugify(post.title)
+
+    await prisma.post.upsert({
+      where: { slug },
+      update: {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        thumbnailUrl: post.thumbnailUrl,
+        categoryId,
+        authorId: post.author.id,
+        isPublished: false,
+        isDraft: false,
+        editorialStatus: "PENDING_REVIEW",
+      },
+      create: {
+        slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        thumbnailUrl: post.thumbnailUrl,
+        categoryId,
+        authorId: post.author.id,
+        isPublished: false,
+        isDraft: false,
+        editorialStatus: "PENDING_REVIEW",
+      },
+    })
+
+    // Add a pending comment for the second pending post to test comment moderation
+    if (index === 1) {
+      const pendingPost = await prisma.post.findUnique({ where: { slug }, select: { id: true } })
+      if (pendingPost) {
+        await prisma.comment.upsert({
+          where: { id: `${pendingPost.id}-pending-comment` },
+          update: { authorName: "Nguyen Van A", content: "Bai viet hay qua, mong som duoc xuat ban!", isApproved: false },
+          create: {
+            id: `${pendingPost.id}-pending-comment`,
+            postId: pendingPost.id,
+            authorName: "Nguyen Van A",
+            content: "Bai viet hay qua, mong som duoc xuat ban!",
+            isApproved: false,
+          },
+        })
+      }
+    }
+  }
+
+  // ── Editor draft (not submitted) ─────────────────────────────────────────
+  const editor1DraftSlug = slugify("BTV Lan [DRAFT]: Bi kip chup anh do an dep tren dien thoai")
+  await prisma.post.upsert({
+    where: { slug: editor1DraftSlug },
+    update: {
+      title: "BTV Lan [DRAFT]: Bi kip chup anh do an dep tren dien thoai",
+      excerpt: "Khong can may anh chuyen nghiep, chi can biet cach chup la du.",
+      content: "Dang viet... Con thieu phan mo ta ky thuat anh sang tu nhien va goc chup dep.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
+      categoryId: categoryBySlug.get("meo-hay") || "",
+      authorId: editor1.id,
+      isPublished: false,
+      isDraft: true,
+      editorialStatus: "PENDING_REVIEW",
+    },
+    create: {
+      slug: editor1DraftSlug,
+      title: "BTV Lan [DRAFT]: Bi kip chup anh do an dep tren dien thoai",
+      excerpt: "Khong can may anh chuyen nghiep, chi can biet cach chup la du.",
+      content: "Dang viet... Con thieu phan mo ta ky thuat anh sang tu nhien va goc chup dep.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
+      categoryId: categoryBySlug.get("meo-hay") || "",
+      authorId: editor1.id,
+      isPublished: false,
+      isDraft: true,
+      editorialStatus: "PENDING_REVIEW",
+    },
+  })
 }
+
+
 
 main()
   .then(async () => {

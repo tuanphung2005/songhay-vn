@@ -37,7 +37,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
     const user = await prisma.user.findUnique({ where: { email } })
 
-    if (!user || !verifyPassword(password, user.passwordHash) || user.role !== "ADMIN") {
+    if (!user || !verifyPassword(password, user.passwordHash)) {
       await clearSessionCookie()
       redirect("/login?admin=1&error=invalid")
     }
@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <header className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-rose-600">Songhay CMS</p>
           <h1 className="text-2xl font-black text-zinc-900">Đăng nhập quản trị</h1>
-          <p className="text-sm text-zinc-600">Chỉ tài khoản admin được phép truy cập CMS.</p>
+          <p className="text-sm text-zinc-600">Đăng nhập CMS.</p>
         </header>
 
         {hasError ? <p className="text-sm text-rose-600">Thông tin đăng nhập không hợp lệ.</p> : null}
