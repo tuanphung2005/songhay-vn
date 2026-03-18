@@ -130,8 +130,17 @@ export function PersonalArchiveTab({ data, filters, movePostToTrash }: PersonalA
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Link href={`/admin/edit/${post.id}`}>
-                <Button type="button" size="sm" variant="secondary">Mở bài</Button>
+                <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
               </Link>
+              {post.isPublished ? (
+                <a href={`/${post.category.slug}/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                  <Button type="button" size="sm" variant="outline">Xem bài viết</Button>
+                </a>
+              ) : (
+                <a href={`/admin/preview/${post.id}`} target="_blank" rel="noopener noreferrer">
+                  <Button type="button" size="sm" variant="outline">Xem trước</Button>
+                </a>
+              )}
               <ConfirmActionForm
                 action={movePostToTrash}
                 fields={[{ name: "postId", value: post.id }, { name: "sourceTab", value: "personal-archive" }]}

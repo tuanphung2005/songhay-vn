@@ -168,6 +168,9 @@ export function PostsTab({
                         <Link href={`/admin/edit/${post.id}`}>
                           <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
                         </Link>
+                        <a href={`/${post.category.slug}/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                          <Button type="button" size="sm" variant="outline">Xem bài viết</Button>
+                        </a>
                         <ConfirmActionForm
                           action={movePostToTrash}
                           fields={[{ name: "postId", value: post.id }, { name: "sourceTab", value: "posts" }]}
@@ -177,7 +180,9 @@ export function PostsTab({
                         </ConfirmActionForm>
                       </>
                     ) : (
-                      <p className="text-muted-foreground text-xs">Bạn chỉ có quyền chỉnh sửa bài của mình tại tab Lưu trữ cá nhân.</p>
+                      <a href={`/${post.category.slug}/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                        <Button type="button" size="sm" variant="outline">Xem bài viết</Button>
+                      </a>
                     )}
                   </div>
                 </TableCell>

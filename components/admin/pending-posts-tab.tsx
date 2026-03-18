@@ -61,8 +61,11 @@ export function PendingPostsTab({ isAdmin, rows, approvePendingPost, rejectPendi
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Link href={`/admin/edit/${post.id}`}>
-                <Button type="button" size="sm" variant="secondary">Xem/Sửa</Button>
+                <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
               </Link>
+              <a href={`/admin/preview/${post.id}`} target="_blank" rel="noopener noreferrer">
+                <Button type="button" size="sm" variant="outline">Xem trước</Button>
+              </a>
               {isAdmin ? (
                 <>
                   <form action={approvePendingPost}>

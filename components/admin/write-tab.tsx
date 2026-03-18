@@ -1,9 +1,10 @@
 'use client'
 import dynamic from "next/dynamic"
-import { useState } from "react"
+import { useRef, useState, useTransition } from "react"
 
 const RichTextField = dynamic(() => import("@/components/admin/rich-text-field").then(m => m.RichTextField), { ssr: false })
 
+import { createPostForPreview } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -32,6 +33,19 @@ type WriteTabProps = {
 
 export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
   const [hasVideo, setHasVideo] = useState(false)
+  const [isPreviewing, startPreviewTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function handlePreview() {
+    if (!formRef.current) return
+    const formData = new FormData(formRef.current)
+    startPreviewTransition(async () => {
+      const result = await createPostForPreview(formData)
+      if ("postId" in result) {
+        window.open(`/admin/preview/${result.postId}`, "_blank")
+      }
+    })
+  }
 
   return (
     <Card>
@@ -40,7 +54,7 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
         <CardDescription></CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={createPost} className="space-y-4">
+        <form ref={formRef} action={createPost} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="postTitle">Tên bài viết</Label>
             <Input id="postTitle" name="title" placeholder="Nhập tiêu đề" required />
@@ -127,16 +141,16 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
             </label>
           </div>
 
-          <div className="grid gap-2 md:grid-cols-3">
+          <div className={`grid gap-2 ${isAdmin ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
             <Button type="submit" name="submitAction" value="save-draft" variant="outline">Lưu nháp</Button>
-            <Button type="submit" name="submitAction" value="submit-review" className="w-full" variant="secondary">Gửi chờ duyệt</Button>
+            <Button type="submit" name="submitAction" value="submit-review" className="w-full" variant="destructive">Gửi chờ duyệt</Button>
+            <Button type="button" className="w-full" variant="secondary" onClick={handlePreview} disabled={isPreviewing}>
+              {isPreviewing ? "Đang lưu..." : "Xem trước"}
+            </Button>
             {isAdmin ? (
               <Button type="submit" name="submitAction" value="publish" className="w-full">Xuất bản</Button>
-            ) : (
-              <Button type="button" className="w-full" disabled>Xuất bản (chỉ admin)</Button>
-            )}
+            ) : null}
           </div>
-          <p className="text-muted-foreground text-xs">Sau khi lưu nháp, mở bài trong Lưu trữ cá nhân để dùng chế độ Xem trước.</p>
         </form>
       </CardContent>
     </Card>

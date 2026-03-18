@@ -60,12 +60,13 @@ describe("role-based data scoping", () => {
 // ── Role-based UI gate assertions ────────────────────────────────────────────
 
 describe("role-based UI gates", () => {
-  test("write tab disables publish button for non-admin users", () => {
+  test("write tab hides publish button for non-admin users", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
 
+    // Publish button is conditionally rendered only for admin
     expect(source).toContain("isAdmin ? (")
-    expect(source).toContain("Xuất bản (chỉ admin)")
-    expect(source).toContain("disabled")
+    // No longer shows a disabled publish button — fully hidden for BTV
+    expect(source).not.toContain("Xuất bản (chỉ admin)")
   })
 
   test("admin-only tabs are gated with adminOnly flag", () => {

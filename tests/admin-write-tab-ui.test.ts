@@ -23,6 +23,27 @@ describe("admin write tab UI", () => {
     expect(source).toContain("name=\"submitAction\" value=\"publish\"")
   })
 
+  test("write tab has preview button and hides publish button for non-admin", () => {
+    const source = readWorkspaceFile("components/admin/write-tab.tsx")
+
+    // Preview button opens new tab
+    expect(source).toContain("Xem trước")
+    expect(source).toContain("createPostForPreview")
+    expect(source).toContain("window.open")
+
+    // Publish only rendered for admin
+    expect(source).toContain("isAdmin")
+    // No longer shows a disabled publish button for BTV
+    expect(source).not.toContain("Xuất bản (chỉ admin)")
+  })
+
+  test("write tab pending review button uses destructive variant", () => {
+    const source = readWorkspaceFile("components/admin/write-tab.tsx")
+    // The Gửi chờ duyệt button should use destructive (red) variant
+    expect(source).toContain("value=\"submit-review\"")
+    expect(source).toContain("variant=\"destructive\"")
+  })
+
   test("rich text field media picker has pagination controls", () => {
     const source = readWorkspaceFile("components/admin/rich-text-field.tsx")
 

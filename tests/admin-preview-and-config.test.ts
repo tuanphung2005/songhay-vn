@@ -15,13 +15,21 @@ describe("admin preview route and config", () => {
     expect(source).toContain("bodySizeLimit: \"250mb\"")
   })
 
-  test("admin preview route includes editorial relations and draft state", () => {
+  test("admin preview route renders full website layout with preview banner", () => {
     const source = readWorkspaceFile("app/admin/preview/[id]/page.tsx")
 
-    expect(source).toContain("include: {")
-    expect(source).toContain("approver:")
-    expect(source).toContain("post.isDraft")
+    // Must still be noindexed
     expect(source).toContain("index: false")
     expect(source).toContain("follow: false")
+
+    // Must require CMS auth
+    expect(source).toContain("requireCmsUser")
+
+    // Renders real site layout
+    expect(source).toContain("SiteHeader")
+    expect(source).toContain("SiteFooter")
+
+    // Shows a preview banner
+    expect(source).toContain("Chế độ xem trước")
   })
 })

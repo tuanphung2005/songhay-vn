@@ -170,6 +170,57 @@ export async function createPost(formData: FormData) {
   redirect("/admin?tab=pending-posts&toast=post_submitted_review")
 }
 
+export async function createPostForPreview(formData: FormData): Promise<{ postId: string } | { error: string }> {
+  const currentUser = await requireCmsUser()
+
+  const title = String(formData.get("title") || "").trim()
+  const excerpt = String(formData.get("excerpt") || "").trim()
+  const content = String(formData.get("content") || "").trim()
+  const plainContent = getPlainTextFromHtml(content)
+  const categoryId = String(formData.get("categoryId") || "").trim()
+  const seoTitle = String(formData.get("seoTitle") || "").trim() || null
+  const seoDescription = String(formData.get("seoDescription") || "").trim() || null
+  const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
+  const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+  const isSensitive = formData.get("isSensitive") === "on"
+  const thumbnailUpload = formData.get("thumbnailUpload")
+  const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
+
+  if (!title || !excerpt || !plainContent || !categoryId) {
+    return { error: "missing_fields" }
+  }
+
+  const slug = await uniquePostSlug(title)
+  const thumbnailUrl =
+    thumbnailUpload instanceof File && thumbnailUpload.size > 0
+      ? await uploadThumbnail(thumbnailUpload)
+      : thumbnailUrlInput || null
+
+  const post = await prisma.post.create({
+    data: {
+      title,
+      slug,
+      excerpt,
+      content,
+      categoryId,
+      authorId: currentUser.id,
+      seoTitle,
+      seoDescription,
+      seoKeywords,
+      ogImage: thumbnailUrl,
+      videoEmbedUrl,
+      isSensitive,
+      isPublished: false,
+      isDraft: true,
+      editorialStatus: "PENDING_REVIEW",
+      thumbnailUrl,
+    },
+  })
+
+  revalidatePath("/admin")
+  return { postId: post.id }
+}
+
 export async function approvePendingPost(formData: FormData) {
   const currentUser = await requireAdminUser()
 
