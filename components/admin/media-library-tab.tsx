@@ -275,9 +275,9 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
           {isLoading ? <p className="text-muted-foreground text-sm">Đang tải dữ liệu...</p> : null}
           {!isLoading && items.length === 0 ? <p className="text-muted-foreground text-sm">Không có media phù hợp.</p> : null}
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {items.map((asset) => (
-              <div key={asset.id} className="rounded-lg border p-3">
+              <div key={asset.id} className="rounded-lg border p-2">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="line-clamp-1 font-semibold">{asset.displayName || asset.filename}</p>
@@ -290,11 +290,22 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   </p>
                 </div>
 
-                <div className="mt-2">
+                <div className="bg-muted/40 mt-2 flex min-h-24 items-center justify-center rounded border p-1">
                   {asset.assetType === "IMAGE" ? (
-                    <img src={asset.url} alt={asset.displayName || asset.filename} className="h-24 w-full rounded border object-cover" loading="lazy" />
+                    <img
+                      src={asset.url}
+                      alt={asset.displayName || asset.filename}
+                      className="max-h-24 w-auto max-w-full rounded object-contain"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
-                    <video src={asset.url} controls className="h-24 w-full rounded border bg-black/80 object-cover" />
+                    <video
+                      src={asset.url}
+                      controls
+                      preload="metadata"
+                      className="max-h-24 w-auto max-w-full rounded bg-black/80 object-contain"
+                    />
                   )}
                 </div>
 
