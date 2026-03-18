@@ -52,6 +52,10 @@ declare module "next/navigation" {
   export const notFound: () => never
   export const redirect: (href: string) => never
   export const usePathname: () => string
+  export const useSearchParams: () => URLSearchParams
+  export const useRouter: () => {
+    replace: (href: string, options?: { scroll?: boolean }) => void
+  }
 }
 
 declare module "next/cache" {

@@ -209,7 +209,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       redirect("/admin?tab=personal-archive&toast=post_saved_draft")
     }
 
-    redirect(isPublished ? "/admin?tab=posts" : "/admin?tab=pending-posts")
+    redirect(isPublished ? "/admin?tab=posts&toast=post_updated_published" : "/admin?tab=pending-posts&toast=post_updated_review")
   }
 
   return (

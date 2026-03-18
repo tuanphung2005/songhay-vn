@@ -78,14 +78,14 @@ export function PostsTab({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form method="get" className="mb-4 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-start">
+        <form method="get" className="mb-4 grid gap-2 lg:grid-cols-[minmax(420px,1fr)_minmax(0,2fr)_auto] lg:items-start">
           <input type="hidden" name="tab" value="posts" />
           <input type="hidden" name="postsPage" value="1" />
           <Input
             name="postsQ"
             defaultValue={filters.query}
             placeholder="Tìm theo tiêu đề, slug, mô tả hoặc danh mục..."
-            className="w-full lg:max-w-md"
+            className="w-full"
           />
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <Select name="postsApproval" defaultValue={filters.approval} className="w-full">
@@ -170,7 +170,7 @@ export function PostsTab({
                         </Link>
                         <ConfirmActionForm
                           action={movePostToTrash}
-                          fields={[{ name: "postId", value: post.id }]}
+                          fields={[{ name: "postId", value: post.id }, { name: "sourceTab", value: "posts" }]}
                           confirmMessage="Chuyển bài viết này vào thùng rác?"
                         >
                           <Button type="submit" size="sm" variant="destructive">Chuyển vào thùng rác</Button>

@@ -134,7 +134,7 @@ export function PersonalArchiveTab({ data, filters, movePostToTrash }: PersonalA
               </Link>
               <ConfirmActionForm
                 action={movePostToTrash}
-                fields={[{ name: "postId", value: post.id }]}
+                fields={[{ name: "postId", value: post.id }, { name: "sourceTab", value: "personal-archive" }]}
                 confirmMessage="Chuyển bài viết này vào thùng rác?"
               >
                 <Button type="submit" size="sm" variant="destructive">Chuyển vào thùng rác</Button>

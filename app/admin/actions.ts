@@ -164,7 +164,7 @@ export async function createPost(formData: FormData) {
   }
 
   if (isPublished) {
-    redirect("/admin?tab=posts&toast=post_created")
+    redirect("/admin?tab=posts&toast=post_published")
   }
 
   redirect("/admin?tab=pending-posts&toast=post_submitted_review")
@@ -322,8 +322,10 @@ export async function movePostToTrash(formData: FormData) {
   const currentUser = await requireCmsUser()
 
   const postId = String(formData.get("postId") || "")
+  const sourceTabRaw = String(formData.get("sourceTab") || "").trim()
+  const sourceTab = sourceTabRaw === "personal-archive" ? "personal-archive" : "posts"
   if (!postId) {
-    return
+    redirect(`/admin?tab=${sourceTab}&toast=post_action_failed`)
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -340,11 +342,11 @@ export async function movePostToTrash(formData: FormData) {
   })
 
   if (!existingPost) {
-    return
+    redirect(`/admin?tab=${sourceTab}&toast=post_not_found`)
   }
 
   if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
-    return
+    redirect(`/admin?tab=${sourceTab}&toast=post_action_forbidden`)
   }
 
   await prisma.post.update({
@@ -363,6 +365,7 @@ export async function movePostToTrash(formData: FormData) {
   revalidatePath(`/${existingPost.category.slug}`)
   revalidatePath(`/${existingPost.category.slug}/${existingPost.slug}`)
   clearDataCache()
+  redirect(`/admin?tab=${sourceTab}&toast=post_moved_trash`)
 }
 
 export async function restorePostFromTrash(formData: FormData) {
@@ -370,7 +373,7 @@ export async function restorePostFromTrash(formData: FormData) {
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
-    return
+    redirect("/admin?tab=trash&toast=post_action_failed")
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -381,11 +384,11 @@ export async function restorePostFromTrash(formData: FormData) {
   })
 
   if (!existingPost) {
-    return
+    redirect("/admin?tab=trash&toast=post_not_found")
   }
 
   if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
-    return
+    redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
   await prisma.post.update({
@@ -399,6 +402,7 @@ export async function restorePostFromTrash(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
+  redirect("/admin?tab=trash&toast=post_restored")
 }
 
 export async function deletePostPermanently(formData: FormData) {
@@ -406,7 +410,7 @@ export async function deletePostPermanently(formData: FormData) {
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
-    return
+    redirect("/admin?tab=trash&toast=post_action_failed")
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -417,11 +421,11 @@ export async function deletePostPermanently(formData: FormData) {
   })
 
   if (!existingPost) {
-    return
+    redirect("/admin?tab=trash&toast=post_not_found")
   }
 
   if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
-    return
+    redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
   await prisma.post.delete({ where: { id: postId } })
@@ -429,6 +433,7 @@ export async function deletePostPermanently(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
+  redirect("/admin?tab=trash&toast=post_deleted_permanently")
 }
 
 export async function moderateComment(formData: FormData) {
@@ -438,7 +443,7 @@ export async function moderateComment(formData: FormData) {
   const action = String(formData.get("action") || "")
 
   if (!commentId || !["approve", "delete"].includes(action)) {
-    return
+    redirect("/admin?tab=comments&toast=comment_action_failed")
   }
 
   if (action === "approve") {
@@ -451,6 +456,7 @@ export async function moderateComment(formData: FormData) {
 
   revalidatePath("/admin")
   clearDataCache()
+  redirect(`/admin?tab=comments&toast=${action === "approve" ? "comment_approved" : "comment_deleted"}`)
 }
 
 export async function updateCategory(formData: FormData) {
