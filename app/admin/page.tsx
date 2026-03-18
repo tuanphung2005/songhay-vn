@@ -29,7 +29,6 @@ import {
   restorePostFromTrash,
   updatePasswordMock,
   updateCategory,
-  updatePostFlags,
 } from "@/app/admin/actions"
 import { type AdminTab, getAdminPageData } from "@/app/admin/data"
 import { AdminActionToast } from "@/components/admin/action-toast"
@@ -77,8 +76,8 @@ const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
   { key: "pending-posts", label: "Kho bài chờ duyệt", description: "Admin duyệt, CTV theo dõi trạng thái", icon: Clock3 },
   { key: "media-library", label: "Kho dữ liệu", description: "Tái sử dụng ảnh/video đã upload", icon: LibraryBig },
   { key: "personal-archive", label: "Lưu trữ cá nhân", description: "Bài viết theo tài khoản đăng nhập", icon: UserSquare2 },
-  { key: "posts", label: "Kho bài", description: "Kho bài đã xuất bản", icon: Newspaper, adminOnly: true },
-  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2, adminOnly: true },
+  { key: "posts", label: "Kho bài", description: "Kho bài đã xuất bản", icon: Newspaper },
+  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
 ]
 
 const SETTINGS_TABS: NavLeaf[] = [
@@ -88,7 +87,27 @@ const SETTINGS_TABS: NavLeaf[] = [
 ]
 
 type AdminPageProps = {
-  searchParams?: Promise<{ tab?: string; moved?: string; direction?: string; q?: string; page?: string }>
+  searchParams?: Promise<{
+    tab?: string
+    moved?: string
+    direction?: string
+    postsQ?: string
+    postsAuthor?: string
+    postsApproval?: string
+    postsFrom?: string
+    postsTo?: string
+    postsPage?: string
+    personalQ?: string
+    personalStatus?: string
+    personalFrom?: string
+    personalTo?: string
+    personalPage?: string
+    trashQ?: string
+    trashAuthor?: string
+    trashFrom?: string
+    trashTo?: string
+    trashPage?: string
+  }>
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -103,9 +122,59 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const tabFromQuery = resolvedSearchParams?.tab
   const movedCategoryId = resolvedSearchParams?.moved
   const movedDirection = resolvedSearchParams?.direction
-  const postsQuery = (resolvedSearchParams?.q || "").trim().slice(0, 120)
-  const rawPostsPage = Number.parseInt(resolvedSearchParams?.page || "1", 10)
+
+  const postsQuery = (resolvedSearchParams?.postsQ || "").trim().slice(0, 120)
+  const postsAuthorRaw = (resolvedSearchParams?.postsAuthor || "").trim()
+  const postsAuthor = postsAuthorRaw === "all" ? "" : postsAuthorRaw
+  const postsApproval = ["all", "approved", "unapproved"].includes(resolvedSearchParams?.postsApproval || "")
+    ? (resolvedSearchParams?.postsApproval as "all" | "approved" | "unapproved")
+    : "all"
+  const postsFrom = (resolvedSearchParams?.postsFrom || "").trim()
+  const postsTo = (resolvedSearchParams?.postsTo || "").trim()
+  const rawPostsPage = Number.parseInt(resolvedSearchParams?.postsPage || "1", 10)
   const requestedPostsPage = Number.isFinite(rawPostsPage) && rawPostsPage > 0 ? rawPostsPage : 1
+
+  const personalQuery = (resolvedSearchParams?.personalQ || "").trim().slice(0, 120)
+  const personalStatus = ["all", "draft", "pending", "published", "rejected"].includes(resolvedSearchParams?.personalStatus || "")
+    ? (resolvedSearchParams?.personalStatus as "all" | "draft" | "pending" | "published" | "rejected")
+    : "all"
+  const personalFrom = (resolvedSearchParams?.personalFrom || "").trim()
+  const personalTo = (resolvedSearchParams?.personalTo || "").trim()
+  const rawPersonalPage = Number.parseInt(resolvedSearchParams?.personalPage || "1", 10)
+  const requestedPersonalPage = Number.isFinite(rawPersonalPage) && rawPersonalPage > 0 ? rawPersonalPage : 1
+
+  const trashQuery = (resolvedSearchParams?.trashQ || "").trim().slice(0, 120)
+  const trashAuthorRaw = (resolvedSearchParams?.trashAuthor || "").trim()
+  const trashAuthor = trashAuthorRaw === "all" ? "" : trashAuthorRaw
+  const trashFrom = (resolvedSearchParams?.trashFrom || "").trim()
+  const trashTo = (resolvedSearchParams?.trashTo || "").trim()
+  const rawTrashPage = Number.parseInt(resolvedSearchParams?.trashPage || "1", 10)
+  const requestedTrashPage = Number.isFinite(rawTrashPage) && rawTrashPage > 0 ? rawTrashPage : 1
+
+  const postsFilters = {
+    query: postsQuery,
+    authorId: postsAuthor,
+    approval: postsApproval,
+    fromDate: postsFrom,
+    toDate: postsTo,
+    requestedPage: requestedPostsPage,
+  } as const
+
+  const personalArchiveFilters = {
+    query: personalQuery,
+    status: personalStatus,
+    fromDate: personalFrom,
+    toDate: personalTo,
+    requestedPage: requestedPersonalPage,
+  } as const
+
+  const trashFilters = {
+    query: trashQuery,
+    authorId: trashAuthor,
+    fromDate: trashFrom,
+    toDate: trashTo,
+    requestedPage: requestedTrashPage,
+  } as const
 
   const activeTab: AdminTab = visibleTabs.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
@@ -129,8 +198,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     overviewAnalytics,
   } = await getAdminPageData({
     activeTab,
-    postsQuery,
-    requestedPostsPage,
+    postsFilters,
+    personalArchiveFilters,
+    trashFilters,
     currentUser: {
       id: currentUser.id,
       role: currentUser.role,
@@ -289,10 +359,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           {activeTab === "write" ? <WriteTab isAdmin={isAdmin} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
           {activeTab === "pending-posts" ? <PendingPostsTab isAdmin={isAdmin} rows={pendingPostsData} approvePendingPost={approvePendingPost} rejectPendingPost={rejectPendingPost} /> : null}
           {activeTab === "media-library" ? <MediaLibraryTab rows={mediaLibraryData} /> : null}
-          {activeTab === "personal-archive" ? <PersonalArchiveTab rows={personalPostsData} /> : null}
+          {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={isAdmin} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}
-          {activeTab === "posts" ? <PostsTab postsData={postsData} postsQuery={postsQuery} postsPaginationItems={postsPaginationItems} updatePostFlags={updatePostFlags} movePostToTrash={movePostToTrash} /> : null}
-          {activeTab === "trash" ? <TrashTab trashedPosts={trashedPosts} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
+          {activeTab === "posts" ? <PostsTab isAdmin={isAdmin} postsData={postsData} filters={postsFilters} postsPaginationItems={postsPaginationItems} movePostToTrash={movePostToTrash} /> : null}
+          {activeTab === "trash" ? <TrashTab isAdmin={isAdmin} data={trashedPosts} filters={trashFilters} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
           {activeTab === "settings-password" ? <SettingsPasswordTab updatePasswordMock={updatePasswordMock} /> : null}
         </section>
       </div>

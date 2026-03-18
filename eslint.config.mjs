@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored automation docs/scripts are not app runtime code.
+    ".github/get-shit-done/**",
+    ".github/skills/**",
   ]),
 ]);
 

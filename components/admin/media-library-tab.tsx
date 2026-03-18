@@ -93,8 +93,13 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
 
     const form = event.currentTarget
     const formData = new FormData(form)
-    const assetType = String(formData.get("assetType") || "image").toLowerCase()
-    const endpoint = assetType === "video" ? "/api/uploads/video" : "/api/uploads/image"
+    const file = formData.get("file")
+    if (!(file instanceof File) || file.size === 0) {
+      window.location.assign("/admin?tab=media-library&toast=media_upload_failed")
+      return
+    }
+
+    const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
 
     setIsUploading(true)
 
@@ -174,13 +179,6 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
       <CardContent className="space-y-4">
         <form onSubmit={handleUpload} className="grid gap-3 rounded-lg border p-3 md:grid-cols-[160px_1fr_auto] md:items-end">
           <div className="space-y-1.5">
-            <Label htmlFor="assetType">Loại media</Label>
-            <Select id="assetType" name="assetType" defaultValue="image" required>
-              <option value="image">Ảnh (riêng tư theo user)</option>
-              <option value="video">Video (chia sẻ toàn hệ thống)</option>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
             <Label htmlFor="assetDisplayName">Tên media (để tìm kiếm)</Label>
             <Input id="assetDisplayName" name="displayName" placeholder="VD: Anh bia tu vi thang 3" />
           </div>
@@ -189,6 +187,7 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
             <Input id="assetFile" name="file" type="file" required />
           </div>
           <Button type="submit" disabled={isUploading}>{isUploading ? "Đang upload..." : "Upload vào kho"}</Button>
+          <p className="text-muted-foreground text-xs md:col-span-3">Loại media sẽ tự nhận diện theo tệp upload (ảnh/video).</p>
         </form>
 
         <div className="space-y-3">
@@ -232,7 +231,6 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
                     <Badge variant="outline">{asset.visibility === "SHARED" ? "Shared" : "Private"}</Badge>
                   </div>
                   <p className="text-muted-foreground line-clamp-1 text-xs">File: {asset.filename}</p>
-                  <p className="text-muted-foreground break-all text-xs">{asset.url}</p>
                   <p className="text-muted-foreground text-xs">
                     {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi {asset.uploader.name} · {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
                   </p>

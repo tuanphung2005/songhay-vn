@@ -127,6 +127,8 @@ export function RichTextField({
   const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [mediaType, setMediaType] = useState<"ALL" | "IMAGE" | "VIDEO">("IMAGE")
   const [searchTerm, setSearchTerm] = useState("")
+  const [pickerPage, setPickerPage] = useState(1)
+  const pickerPageSize = 12
 
   const isEmpty = useMemo(() => toPlainText(html).length === 0, [html])
   const classicConfig = useMemo(
@@ -339,6 +341,10 @@ export function RichTextField({
     return text.includes(searchTerm.trim().toLowerCase())
   })
 
+  const pickerTotalPages = Math.max(1, Math.ceil(filteredMedia.length / pickerPageSize))
+  const safePickerPage = Math.min(pickerPage, pickerTotalPages)
+  const pagedMedia = filteredMedia.slice((safePickerPage - 1) * pickerPageSize, safePickerPage * pickerPageSize)
+
   return (
     <div className="space-y-2">
       <input type="hidden" name={name} value={html} />
@@ -351,7 +357,7 @@ export function RichTextField({
             className={`rounded px-2 py-1 font-semibold transition ${mode === "classic" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-600 hover:text-zinc-900"
               }`}
           >
-            Classic CMS
+            Trình sửa CMS
           </button>
           <button
             type="button"
@@ -359,14 +365,17 @@ export function RichTextField({
             className={`rounded px-2 py-1 font-semibold transition ${mode === "code" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-600 hover:text-zinc-900"
               }`}
           >
-            HTML Code
+            HTML
           </button>
           <button
             type="button"
-            onClick={() => setShowMediaPicker(true)}
+            onClick={() => {
+              setPickerPage(1)
+              setShowMediaPicker(true)
+            }}
             className="rounded bg-zinc-900 px-2 py-1 font-semibold text-white transition hover:bg-zinc-700"
           >
-            Chọn từ kho dữ liệu
+            Thêm ảnh
           </button>
         </div>
       </div>
@@ -391,7 +400,10 @@ export function RichTextField({
               <select
                 className="h-9 rounded-md border border-input px-3 text-sm"
                 value={mediaType}
-                onChange={(event) => setMediaType(event.target.value as "ALL" | "IMAGE" | "VIDEO")}
+                onChange={(event) => {
+                  setPickerPage(1)
+                  setMediaType(event.target.value as "ALL" | "IMAGE" | "VIDEO")
+                }}
               >
                 <option value="ALL">Tất cả</option>
                 <option value="IMAGE">Ảnh</option>
@@ -399,7 +411,10 @@ export function RichTextField({
               </select>
               <input
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) => {
+                  setPickerPage(1)
+                  setSearchTerm(event.target.value)
+                }}
                 className="h-9 rounded-md border border-input px-3 text-sm"
                 placeholder="Tìm theo tên file hoặc URL..."
               />
@@ -407,7 +422,7 @@ export function RichTextField({
             <div className="max-h-[60vh] overflow-y-auto p-4">
               {filteredMedia.length === 0 ? <p className="text-muted-foreground text-sm">Không tìm thấy media phù hợp.</p> : null}
               <div className="grid gap-3 md:grid-cols-2">
-                {filteredMedia.map((asset) => (
+                {pagedMedia.map((asset) => (
                   <div key={asset.id} className="rounded-md border p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <p className="line-clamp-1 text-sm font-semibold">{asset.displayName || asset.filename}</p>
@@ -430,6 +445,29 @@ export function RichTextField({
                   </div>
                 ))}
               </div>
+              {filteredMedia.length > 0 ? (
+                <div className="mt-4 flex items-center justify-between border-t pt-3">
+                  <p className="text-muted-foreground text-sm">Trang {safePickerPage}/{pickerTotalPages}</p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="rounded border px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={safePickerPage <= 1}
+                      onClick={() => setPickerPage((value) => Math.max(1, value - 1))}
+                    >
+                      Trước
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded bg-zinc-900 px-2 py-1 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={safePickerPage >= pickerTotalPages}
+                      onClick={() => setPickerPage((value) => Math.min(pickerTotalPages, value + 1))}
+                    >
+                      Sau
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

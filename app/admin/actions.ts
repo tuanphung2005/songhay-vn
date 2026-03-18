@@ -101,11 +101,14 @@ export async function createPost(formData: FormData) {
   const categoryId = String(formData.get("categoryId") || "").trim()
   const seoTitle = String(formData.get("seoTitle") || "").trim() || null
   const seoDescription = String(formData.get("seoDescription") || "").trim() || null
-  const ogImage = String(formData.get("ogImage") || "").trim() || null
+  const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
+  const manualOgImage = String(formData.get("ogImage") || "").trim() || null
   const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+  const isSensitive = formData.get("isSensitive") === "on"
   const isFeatured = formData.get("isFeatured") === "on"
   const isTrending = formData.get("isTrending") === "on"
   const requestedPublished = formData.get("isPublished") === "on"
+  const submitAction = String(formData.get("submitAction") || "").trim()
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
@@ -118,10 +121,14 @@ export async function createPost(formData: FormData) {
     thumbnailUpload instanceof File && thumbnailUpload.size > 0
       ? await uploadThumbnail(thumbnailUpload)
       : thumbnailUrlInput || null
+  const ogImage = thumbnailUrl || manualOgImage
 
   const isAdmin = currentUser.role === "ADMIN"
-  const editorialStatus = isAdmin && requestedPublished ? "PUBLISHED" : "PENDING_REVIEW"
+  const shouldSaveDraft = submitAction === "save-draft"
+  const shouldPublishNow = submitAction === "publish" || (submitAction.length === 0 && requestedPublished && isAdmin)
+  const editorialStatus = shouldPublishNow ? "PUBLISHED" : "PENDING_REVIEW"
   const isPublished = editorialStatus === "PUBLISHED"
+  const isDraft = shouldSaveDraft
 
   await prisma.post.create({
     data: {
@@ -133,12 +140,18 @@ export async function createPost(formData: FormData) {
       authorId: currentUser.id,
       seoTitle,
       seoDescription,
+      seoKeywords,
       ogImage,
       videoEmbedUrl,
+      isSensitive,
       isFeatured,
       isTrending,
       isPublished,
+      isDraft,
       editorialStatus,
+      approvedAt: isPublished ? new Date() : null,
+      approverId: isPublished ? currentUser.id : null,
+      publishedAt: isPublished ? new Date() : undefined,
       thumbnailUrl,
     },
   })
@@ -146,6 +159,10 @@ export async function createPost(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
+  if (shouldSaveDraft) {
+    redirect("/admin?tab=personal-archive&toast=post_saved_draft")
+  }
+
   if (isPublished) {
     redirect("/admin?tab=posts&toast=post_created")
   }
@@ -154,7 +171,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function approvePendingPost(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireAdminUser()
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -166,6 +183,9 @@ export async function approvePendingPost(formData: FormData) {
     data: {
       editorialStatus: "PUBLISHED",
       isPublished: true,
+      isDraft: false,
+      approverId: currentUser.id,
+      approvedAt: new Date(),
       publishedAt: new Date(),
     },
   })
@@ -189,6 +209,9 @@ export async function rejectPendingPost(formData: FormData) {
     data: {
       editorialStatus: "REJECTED",
       isPublished: false,
+      isDraft: false,
+      approverId: null,
+      approvedAt: null,
     },
   })
 
@@ -296,7 +319,7 @@ export async function updatePostFlags(formData: FormData) {
 }
 
 export async function movePostToTrash(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -306,6 +329,7 @@ export async function movePostToTrash(formData: FormData) {
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
     select: {
+      authorId: true,
       slug: true,
       category: {
         select: {
@@ -316,6 +340,10 @@ export async function movePostToTrash(formData: FormData) {
   })
 
   if (!existingPost) {
+    return
+  }
+
+  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
     return
   }
 
@@ -338,10 +366,25 @@ export async function movePostToTrash(formData: FormData) {
 }
 
 export async function restorePostFromTrash(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
+    return
+  }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      authorId: true,
+    },
+  })
+
+  if (!existingPost) {
+    return
+  }
+
+  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
     return
   }
 
@@ -359,10 +402,25 @@ export async function restorePostFromTrash(formData: FormData) {
 }
 
 export async function deletePostPermanently(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
+    return
+  }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      authorId: true,
+    },
+  })
+
+  if (!existingPost) {
+    return
+  }
+
+  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
     return
   }
 

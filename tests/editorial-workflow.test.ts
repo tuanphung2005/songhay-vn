@@ -7,19 +7,24 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("editorial workflow", () => {
-  test("post creation routes USER content to pending review", () => {
+  test("post creation supports draft and pending review flow", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    expect(source).toContain("const editorialStatus = isAdmin && requestedPublished ? \"PUBLISHED\" : \"PENDING_REVIEW\"")
+    expect(source).toContain("const shouldSaveDraft = submitAction === \"save-draft\"")
+    expect(source).toContain("const shouldPublishNow = submitAction === \"publish\"")
+    expect(source).toContain("const isDraft = shouldSaveDraft")
     expect(source).toContain("redirect(\"/admin?tab=pending-posts&toast=post_submitted_review\")")
+    expect(source).toContain("redirect(\"/admin?tab=personal-archive&toast=post_saved_draft\")")
     expect(source).toContain("authorId: currentUser.id")
   })
 
-  test("admin actions include approve and reject for pending posts", () => {
+  test("admin actions include approval metadata updates", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
     expect(source).toContain("export async function approvePendingPost")
     expect(source).toContain("editorialStatus: \"PUBLISHED\"")
+    expect(source).toContain("approverId: currentUser.id")
+    expect(source).toContain("approvedAt: new Date()")
     expect(source).toContain("export async function rejectPendingPost")
     expect(source).toContain("editorialStatus: \"REJECTED\"")
   })

@@ -16,6 +16,8 @@ export type AdminTab =
   | "settings-password"
 
 const POSTS_PAGE_SIZE = 12
+const PERSONAL_ARCHIVE_PAGE_SIZE = 10
+const TRASH_PAGE_SIZE = 10
 const ADMIN_CACHE_TTL_SECONDS = 20
 
 function buildPaginationItems(currentPage: number, totalPages: number) {
@@ -47,6 +49,23 @@ function startOfDay(value: Date) {
   return result
 }
 
+function endOfDay(value: Date) {
+  const result = new Date(value)
+  result.setHours(23, 59, 59, 999)
+  return result
+}
+
+function parseDateInput(value: string | null | undefined) {
+  if (!value || value.trim().length === 0) {
+    return null
+  }
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+  return parsed
+}
+
 function toDayKey(value: Date) {
   const year = value.getFullYear()
   const month = String(value.getMonth() + 1).padStart(2, "0")
@@ -64,13 +83,34 @@ function toDayLabel(value: Date) {
 
 export async function getAdminPageData({
   activeTab,
-  postsQuery,
-  requestedPostsPage,
+  postsFilters,
+  personalArchiveFilters,
+  trashFilters,
   currentUser,
 }: {
   activeTab: AdminTab
-  postsQuery: string
-  requestedPostsPage: number
+  postsFilters: {
+    query: string
+    authorId: string
+    approval: "all" | "approved" | "unapproved"
+    fromDate: string
+    toDate: string
+    requestedPage: number
+  }
+  personalArchiveFilters: {
+    query: string
+    status: "all" | "draft" | "pending" | "published" | "rejected"
+    fromDate: string
+    toDate: string
+    requestedPage: number
+  }
+  trashFilters: {
+    query: string
+    authorId: string
+    fromDate: string
+    toDate: string
+    requestedPage: number
+  }
   currentUser: {
     id: string
     role: "ADMIN" | "USER"
@@ -121,16 +161,33 @@ export async function getAdminPageData({
       )
       : []
 
+  const postsFromDate = parseDateInput(postsFilters.fromDate)
+  const postsToDate = parseDateInput(postsFilters.toDate)
+
   const postsWhere: Prisma.PostWhereInput = {
     isDeleted: false,
-    editorialStatus: "PUBLISHED",
-    ...(postsQuery.length > 0
+    isPublished: true,
+    isDraft: false,
+    ...(postsFilters.authorId.length > 0 ? { authorId: postsFilters.authorId } : {}),
+    ...(postsFilters.approval === "approved" ? { approverId: { not: null } } : {}),
+    ...(postsFilters.approval === "unapproved" ? { approverId: null } : {}),
+    ...(postsFromDate || postsToDate
+      ? {
+        publishedAt: {
+          ...(postsFromDate ? { gte: startOfDay(postsFromDate) } : {}),
+          ...(postsToDate ? { lte: endOfDay(postsToDate) } : {}),
+        },
+      }
+      : {}),
+    ...(postsFilters.query.length > 0
       ? {
         OR: [
-          { title: { contains: postsQuery, mode: "insensitive" } },
-          { slug: { contains: postsQuery, mode: "insensitive" } },
-          { excerpt: { contains: postsQuery, mode: "insensitive" } },
-          { category: { name: { contains: postsQuery, mode: "insensitive" } } },
+          { title: { contains: postsFilters.query, mode: "insensitive" } },
+          { slug: { contains: postsFilters.query, mode: "insensitive" } },
+          { excerpt: { contains: postsFilters.query, mode: "insensitive" } },
+          { category: { name: { contains: postsFilters.query, mode: "insensitive" } } },
+          { author: { name: { contains: postsFilters.query, mode: "insensitive" } } },
+          { author: { email: { contains: postsFilters.query, mode: "insensitive" } } },
         ],
       }
       : {}),
@@ -141,7 +198,7 @@ export async function getAdminPageData({
       ? await (async () => {
         const totalCount = await prisma.post.count({ where: postsWhere })
         const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PAGE_SIZE))
-        const currentPage = Math.min(requestedPostsPage, totalPages)
+        const currentPage = Math.min(postsFilters.requestedPage, totalPages)
 
         const posts = await prisma.post.findMany({
           where: postsWhere,
@@ -150,14 +207,23 @@ export async function getAdminPageData({
             title: true,
             slug: true,
             views: true,
+            thumbnailUrl: true,
+            publishedAt: true,
             isFeatured: true,
             isTrending: true,
             isPublished: true,
+            isDraft: true,
             editorialStatus: true,
-            seoTitle: true,
-            seoDescription: true,
             author: {
               select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            approver: {
+              select: {
+                id: true,
                 name: true,
                 email: true,
               },
@@ -179,6 +245,23 @@ export async function getAdminPageData({
           totalCount,
           totalPages,
           currentPage,
+          filterOptions: await prisma.user.findMany({
+            where: {
+              posts: {
+                some: {
+                  isDeleted: false,
+                  isPublished: true,
+                  isDraft: false,
+                },
+              },
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+            orderBy: [{ name: "asc" }, { email: "asc" }],
+          }),
         }
       })()
       : {
@@ -186,6 +269,7 @@ export async function getAdminPageData({
         totalCount: 0,
         totalPages: 1,
         currentPage: 1,
+        filterOptions: [] as Array<{ id: string; name: string; email: string }>,
       }
 
   const pendingPostsData =
@@ -223,29 +307,96 @@ export async function getAdminPageData({
 
   const personalPostsData =
     activeTab === "personal-archive"
-      ? await prisma.post.findMany({
-        where: {
+      ? await (async () => {
+        const personalFromDate = parseDateInput(personalArchiveFilters.fromDate)
+        const personalToDate = parseDateInput(personalArchiveFilters.toDate)
+
+        const personalWhere: Prisma.PostWhereInput = {
           isDeleted: false,
           authorId: currentUser.id,
-        },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          editorialStatus: true,
-          isPublished: true,
-          updatedAt: true,
-          category: {
-            select: {
-              name: true,
-              slug: true,
+          ...(personalArchiveFilters.status === "draft" ? { isDraft: true } : {}),
+          ...(personalArchiveFilters.status === "pending" ? { editorialStatus: "PENDING_REVIEW" } : {}),
+          ...(personalArchiveFilters.status === "published" ? { editorialStatus: "PUBLISHED" } : {}),
+          ...(personalArchiveFilters.status === "rejected" ? { editorialStatus: "REJECTED" } : {}),
+          ...(personalFromDate || personalToDate
+            ? {
+              updatedAt: {
+                ...(personalFromDate ? { gte: startOfDay(personalFromDate) } : {}),
+                ...(personalToDate ? { lte: endOfDay(personalToDate) } : {}),
+              },
+            }
+            : {}),
+          ...(personalArchiveFilters.query.length > 0
+            ? {
+              OR: [
+                { title: { contains: personalArchiveFilters.query, mode: "insensitive" } },
+                { slug: { contains: personalArchiveFilters.query, mode: "insensitive" } },
+                { excerpt: { contains: personalArchiveFilters.query, mode: "insensitive" } },
+                { category: { name: { contains: personalArchiveFilters.query, mode: "insensitive" } } },
+              ],
+            }
+            : {}),
+        }
+
+        const totalCount = await prisma.post.count({ where: personalWhere })
+        const totalPages = Math.max(1, Math.ceil(totalCount / PERSONAL_ARCHIVE_PAGE_SIZE))
+        const currentPage = Math.min(personalArchiveFilters.requestedPage, totalPages)
+
+        const rows = await prisma.post.findMany({
+          where: personalWhere,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            thumbnailUrl: true,
+            editorialStatus: true,
+            isPublished: true,
+            isDraft: true,
+            createdAt: true,
+            publishedAt: true,
+            approvedAt: true,
+            updatedAt: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            approver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            category: {
+              select: {
+                name: true,
+                slug: true,
+              },
             },
           },
-        },
-        orderBy: [{ updatedAt: "desc" }],
-        take: 60,
-      })
-      : []
+          orderBy: [{ updatedAt: "desc" }],
+          skip: (currentPage - 1) * PERSONAL_ARCHIVE_PAGE_SIZE,
+          take: PERSONAL_ARCHIVE_PAGE_SIZE,
+        })
+
+        return {
+          rows,
+          totalCount,
+          totalPages,
+          currentPage,
+          paginationItems: buildPaginationItems(currentPage, totalPages),
+        }
+      })()
+      : {
+        rows: [],
+        totalCount: 0,
+        totalPages: 1,
+        currentPage: 1,
+        paginationItems: [] as Array<number | "ellipsis">,
+      }
 
   const mediaLibraryData =
     activeTab === "media-library" || activeTab === "write"
@@ -279,14 +430,57 @@ export async function getAdminPageData({
 
   const trashedPosts =
     activeTab === "trash"
-      ? await memoizeWithTtl("admin:trash:posts", ADMIN_CACHE_TTL_SECONDS, async () =>
-        prisma.post.findMany({
-          where: { isDeleted: true },
+      ? await (async () => {
+        const trashFromDate = parseDateInput(trashFilters.fromDate)
+        const trashToDate = parseDateInput(trashFilters.toDate)
+
+        const trashWhere: Prisma.PostWhereInput = {
+          isDeleted: true,
+          ...(currentUser.role === "ADMIN" ? {} : { authorId: currentUser.id }),
+          ...(currentUser.role === "ADMIN" && trashFilters.authorId.length > 0 ? { authorId: trashFilters.authorId } : {}),
+          ...(trashFromDate || trashToDate
+            ? {
+              deletedAt: {
+                ...(trashFromDate ? { gte: startOfDay(trashFromDate) } : {}),
+                ...(trashToDate ? { lte: endOfDay(trashToDate) } : {}),
+              },
+            }
+            : {}),
+          ...(trashFilters.query.length > 0
+            ? {
+              OR: [
+                { title: { contains: trashFilters.query, mode: "insensitive" } },
+                { slug: { contains: trashFilters.query, mode: "insensitive" } },
+                { category: { name: { contains: trashFilters.query, mode: "insensitive" } } },
+                { author: { name: { contains: trashFilters.query, mode: "insensitive" } } },
+                { author: { email: { contains: trashFilters.query, mode: "insensitive" } } },
+              ],
+            }
+            : {}),
+        }
+
+        const totalCount = await prisma.post.count({ where: trashWhere })
+        const totalPages = Math.max(1, Math.ceil(totalCount / TRASH_PAGE_SIZE))
+        const currentPage = Math.min(trashFilters.requestedPage, totalPages)
+
+        const rows = await prisma.post.findMany({
+          where: trashWhere,
           select: {
             id: true,
             title: true,
             slug: true,
+            thumbnailUrl: true,
+            createdAt: true,
+            publishedAt: true,
+            approvedAt: true,
             deletedAt: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
             category: {
               select: {
                 slug: true,
@@ -294,10 +488,46 @@ export async function getAdminPageData({
             },
           },
           orderBy: [{ deletedAt: "desc" }, { updatedAt: "desc" }],
-          take: 30,
+          skip: (currentPage - 1) * TRASH_PAGE_SIZE,
+          take: TRASH_PAGE_SIZE,
         })
-      )
-      : []
+
+        const authorOptions =
+          currentUser.role === "ADMIN"
+            ? await prisma.user.findMany({
+              where: {
+                posts: {
+                  some: {
+                    isDeleted: true,
+                  },
+                },
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+              orderBy: [{ name: "asc" }, { email: "asc" }],
+            })
+            : []
+
+        return {
+          rows,
+          totalCount,
+          totalPages,
+          currentPage,
+          paginationItems: buildPaginationItems(currentPage, totalPages),
+          authorOptions,
+        }
+      })()
+      : {
+        rows: [],
+        totalCount: 0,
+        totalPages: 1,
+        currentPage: 1,
+        paginationItems: [] as Array<number | "ellipsis">,
+        authorOptions: [] as Array<{ id: string; name: string; email: string }>,
+      }
 
   const pendingComments =
     activeTab === "comments"
@@ -435,10 +665,13 @@ export async function getAdminPageData({
     categoriesForWrite,
     postsData,
     postsPaginationItems,
+    postsFilters,
     pendingPostsData,
     personalPostsData,
+    personalArchiveFilters,
     mediaLibraryData,
     trashedPosts,
+    trashFilters,
     pendingComments,
     overviewAnalytics,
   }

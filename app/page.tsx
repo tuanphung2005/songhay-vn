@@ -44,11 +44,43 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [{ featuredPosts, latest, mostRead }, trendingPosts, navCategories] = await Promise.all([
+  const [{ latest, mostRead }, trendingPosts, navCategories, latestByCategoryResponse] = await Promise.all([
     getHomepageData(),
     getTrendingPosts(),
     getNavCategories(),
+    fetch(`${siteUrl}/api/posts/latest-by-category?perCategory=1&categories=6`, {
+      next: { revalidate: 300 },
+    }),
   ])
+
+  const latestByCategoryPayload = latestByCategoryResponse.ok
+    ? (await latestByCategoryResponse.json()) as {
+      items: Array<{
+        category: {
+          name: string
+          slug: string
+        }
+        posts: Array<{
+          id: string
+          title: string
+          slug: string
+          excerpt: string
+          thumbnailUrl: string | null
+          publishedAt: string
+        }>
+      }>
+    }
+    : { items: [] }
+
+  const featuredPosts = latestByCategoryPayload.items
+    .flatMap((section) =>
+      section.posts.map((post) => ({
+        ...post,
+        category: section.category,
+        publishedAt: new Date(post.publishedAt),
+      }))
+    )
+    .slice(0, 4)
 
   const heroPost = featuredPosts[0]
   const heroMini = featuredPosts.slice(1, 4)

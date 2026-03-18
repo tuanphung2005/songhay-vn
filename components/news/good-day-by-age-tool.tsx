@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useMemo, useState } from "react"
 
 type GoodDayByAgeToolProps = {
@@ -38,7 +37,9 @@ function diffYears(birthDate: Date, targetDate: Date) {
   return years
 }
 
-export function GoodDayByAgeTool({ showUtilityLinks = false }: GoodDayByAgeToolProps) {
+export function GoodDayByAgeTool({ showUtilityLinks = false }: GoodDayByAgeToolProps = {}) {
+  void showUtilityLinks
+
   const defaultBirthDate = useMemo(() => toInputDate(new Date(1998, 0, 1)), [])
   const defaultTargetDate = useMemo(() => {
     const tomorrow = new Date()

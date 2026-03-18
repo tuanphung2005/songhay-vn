@@ -38,6 +38,7 @@ model User {
   updatedAt    DateTime  @updatedAt
   comments     Comment[]
   posts        Post[]
+  approvedPosts Post[]   @relation("PostApprover")
   mediaAssets  MediaAsset[]
 }
 
@@ -62,25 +63,33 @@ model Post {
   videoEmbedUrl  String?
   seoTitle       String?
   seoDescription String?
+  seoKeywords    String?
   ogImage        String?
+  isSensitive    Boolean  @default(false)
+  isDraft        Boolean  @default(true)
   isFeatured     Boolean  @default(false)
   isTrending     Boolean  @default(false)
   isPublished    Boolean  @default(true)
   editorialStatus EditorialStatus @default(PUBLISHED)
   isDeleted      Boolean  @default(false)
   deletedAt      DateTime?
+  approvedAt     DateTime?
   views          Int      @default(0)
   publishedAt    DateTime @default(now())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   categoryId     String
   authorId       String?
+  approverId     String?
   category       Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   author         User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  approver       User?    @relation("PostApprover", fields: [approverId], references: [id], onDelete: SetNull)
   comments       Comment[]
 
   @@index([categoryId])
   @@index([authorId])
+  @@index([approverId])
+  @@index([isDraft])
   @@index([isPublished, publishedAt])
   @@index([editorialStatus])
   @@index([isDeleted])
