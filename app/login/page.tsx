@@ -66,7 +66,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               name="email"
               type="email"
               required
-              placeholder="admin@songhay.vn"
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
             />
           </label>

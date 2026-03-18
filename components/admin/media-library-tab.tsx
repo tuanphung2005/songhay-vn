@@ -23,10 +23,12 @@ type MediaAssetRow = {
   uploader: {
     id: string
     name: string
+    email?: string
   }
 }
 
 type MediaLibraryTabProps = {
+  isAdmin: boolean
   rows: MediaAssetRow[]
 }
 
@@ -34,20 +36,42 @@ function toMb(sizeBytes: number) {
   return `${(sizeBytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
-export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
+function getInitialUploaderOptions(rows: MediaAssetRow[]) {
+  const map = new Map<string, { id: string; name: string; email: string }>()
+
+  for (const row of rows) {
+    if (!row.uploader?.id) {
+      continue
+    }
+
+    map.set(row.uploader.id, {
+      id: row.uploader.id,
+      name: row.uploader.name,
+      email: row.uploader.email || "-",
+    })
+  }
+
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "vi"))
+}
+
+export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<"image" | "video">("image")
+  const [uploaderFilter, setUploaderFilter] = useState("all")
   const [searchValue, setSearchValue] = useState("")
   const [page, setPage] = useState(1)
   const [pageSize] = useState(12)
   const [isLoading, setIsLoading] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
+  const [uploaderOptions, setUploaderOptions] = useState<Array<{ id: string; name: string; email: string }>>(
+    getInitialUploaderOptions(rows)
+  )
   const [items, setItems] = useState<MediaAssetRow[]>(
     rows.filter((item) => item.assetType === "IMAGE").slice(0, 12)
   )
 
-  async function loadMedia(next: { filterType: "image" | "video"; searchValue: string; page: number }) {
+  async function loadMedia(next: { filterType: "image" | "video"; searchValue: string; page: number; uploaderFilter: string }) {
     setIsLoading(true)
 
     try {
@@ -58,6 +82,10 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
 
       if (next.searchValue.trim().length > 0) {
         params.set("search", next.searchValue.trim())
+      }
+
+      if (isAdmin && next.uploaderFilter !== "all") {
+        params.set("uploaderId", next.uploaderFilter)
       }
 
       const endpoint = next.filterType === "video" ? "/api/uploads/video" : "/api/uploads/image"
@@ -73,12 +101,16 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
 
       const payload = (await response.json()) as {
         items: MediaAssetRow[]
+        uploaderOptions?: Array<{ id: string; name: string; email: string }>
         pagination: {
           totalPages: number
         }
       }
 
       setItems(payload.items)
+      if (isAdmin) {
+        setUploaderOptions(payload.uploaderOptions || [])
+      }
       setTotalPages(Math.max(1, payload.pagination.totalPages || 1))
     } catch {
       setItems([])
@@ -141,7 +173,7 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
         return
       }
 
-      await loadMedia({ filterType, searchValue, page })
+      await loadMedia({ filterType, searchValue, page, uploaderFilter })
       window.history.replaceState({}, "", "/admin?tab=media-library&toast=media_deleted")
     } catch {
       window.location.assign("/admin?tab=media-library&toast=media_delete_failed")
@@ -153,19 +185,19 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
   async function handleFilterChange(value: "image" | "video") {
     setFilterType(value)
     setPage(1)
-    await loadMedia({ filterType: value, searchValue, page: 1 })
+    await loadMedia({ filterType: value, searchValue, page: 1, uploaderFilter })
   }
 
   async function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setPage(1)
-    await loadMedia({ filterType, searchValue, page: 1 })
+    await loadMedia({ filterType, searchValue, page: 1, uploaderFilter })
   }
 
   async function goToPage(nextPage: number) {
     const bounded = Math.max(1, Math.min(nextPage, totalPages))
     setPage(bounded)
-    await loadMedia({ filterType, searchValue, page: bounded })
+    await loadMedia({ filterType, searchValue, page: bounded, uploaderFilter })
   }
 
   return (
@@ -173,7 +205,7 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
       <CardHeader>
         <CardTitle>Kho dữ liệu</CardTitle>
         <CardDescription>
-          Upload media một lần để tái sử dụng: ảnh theo user, video chia sẻ toàn hệ thống.
+          Upload media một lần để tái sử dụng. Admin có thể lọc theo người upload để quản trị nhanh.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -191,7 +223,7 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
         </form>
 
         <div className="space-y-3">
-          <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] md:items-end">
+          <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] lg:grid-cols-[180px_260px_1fr_auto] md:items-end">
             <div className="space-y-1.5">
               <Label htmlFor="mediaFilterType">Lọc loại media</Label>
               <Select
@@ -206,6 +238,28 @@ export function MediaLibraryTab({ rows }: MediaLibraryTabProps) {
                 <option value="video">Video</option>
               </Select>
             </div>
+            {isAdmin ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="mediaFilterUploader">Lọc theo người upload</Label>
+                <Select
+                  id="mediaFilterUploader"
+                  value={uploaderFilter}
+                  onChange={async (event) => {
+                    const nextValue = event.target.value
+                    setUploaderFilter(nextValue)
+                    setPage(1)
+                    await loadMedia({ filterType, searchValue, page: 1, uploaderFilter: nextValue })
+                  }}
+                >
+                  <option value="all">Tất cả người upload</option>
+                  {uploaderOptions.map((uploader) => (
+                    <option key={uploader.id} value={uploader.id}>
+                      {uploader.name} ({uploader.email})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            ) : null}
             <div className="space-y-1.5">
               <Label htmlFor="mediaSearch">Tìm media</Label>
               <Input

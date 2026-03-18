@@ -402,7 +402,11 @@ export async function getAdminPageData({
     activeTab === "media-library" || activeTab === "write"
       ? await prisma.mediaAsset.findMany({
         where: {
-          OR: [{ uploaderId: currentUser.id }, { visibility: "SHARED", assetType: "VIDEO" }],
+          ...(activeTab === "write"
+            ? { OR: [{ uploaderId: currentUser.id }, { visibility: "SHARED", assetType: "VIDEO" }] }
+            : currentUser.role === "ADMIN"
+              ? {}
+              : { uploaderId: currentUser.id }),
         },
         select: {
           id: true,
@@ -418,6 +422,7 @@ export async function getAdminPageData({
             select: {
               id: true,
               name: true,
+              email: true,
             },
           },
         },

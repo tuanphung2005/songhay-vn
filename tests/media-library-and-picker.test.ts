@@ -40,6 +40,6 @@ describe("media library and editor picker", () => {
 
     expect(source).toContain("Upload vào kho")
     expect(source).toContain("items.map")
-    expect(source).toContain("video chia sẻ toàn hệ thống")
+    expect(source).toContain("Admin có thể lọc theo người upload")
   })
 })

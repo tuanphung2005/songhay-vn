@@ -42,13 +42,19 @@ export async function GET(request: unknown) {
 
   const url = new URL(incomingRequest.url)
   const search = String(url.searchParams.get("search") || "").trim()
+  const uploaderIdParam = String(url.searchParams.get("uploaderId") || "").trim()
   const page = toPaging(url.searchParams.get("page"), 1)
   const requestedPageSize = toPaging(url.searchParams.get("pageSize"), DEFAULT_PAGE_SIZE)
   const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE)
+  const isAdmin = session.role === "ADMIN"
+  const uploaderIdFilter =
+    uploaderIdParam.length > 0
+      ? (isAdmin || uploaderIdParam === session.userId ? uploaderIdParam : session.userId)
+      : (isAdmin ? "" : session.userId)
 
   const where = {
     assetType: "IMAGE" as const,
-    uploaderId: session.userId,
+    ...(uploaderIdFilter.length > 0 ? { uploaderId: uploaderIdFilter } : {}),
     ...(search.length > 0
       ? {
         OR: [
@@ -87,8 +93,28 @@ export async function GET(request: unknown) {
     take: pageSize,
   })
 
+  const uploaderOptions =
+    isAdmin
+      ? await prisma.user.findMany({
+        where: {
+          mediaAssets: {
+            some: {
+              assetType: "IMAGE",
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+        orderBy: [{ name: "asc" }, { email: "asc" }],
+      })
+      : []
+
   return NextResponse.json({
     items,
+    uploaderOptions,
     pagination: {
       totalCount,
       totalPages,

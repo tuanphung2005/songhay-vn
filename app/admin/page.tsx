@@ -358,7 +358,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}
           {activeTab === "write" ? <WriteTab isAdmin={isAdmin} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
           {activeTab === "pending-posts" ? <PendingPostsTab isAdmin={isAdmin} rows={pendingPostsData} approvePendingPost={approvePendingPost} rejectPendingPost={rejectPendingPost} /> : null}
-          {activeTab === "media-library" ? <MediaLibraryTab rows={mediaLibraryData} /> : null}
+          {activeTab === "media-library" ? <MediaLibraryTab isAdmin={isAdmin} rows={mediaLibraryData} /> : null}
           {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={isAdmin} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}
           {activeTab === "posts" ? <PostsTab isAdmin={isAdmin} postsData={postsData} filters={postsFilters} postsPaginationItems={postsPaginationItems} movePostToTrash={movePostToTrash} /> : null}
