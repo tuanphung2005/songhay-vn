@@ -249,7 +249,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     <main className="min-h-screen bg-muted/30">
       <AdminActionToast />
       <header className="border-b bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/80">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6">
+        <div className="flex w-full items-center justify-between px-4 py-4 md:px-6 xl:px-8">
           <div>
             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.2em]">Songhay CMS</p>
             <h1 className="mt-1 text-xl font-black text-zinc-900 md:text-2xl">Bảng điều khiển quản trị</h1>
@@ -261,7 +261,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-7xl gap-4 p-4 md:grid-cols-[280px_1fr] md:p-6">
+      <div className="grid w-full gap-4 p-4 md:grid-cols-[280px_1fr] md:p-6 xl:gap-6 xl:px-8">
         <aside className="space-y-4">
           <Card>
             <CardHeader>
