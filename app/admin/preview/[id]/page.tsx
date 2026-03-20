@@ -11,6 +11,7 @@ import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { normalizeArticleHtml } from "@/lib/html"
 import { requireCmsUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getTrendingPosts } from "@/lib/queries"
@@ -25,36 +26,7 @@ type PreviewPageProps = {
   params: Promise<{ id: string }>
 }
 
-function normalizeArticleHtml(rawHtml: string) {
-  return rawHtml
-    .replace(/<span([^>]*)style="([^"]*)"([^>]*)>([\s\S]*?)<\/span>/gi, (_match, _before, styleValue, _after, content) => {
-      let result = String(content)
-      if (/text-decoration\s*:\s*underline/i.test(styleValue)) result = `<u>${result}</u>`
-      if (/text-decoration\s*:\s*line-through/i.test(styleValue)) result = `<s>${result}</s>`
-      return result
-    })
-    .replace(/\sstyle="([^"]*)"/gi, (_match, styleValue) => {
-      const rules = String(styleValue).split(";").map((s) => s.trim()).filter(Boolean)
-      const kept: string[] = []
-      for (const rule of rules) {
-        const [rawProp, rawVal] = rule.split(":")
-        const p = rawProp?.trim().toLowerCase()
-        const v = rawVal?.trim().toLowerCase()
-        if (!p || !v) continue
-        if (p === "text-align" && ["left", "right", "center", "justify"].includes(v)) kept.push(`text-align:${v}`)
-        if (p === "float" && ["left", "right", "none"].includes(v)) kept.push(`float:${v}`)
-        if (p === "color" && /^#[0-9a-f]{3,8}$|^rgb\([\d\s,.%]+\)$|^rgba\([\d\s,.%]+\)$|^[a-z-]+$/i.test(v)) kept.push(`color:${v}`)
-        if (p === "background-color" && /^#[0-9a-f]{3,8}$|^rgb\([\d\s,.%]+\)$|^rgba\([\d\s,.%]+\)$|^[a-z-]+$/i.test(v)) kept.push(`background-color:${v}`)
-        if (p === "font-size" && /^(\d+(\.\d+)?(px|em|rem|%)|small|medium|large|x-large|xx-large)$/i.test(v)) kept.push(`font-size:${v}`)
-        if (p === "font-family" && /^[a-z0-9\s\-,'\"]+$/i.test(v)) kept.push(`font-family:${v}`)
-        if (p === "text-decoration" && /^(underline|line-through|none)$/i.test(v)) kept.push(`text-decoration:${v}`)
-        if (["width", "max-width", "height"].includes(p) && /^(auto|\d+(\.\d+)?(px|%))$/i.test(v)) kept.push(`${p}:${v}`)
-      }
-      return kept.length ? ` style="${kept.join(";")}"` : ""
-    })
-    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?\ *>)*<\/p>/gi, "")
-    .trim()
-}
+// Shared logic in lib/html.ts
 
 export default async function AdminPreviewPage({ params }: PreviewPageProps) {
   await requireCmsUser()

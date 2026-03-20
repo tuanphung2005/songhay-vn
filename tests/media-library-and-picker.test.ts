@@ -33,6 +33,14 @@ describe("media library and editor picker", () => {
     expect(source).toContain("setShowMediaPicker(true)")
     expect(source).toContain("function insertMedia")
     expect(source).toContain("Chèn vào nội dung")
+
+    // Check specific snippets for image and video
+    expect(source).toContain('asset.assetType === "IMAGE"')
+    expect(source).toContain("<figure>")
+    expect(source).toContain("<figcaption>")
+    
+    expect(source).toContain('<div class="video-wrap">')
+    expect(source).toContain("<video controls")
   })
 
   test("media library tab provides upload UI and listing", () => {

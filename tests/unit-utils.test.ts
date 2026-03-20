@@ -3,6 +3,7 @@ import { calculateBmi } from "../lib/bmi"
 import { slugify } from "../lib/slug"
 import { hashPassword, verifyPassword } from "../lib/password"
 import { cn } from "../lib/utils"
+import { normalizeArticleHtml } from "../lib/html"
 
 describe("Unit: BMI Calculation", () => {
   test("calculates BMI correctly for male", () => {
@@ -70,5 +71,33 @@ describe("Unit: Class Merge Utility (cn)", () => {
     expect(cn("px-2 py-2", "p-4")).toBe("p-4") // py-2 and px-2 are overridden by p-4 by tailwind-merge
     expect(cn("text-red-500", "text-blue-500")).toBe("text-blue-500")
     expect(cn("bg-red-500", { "bg-blue-500": true, "text-white": false })).toBe("bg-blue-500")
+  })
+})
+
+describe("Unit: HTML Normalization", () => {
+  test("removes empty paragraphs", () => {
+    expect(normalizeArticleHtml("<p></p><p>Text</p><p>&nbsp;</p>")).toBe("<p>Text</p>")
+  })
+
+  test("converts span underlines/strikethroughs to semantic tags", () => {
+    expect(normalizeArticleHtml('<span style="text-decoration: underline">Underline</span>')).toBe("<u>Underline</u>")
+    expect(normalizeArticleHtml('<span style="text-decoration: line-through">Strike</span>')).toBe("<s>Strike</s>")
+  })
+
+  test("filters allowed styles and removes others", () => {
+    const input = '<p style="text-align: center; color: red; margin-top: 20px; font-size: 16px">Styled Text</p>'
+    const output = normalizeArticleHtml(input)
+    expect(output).toContain('style="text-align:center;color:red;font-size:16px"')
+    expect(output).not.toContain("margin-top")
+  })
+
+  test("preserves images and videos/iframes unaffected", () => {
+    const img = '<figure><img src="test.jpg" alt="test" /><figcaption>Test</figcaption></figure>'
+    const video = '<div class="video-wrap"><video controls src="test.mp4"></video></div>'
+    const iframe = '<iframe src="https://youtube.com/embed/123"></iframe>'
+    
+    expect(normalizeArticleHtml(img)).toBe(img)
+    expect(normalizeArticleHtml(video)).toBe(video)
+    expect(normalizeArticleHtml(iframe)).toBe(iframe)
   })
 })
