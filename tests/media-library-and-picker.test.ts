@@ -29,7 +29,7 @@ describe("media library and editor picker", () => {
   test("rich text field contains media picker popup and insert logic", () => {
     const source = readWorkspaceFile("components/admin/rich-text-field.tsx")
 
-    expect(source).toContain("Thêm ảnh")
+    expect(source).toContain("Thêm media")
     expect(source).toContain("setShowMediaPicker(true)")
     expect(source).toContain("function insertMedia")
     expect(source).toContain("Chèn vào nội dung")

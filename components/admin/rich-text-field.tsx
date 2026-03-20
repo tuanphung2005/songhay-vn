@@ -375,7 +375,7 @@ export function RichTextField({
             }}
             className="rounded bg-zinc-900 px-2 py-1 font-semibold text-white transition hover:bg-zinc-700"
           >
-            Thêm ảnh
+            Thêm media
           </button>
         </div>
       </div>
