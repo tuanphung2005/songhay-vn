@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { MediaAssetType } from "@prisma/client"
 
 import { requireAdminUser, requireCmsUser } from "@/lib/auth"
-import { uploadImageToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary"
+import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
@@ -49,21 +49,6 @@ async function uniquePostSlug(baseTitle: string) {
   }
 }
 
-async function uploadThumbnail(file: File | null) {
-  if (!file || file.size === 0) {
-    return null
-  }
-
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-
-  return uploadImageToCloudinary({
-    buffer,
-    filename: file.name,
-    mimeType: file.type || "image/jpeg",
-    folder: "songhay/thumbnails",
-  })
-}
 
 export async function createCategory(formData: FormData) {
   await requireAdminUser()

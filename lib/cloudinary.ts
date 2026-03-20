@@ -5,6 +5,7 @@ type UploadParams = {
   filename: string
   mimeType: string
   folder?: string
+  transformation?: string
 }
 
 type UploadResourceType = "image" | "video" | "raw"
@@ -56,6 +57,7 @@ async function uploadAssetToCloudinary({
   mimeType,
   folder = "songhay",
   resourceType,
+  transformation,
 }: UploadParams & { resourceType: UploadResourceType }) {
   const { cloudName, apiKey, apiSecret, uploadPreset } = getCloudinaryConfig()
   const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`
@@ -64,6 +66,10 @@ async function uploadAssetToCloudinary({
 
   formData.append("file", new Blob([fileBytes], { type: mimeType }), filename)
   formData.append("folder", folder)
+
+  if (transformation) {
+    formData.append("transformation", transformation)
+  }
 
   if (uploadPreset) {
     formData.append("upload_preset", uploadPreset)
@@ -89,22 +95,41 @@ async function uploadAssetToCloudinary({
   return payload.secure_url
 }
 
-export async function uploadImageToCloudinary({ buffer, filename, mimeType, folder = "songhay" }: UploadParams) {
+export async function uploadImageToCloudinary({ buffer, filename, mimeType, folder = "songhay", transformation }: UploadParams) {
   return uploadAssetToCloudinary({
     buffer,
     filename,
     mimeType,
     folder,
     resourceType: "image",
+    transformation,
   })
 }
 
-export async function uploadVideoToCloudinary({ buffer, filename, mimeType, folder = "songhay" }: UploadParams) {
+export async function uploadThumbnail(file: File | null) {
+  if (!file || file.size === 0) {
+    return null
+  }
+
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+
+  return uploadImageToCloudinary({
+    buffer,
+    filename: file.name,
+    mimeType: file.type || "image/jpeg",
+    folder: "songhay/thumbnails",
+    transformation: "c_fill,w_1200,h_720,g_auto",
+  })
+}
+
+export async function uploadVideoToCloudinary({ buffer, filename, mimeType, folder = "songhay", transformation }: UploadParams) {
   return uploadAssetToCloudinary({
     buffer,
     filename,
     mimeType,
     folder,
     resourceType: "video",
+    transformation,
   })
 }

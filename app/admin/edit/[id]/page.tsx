@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { uploadImageToCloudinary } from "@/lib/cloudinary"
+import { uploadImageToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { requireCmsUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -53,21 +53,6 @@ async function uniquePostSlug(baseTitle: string, currentId: string) {
   }
 }
 
-async function uploadThumbnail(file: File | null) {
-  if (!file || file.size === 0) {
-    return null
-  }
-
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-
-  return uploadImageToCloudinary({
-    buffer,
-    filename: file.name,
-    mimeType: file.type || "image/jpeg",
-    folder: "songhay/thumbnails",
-  })
-}
 
 interface EditPostPageProps {
   params: Promise<{ id: string }>
