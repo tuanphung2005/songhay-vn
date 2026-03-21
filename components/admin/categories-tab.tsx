@@ -14,6 +14,11 @@ type CategoryManageRow = {
   id: string
   slug: string
   name: string
+  parentId: string | null
+  parent: {
+    name: string
+    slug: string
+  } | null
   description: string | null
   _count: {
     posts: number
@@ -39,18 +44,31 @@ export function CategoriesTab({
   reorderCategory,
   deleteCategory,
 }: CategoriesTabProps) {
+  const rootCategories = categoriesForManage.filter((c) => !c.parentId)
+
   return (
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
       <Card>
         <CardHeader>
           <CardTitle>Tạo chuyên mục</CardTitle>
-          <CardDescription>Tạo mới chuyên mục với slug tự động.</CardDescription>
+          <CardDescription>Tạo mới chuyên mục hoặc chỉ mục phụ.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createCategory} className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="categoryName">Tên chuyên mục</Label>
               <Input id="categoryName" name="name" placeholder="Ví dụ: Sống khỏe" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="categoryParent">Danh mục cha (Tùy chọn)</Label>
+              <Select id="categoryParent" name="parentId">
+                <option value="">Không có (Danh mục gốc)</option>
+                {rootCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="categoryDesc">Mô tả</Label>
@@ -77,12 +95,18 @@ export function CategoriesTab({
                 key={category.id}
                 className={cn(
                   "rounded-lg border p-3 transition-all duration-300",
+                  category.parentId ? "ml-6 border-l-4 border-l-stone-300 bg-stone-50/50" : "",
                   movedCategoryId === category.id ? "animate-pulse border-rose-300 ring-2 ring-rose-200" : ""
                 )}
               >
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold">/{category.slug}</p>
+                    {category.parent ? (
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                        Thuộc: {category.parent.name}
+                      </Badge>
+                    ) : null}
                     <Badge variant="secondary">#{index + 1}</Badge>
                     {movedCategoryId === category.id ? (
                       <Badge variant="outline" className="text-rose-700">
@@ -123,8 +147,18 @@ export function CategoriesTab({
 
                 <form action={updateCategory} className="space-y-2">
                   <input type="hidden" name="categoryId" value={category.id} />
-                  <div className="grid gap-2 md:grid-cols-2">
+                  <div className="grid gap-2 md:grid-cols-3">
                     <Input name="name" defaultValue={category.name} placeholder="Tên chuyên mục" required />
+                    <Select name="parentId" defaultValue={category.parentId || ""}>
+                      <option value="">Không có (Kiểu gốc)</option>
+                      {rootCategories
+                        .filter((c) => c.id !== category.id)
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            Thuộc: {c.name}
+                          </option>
+                        ))}
+                    </Select>
                     <Input name="description" defaultValue={category.description || ""} placeholder="Mô tả" />
                   </div>
                   <Button type="submit" size="sm" variant="outline">Lưu thay đổi</Button>

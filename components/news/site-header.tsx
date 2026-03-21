@@ -58,15 +58,29 @@ export async function SiteHeader() {
       </div>
 
       <nav className="bg-red-700">
-        <ul className="mx-auto flex w-full max-w-7xl min-w-max items-center gap-8 overflow-x-auto px-4 py-3 text-xl font-bold text-white md:px-6">
+        <ul className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-8 gap-y-4 px-4 py-3 text-xl font-bold text-white md:px-6">
           {navCategories.map((item) => (
-            <li key={item.slug}>
+            <li key={item.slug} className="group relative">
               <Link
                 href={`/${item.slug}`}
-                className="border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
+                className="flex items-center gap-1 border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
               >
                 {item.name}
               </Link>
+              {item.children && item.children.length > 0 ? (
+                <ul className="invisible absolute left-0 top-full z-50 mt-2 min-w-[200px] origin-top-left flex-col gap-1 rounded-md bg-white p-2 text-sm font-medium text-zinc-800 opacity-0 shadow-lg ring-1 ring-black/5 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                  {item.children.map((child) => (
+                    <li key={child.slug}>
+                      <Link
+                        href={`/${child.slug}`}
+                        className="block rounded px-3 py-2 transition hover:bg-zinc-100 hover:text-red-700"
+                      >
+                        {child.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </li>
           ))}
         </ul>

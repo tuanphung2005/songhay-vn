@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { CategorySelector } from "@/components/admin/category-selector"
 
 type CategoryWriteRow = {
   id: string
   name: string
+  parentId?: string | null
 }
 
 type WriteTabProps = {
@@ -74,18 +75,9 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
             />
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="categorySelect">Danh mục chính</Label>
-              <Select id="categorySelect" name="categoryId" required>
-                <option value="">Chọn chuyên mục</option>
-                {categoriesForWrite.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <CategorySelector categories={categoriesForWrite} />
+
             <label className="inline-flex items-center gap-2 self-end rounded-md border px-3 py-2 text-sm">
               <input
                 className="size-4 rounded border-input"

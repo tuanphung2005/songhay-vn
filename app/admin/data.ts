@@ -143,22 +143,41 @@ export async function getAdminPageData({
 
   const categoriesForManage =
     activeTab === "categories"
-      ? await memoizeWithTtl("admin:categories:manage", ADMIN_CACHE_TTL_SECONDS, async () =>
-        prisma.category.findMany({
+      ? await memoizeWithTtl("admin:categories:manage", ADMIN_CACHE_TTL_SECONDS, async () => {
+        const raw = await prisma.category.findMany({
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-          include: { _count: { select: { posts: true } } },
+          include: {
+            parent: {
+              select: { name: true, slug: true },
+            },
+            _count: { select: { posts: true } },
+          },
         })
-      )
+        const roots = raw.filter(c => !c.parentId)
+        const sorted = []
+        for (const root of roots) {
+          sorted.push(root)
+          sorted.push(...raw.filter(c => c.parentId === root.id))
+        }
+        return sorted
+      })
       : []
 
   const categoriesForWrite =
     activeTab === "write"
-      ? await memoizeWithTtl("admin:categories:write", ADMIN_CACHE_TTL_SECONDS, async () =>
-        prisma.category.findMany({
+      ? await memoizeWithTtl("admin:categories:write", ADMIN_CACHE_TTL_SECONDS, async () => {
+        const raw = await prisma.category.findMany({
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-          select: { id: true, name: true },
+          select: { id: true, name: true, parentId: true, parent: { select: { name: true } } },
         })
-      )
+        const roots = raw.filter(c => !c.parentId)
+        const sorted = []
+        for (const root of roots) {
+          sorted.push(root)
+          sorted.push(...raw.filter(c => c.parentId === root.id))
+        }
+        return sorted
+      })
       : []
 
   const postsFromDate = parseDateInput(postsFilters.fromDate)

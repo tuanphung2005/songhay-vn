@@ -38,7 +38,10 @@ export const getPostsByCategory = cache(async (categorySlug: string) => {
       where: {
         isPublished: true,
         isDeleted: false,
-        category: { slug: categorySlug },
+        OR: [
+          { category: { slug: categorySlug } },
+          { category: { parent: { slug: categorySlug } } },
+        ],
       },
       include: { category: true },
       orderBy: { publishedAt: "desc" },
@@ -108,9 +111,15 @@ export const getTrendingPosts = cache(async () => {
 
 export const getNavCategories = cache(async () => {
   return memoizeWithTtl("nav-categories", CACHE_WINDOW_SECONDS, async () => {
-    return prisma.category.findMany({
-      select: { name: true, slug: true },
+    const allCats = await prisma.category.findMany({
+      select: { id: true, name: true, slug: true, parentId: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     })
+
+    const roots = allCats.filter(c => !c.parentId)
+    return roots.map(root => ({
+      ...root,
+      children: allCats.filter(c => c.parentId === root.id)
+    }))
   })
 })

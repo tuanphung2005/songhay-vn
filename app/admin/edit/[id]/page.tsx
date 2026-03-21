@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { CategorySelector } from "@/components/admin/category-selector"
 import { uploadImageToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { requireCmsUser } from "@/lib/auth"
@@ -76,9 +76,17 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     redirect("/admin?tab=personal-archive")
   }
 
-  const categories = await prisma.category.findMany({
+  const rawCategories = await prisma.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, parentId: true },
   })
+  
+  const roots = rawCategories.filter(c => !c.parentId)
+  const categories = []
+  for (const root of roots) {
+    categories.push(root)
+    categories.push(...rawCategories.filter(c => c.parentId === root.id))
+  }
 
   const mediaAssets = await prisma.mediaAsset.findMany({
     where: {
@@ -106,7 +114,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const excerpt = String(formData.get("excerpt") || "").trim()
     const content = String(formData.get("content") || "").trim()
     const plainContent = getPlainTextFromHtml(content)
-    const categoryId = String(formData.get("categoryId") || "").trim()
+    const mainCategoryId = String(formData.get("mainCategoryId") || "").trim()
+    const subcategoryId = String(formData.get("subcategoryId") || "").trim()
+    const categoryId = subcategoryId || mainCategoryId
     const seoTitle = String(formData.get("seoTitle") || "").trim() || null
     const seoDescription = String(formData.get("seoDescription") || "").trim() || null
     const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
@@ -251,18 +261,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
               />
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="categorySelect">Danh mục chính</Label>
-                <Select id="categorySelect" name="categoryId" defaultValue={post.categoryId} required>
-                  <option value="">Chọn chuyên mục</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              <CategorySelector categories={categories} defaultCategoryId={post.categoryId} />
               <div className="space-y-1.5">
                 <Label htmlFor="videoEmbed">Video embed URL</Label>
                 <Input

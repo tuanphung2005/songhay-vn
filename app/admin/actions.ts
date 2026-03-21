@@ -55,6 +55,8 @@ export async function createCategory(formData: FormData) {
 
   const name = String(formData.get("name") || "").trim()
   const description = String(formData.get("description") || "").trim()
+  const parentIdRaw = String(formData.get("parentId") || "").trim()
+  const parentId = parentIdRaw ? parentIdRaw : null
 
   if (!name) {
     redirect("/admin?tab=categories&toast=category_delete_failed")
@@ -66,8 +68,8 @@ export async function createCategory(formData: FormData) {
   const slug = await uniqueCategorySlug(name)
   await prisma.category.upsert({
     where: { slug },
-    update: { name, description, sortOrder: nextSortOrder },
-    create: { name, slug, description, sortOrder: nextSortOrder },
+    update: { name, description, sortOrder: nextSortOrder, parentId },
+    create: { name, slug, description, sortOrder: nextSortOrder, parentId },
   })
 
   revalidatePath("/")
@@ -162,7 +164,9 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
-  const categoryId = String(formData.get("categoryId") || "").trim()
+  const mainCategoryId = String(formData.get("mainCategoryId") || "").trim()
+  const subcategoryId = String(formData.get("subcategoryId") || "").trim()
+  const categoryId = subcategoryId || mainCategoryId
   const seoTitle = String(formData.get("seoTitle") || "").trim() || null
   const seoDescription = String(formData.get("seoDescription") || "").trim() || null
   const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
@@ -501,6 +505,8 @@ export async function updateCategory(formData: FormData) {
   const categoryId = String(formData.get("categoryId") || "")
   const name = String(formData.get("name") || "").trim()
   const description = String(formData.get("description") || "").trim()
+  const parentIdRaw = String(formData.get("parentId") || "").trim()
+  const parentId = parentIdRaw ? parentIdRaw : null
 
   if (!categoryId || !name) {
     redirect("/admin?tab=categories&toast=category_delete_failed")
@@ -515,11 +521,16 @@ export async function updateCategory(formData: FormData) {
     redirect("/admin?tab=categories&toast=category_delete_failed")
   }
 
+  // Prevent setting itself as parent
+  if (parentId === categoryId) {
+    redirect("/admin?tab=categories&toast=category_updated")
+  }
+
   const slug = await uniqueCategorySlug(name, categoryId)
 
   await prisma.category.update({
     where: { id: categoryId },
-    data: { name, description, slug },
+    data: { name, description, slug, parentId },
   })
 
   revalidatePath("/")
