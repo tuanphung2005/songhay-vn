@@ -59,9 +59,42 @@ import {
   TextPartLanguage,
   TodoList,
   Underline,
+  Plugin,
+  ButtonView,
 } from "ckeditor5"
 import type { EditorConfig } from "ckeditor5"
 import "ckeditor5/ckeditor5-editor.css"
+
+class PastePlainTextPlugin extends Plugin {
+  init() {
+    const editor = this.editor
+    editor.ui.componentFactory.add("pastePlainText", (locale) => {
+      const view = new ButtonView(locale)
+      view.set({
+        label: "Dán text",
+        tooltip: "Dán văn bản thuần (Ctrl+Shift+V)",
+        withText: true,
+      })
+
+      view.on("execute", async () => {
+        try {
+          const text = await navigator.clipboard.readText()
+          if (text) {
+            editor.model.change((writer) => {
+              editor.model.insertContent(writer.createText(text))
+            })
+          }
+        } catch (err) {
+          console.error(err)
+          alert("Trình duyệt chặn lấy clipboard. Vui lòng bấm Ctrl+Shift+V.")
+        }
+      })
+
+      return view
+    })
+  }
+}
+
 import type { editor as MonacoEditor, IDisposable } from "monaco-editor"
 import { useMemo, useRef, useState } from "react"
 
@@ -190,11 +223,13 @@ export function RichTextField({
           HtmlEmbed,
           GeneralHtmlSupport,
           Mention,
+          PastePlainTextPlugin,
         ],
         toolbar: {
           items: [
             "undo",
             "redo",
+            "pastePlainText",
             "|",
             "heading",
             "|",
