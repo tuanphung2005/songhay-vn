@@ -284,6 +284,7 @@ export async function getAdminPageData({
           id: true,
           title: true,
           slug: true,
+          thumbnailUrl: true,
           createdAt: true,
           updatedAt: true,
           category: {
