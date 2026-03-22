@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { cache } from "react"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
@@ -20,6 +21,8 @@ import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
 
+const getPost = cache(async (category: string, slug: string) => getPostByCategoryAndSlug(category, slug))
+
 type PostPageProps = {
   params: Promise<{ category: string; slug: string }>
 }
@@ -28,7 +31,7 @@ type PostPageProps = {
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { category, slug } = await params
-  const post = await getPostByCategoryAndSlug(category, slug)
+  const post = await getPost(category, slug)
   const siteUrl = getSiteUrl()
 
   if (!post) {
@@ -70,7 +73,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params }: PostPageProps) {
   const { category, slug } = await params
-  const post = await getPostByCategoryAndSlug(category, slug)
+  const post = await getPost(category, slug)
 
   if (!post) {
     notFound()
@@ -193,7 +196,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {article.comments.length === 0 ? (
               <p className="text-sm text-zinc-600">Chưa có bình luận hiển thị.</p>
             ) : (
-              article.comments.map((comment: any) => (
+              article.comments.map((comment) => (
                 <div key={comment.id} className="border border-zinc-200 bg-white p-3">
                   <p className="text-sm font-semibold">{comment.authorName}</p>
                   <p className="text-sm text-zinc-700">{comment.content}</p>
@@ -207,7 +210,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="space-y-4">
             <h2 className="text-2xl font-extrabold">Related posts</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {relatedPosts.map((related: any) => (
+              {relatedPosts.map((related) => (
                 <PostCard
                   key={related.id}
                   href={`/${related.category.slug}/${related.slug}`}
@@ -224,7 +227,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         <aside className="space-y-4">
           <MostRead
-            posts={trendingPosts.map((post: any) => ({
+            posts={trendingPosts.map((post) => ({
               id: post.id,
               title: post.title,
               thumbnailUrl: post.thumbnailUrl,

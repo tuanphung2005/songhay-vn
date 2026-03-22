@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/seo/json-ld"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { ScrollToTopOnRouteChange } from "@/components/scroll-to-top-on-route-change"
 import { cn } from "@/lib/utils"
 
 const fontSans = Be_Vietnam_Pro({
@@ -118,6 +119,7 @@ export default function RootLayout({
     >
       <body>
         <TooltipProvider>
+          <ScrollToTopOnRouteChange />
           <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
           {children}
           <FloatingGiftButton />
