@@ -71,7 +71,7 @@ async function main() {
     for (const childName of mainCat.children) {
       const childSlug = slugify(childName)
       let child = await prisma.category.findUnique({ where: { slug: childSlug } })
-      
+
       if (child) {
         child = await prisma.category.update({
           where: { id: child.id },
@@ -104,7 +104,7 @@ async function main() {
         data: { categoryId: defaultCategory.id },
       })
     }
-    
+
     await prisma.category.delete({ where: { id: extra.id } })
     console.log(`Deleted extra category: ${extra.name}`)
   }

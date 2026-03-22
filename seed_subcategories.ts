@@ -25,7 +25,7 @@ async function resetAndSeed() {
     const parent = await prisma.category.findFirst({
       where: { name: { contains: parentName, mode: "insensitive" }, parentId: null }
     })
-    
+
     if (parent) {
       console.log(`Found parent: ${parent.name} (${parent.id})`)
       for (const subName of subList) {
