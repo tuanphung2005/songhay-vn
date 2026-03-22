@@ -1,7 +1,10 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "./generated/prisma/client"
 import { slugify } from "./lib/slug"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL || "" }),
+})
 
 async function resetAndSeed() {
   const S_HAY = "song hay"

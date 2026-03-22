@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client"
+import type { Prisma } from "@/generated/prisma/client"
 
 import { memoizeWithTtl } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"

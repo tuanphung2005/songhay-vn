@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MediaAssetType } from "@prisma/client"
+import { MediaAssetType } from "@/generated/prisma/client"
 
 import { requireAdminUser, requireCmsUser } from "@/lib/auth"
 import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"

@@ -1,10 +1,13 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "../generated/prisma/client"
 
 import { NAV_CATEGORIES } from "../lib/categories"
 import { hashPassword } from "../lib/password"
 import { slugify } from "../lib/slug"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL || "" }),
+})
 
 type SeedPost = {
   categorySlug: string
