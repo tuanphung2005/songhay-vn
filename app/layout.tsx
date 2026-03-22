@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
+import { Suspense } from "react"
 
 import "./globals.css"
 import "ckeditor5/ckeditor5-content.css"
@@ -119,7 +120,9 @@ export default function RootLayout({
     >
       <body>
         <TooltipProvider>
-          <ScrollToTopOnRouteChange />
+          <Suspense fallback={null}>
+            <ScrollToTopOnRouteChange />
+          </Suspense>
           <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
           {children}
           <FloatingGiftButton />

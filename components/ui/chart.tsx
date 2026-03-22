@@ -227,7 +227,7 @@ function ChartTooltipContent({
   )
 }
 
-function ChartLegend({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Legend>) {
+function ChartLegend({ className, ...props }: React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend>) {
   return <RechartsPrimitive.Legend className={cn("flex items-center justify-center gap-4 pt-3", className)} {...props} />
 }
 
