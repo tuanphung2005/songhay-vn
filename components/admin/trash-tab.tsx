@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -121,14 +122,14 @@ export function TrashTab({ isAdmin, data, filters, restorePostFromTrash, deleteP
                 <div className="flex flex-wrap gap-2">
                   <form action={restorePostFromTrash}>
                     <input type="hidden" name="postId" value={post.id} />
-                    <Button type="submit" size="sm" variant="outline">Khôi phục</Button>
+                    <PendingSubmitButton type="submit" size="sm" variant="outline" pendingText="Đang khôi phục...">Khôi phục</PendingSubmitButton>
                   </form>
                   <ConfirmActionForm
                     action={deletePostPermanently}
                     fields={[{ name: "postId", value: post.id }]}
                     confirmMessage="Xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác."
                   >
-                    <Button type="submit" size="sm" variant="destructive">Xóa vĩnh viễn</Button>
+                    <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang xóa...">Xóa vĩnh viễn</PendingSubmitButton>
                   </ConfirmActionForm>
                 </div>
               </div>

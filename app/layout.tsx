@@ -7,6 +7,7 @@ import { FloatingGiftButton } from "@/components/news/floating-gift-button"
 import { JsonLd } from "@/components/seo/json-ld"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 const fontSans = Be_Vietnam_Pro({
@@ -116,10 +117,12 @@ export default function RootLayout({
       className={cn("antialiased", fontSans.variable, fontSerif.variable)}
     >
       <body>
-        <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
-        {children}
-        <FloatingGiftButton />
-        <Toaster />
+        <TooltipProvider>
+          <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
+          {children}
+          <FloatingGiftButton />
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   )

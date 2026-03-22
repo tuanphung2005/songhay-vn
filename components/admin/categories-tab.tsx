@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -74,7 +75,7 @@ export function CategoriesTab({
               <Label htmlFor="categoryDesc">Mô tả</Label>
               <Textarea id="categoryDesc" name="description" placeholder="Mô tả ngắn cho chuyên mục" />
             </div>
-            <Button type="submit" className="w-full">Tạo chuyên mục</Button>
+            <PendingSubmitButton type="submit" className="w-full" pendingText="Đang tạo...">Tạo chuyên mục</PendingSubmitButton>
           </form>
         </CardContent>
       </Card>
@@ -161,7 +162,7 @@ export function CategoriesTab({
                     </Select>
                     <Input name="description" defaultValue={category.description || ""} placeholder="Mô tả" />
                   </div>
-                  <Button type="submit" size="sm" variant="outline">Lưu thay đổi</Button>
+                  <PendingSubmitButton type="submit" size="sm" variant="outline" pendingText="Đang lưu...">Lưu thay đổi</PendingSubmitButton>
                 </form>
 
                 <ConfirmActionForm
@@ -189,14 +190,15 @@ export function CategoriesTab({
                       </Select>
                     </div>
                   ) : null}
-                  <Button
+                  <PendingSubmitButton
                     type="submit"
                     size="sm"
                     variant="destructive"
                     disabled={categoriesForManage.length <= 1 || (category._count.posts > 0 && categoriesForManage.length <= 1)}
+                    pendingText="Đang xóa..."
                   >
                     Xóa chuyên mục
-                  </Button>
+                  </PendingSubmitButton>
                 </ConfirmActionForm>
               </div>
             ))

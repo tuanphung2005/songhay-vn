@@ -4,6 +4,16 @@
 import { type FormEvent, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -57,6 +67,7 @@ function getInitialUploaderOptions(rows: MediaAssetRow[]) {
 export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<"image" | "video">("image")
   const [uploaderFilter, setUploaderFilter] = useState("all")
   const [searchValue, setSearchValue] = useState("")
@@ -156,11 +167,6 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   }
 
   async function handleDelete(assetId: string) {
-    const ok = window.confirm("Xóa media này khỏi kho dữ liệu?")
-    if (!ok) {
-      return
-    }
-
     setDeletingId(assetId)
 
     try {
@@ -179,6 +185,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       window.location.assign("/admin?tab=media-library&toast=media_delete_failed")
     } finally {
       setDeletingId(null)
+      setDeleteDialogId(null)
     }
   }
 
@@ -314,7 +321,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                     type="button"
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleDelete(asset.id)}
+                    onClick={() => setDeleteDialogId(asset.id)}
                     disabled={deletingId === asset.id}
                   >
                     {deletingId === asset.id ? "Đang xóa..." : "Xóa"}
@@ -323,6 +330,31 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </div>
             ))}
           </div>
+
+          <AlertDialog open={deleteDialogId !== null} onOpenChange={(open) => !open && setDeleteDialogId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Xóa media khỏi kho dữ liệu?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  disabled={deleteDialogId === null || deletingId !== null}
+                  onClick={() => {
+                    if (deleteDialogId !== null) {
+                      void handleDelete(deleteDialogId)
+                    }
+                  }}
+                >
+                  {deletingId !== null ? "Đang xóa..." : "Xóa"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <div className="flex items-center justify-between border-t pt-3">
             <p className="text-muted-foreground text-sm">Trang {page}/{totalPages}</p>

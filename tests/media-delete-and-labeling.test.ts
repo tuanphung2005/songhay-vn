@@ -13,7 +13,8 @@ describe("media delete and labeling", () => {
     expect(source).toContain('name="displayName"')
     expect(source).toContain("Tên media (để tìm kiếm)")
     expect(source).toContain("handleDelete")
-    expect(source).toContain("window.confirm")
+    expect(source).toContain("AlertDialog")
+    expect(source).toContain("Xóa media khỏi kho dữ liệu?")
     expect(source).toContain('method: "DELETE"')
   })
 

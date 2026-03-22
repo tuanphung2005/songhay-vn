@@ -5,8 +5,10 @@ import { useRef, useState, useTransition } from "react"
 const RichTextField = dynamic(() => import("@/components/admin/rich-text-field").then(m => m.RichTextField), { ssr: false })
 
 import { createPostForPreview } from "@/app/admin/actions"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -34,6 +36,7 @@ type WriteTabProps = {
 
 export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
   const [hasVideo, setHasVideo] = useState(false)
+  const [isSensitive, setIsSensitive] = useState(false)
   const [isPreviewing, startPreviewTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -78,17 +81,19 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
           <div className="grid gap-3 md:grid-cols-3">
             <CategorySelector categories={categoriesForWrite} />
 
-            <label className="inline-flex items-center gap-2 self-end rounded-md border px-3 py-2 text-sm">
-              <input
-                className="size-4 rounded border-input"
-                name="hasVideo"
-                type="checkbox"
-                checked={hasVideo}
-                onChange={(event) => setHasVideo(event.target.checked)}
-              />
-              Bài có video
-            </label>
+            <div className="self-end rounded-md border px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="hasVideo"
+                  checked={hasVideo}
+                  onCheckedChange={(checked) => setHasVideo(checked === true)}
+                />
+                <Label htmlFor="hasVideo">Bài có video</Label>
+              </div>
+            </div>
           </div>
+
+          {hasVideo ? <input type="hidden" name="hasVideo" value="on" /> : null}
 
           {hasVideo ? (
             <div className="space-y-1.5">
@@ -127,20 +132,28 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
           </fieldset>
 
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
-              <input className="size-4 rounded border-input" name="isSensitive" type="checkbox" />
-              Nội dung nhạy cảm
-            </label>
+            <div className="rounded-md border px-3 py-2">
+              <div className="inline-flex items-center gap-2">
+                <Checkbox
+                  id="isSensitive"
+                  checked={isSensitive}
+                  onCheckedChange={(checked) => setIsSensitive(checked === true)}
+                />
+                <Label htmlFor="isSensitive">Nội dung nhạy cảm</Label>
+              </div>
+            </div>
           </div>
 
+          {isSensitive ? <input type="hidden" name="isSensitive" value="on" /> : null}
+
           <div className={`grid gap-2 ${isAdmin ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-            <Button type="submit" name="submitAction" value="save-draft" variant="outline">Lưu nháp</Button>
-            <Button type="submit" name="submitAction" value="submit-review" className="w-full" variant="destructive">Gửi chờ duyệt</Button>
+            <PendingSubmitButton type="submit" name="submitAction" value="save-draft" variant="outline" pendingText="Đang lưu...">Lưu nháp</PendingSubmitButton>
+            <PendingSubmitButton type="submit" name="submitAction" value="submit-review" className="w-full" variant="destructive" pendingText="Đang gửi duyệt...">Gửi chờ duyệt</PendingSubmitButton>
             <Button type="button" className="w-full" variant="secondary" onClick={handlePreview} disabled={isPreviewing}>
               {isPreviewing ? "Đang lưu..." : "Xem trước"}
             </Button>
             {isAdmin ? (
-              <Button type="submit" name="submitAction" value="publish" className="w-full">Xuất bản</Button>
+              <PendingSubmitButton type="submit" name="submitAction" value="publish" className="w-full" pendingText="Đang xuất bản...">Xuất bản</PendingSubmitButton>
             ) : null}
           </div>
         </form>

@@ -45,6 +45,9 @@ import { WriteTab } from "@/components/admin/write-tab"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { requireCmsUser } from "@/lib/auth"
 
 export const revalidate = 0
@@ -108,6 +111,32 @@ type AdminPageProps = {
     trashTo?: string
     trashPage?: string
   }>
+}
+
+function AdminNavButton({
+  tab,
+  activeTab,
+}: {
+  tab: NavLeaf
+  activeTab: AdminTab
+}) {
+  const TabIcon = tab.icon
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button asChild className="h-9 w-full justify-start gap-2.5" variant={activeTab === tab.key ? "secondary" : "ghost"}>
+          <Link href={`/admin?tab=${tab.key}`}>
+            <TabIcon className="size-4" />
+            <span className="truncate">{tab.label}</span>
+          </Link>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="max-w-72">
+        {tab.description}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -268,57 +297,33 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <CardTitle>Điều hướng CMS</CardTitle>
               <CardDescription>Chuyển nhanh theo nghiệp vụ quản trị.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                asChild
-                className="h-10 w-full justify-start gap-2.5"
-                variant={activeTab === OVERVIEW_TAB.key ? "secondary" : "ghost"}
-              >
-                <Link href={`/admin?tab=${OVERVIEW_TAB.key}`}>
-                  <OVERVIEW_TAB.icon className="size-4" />
-                  {OVERVIEW_TAB.label}
-                </Link>
-              </Button>
+            <CardContent className="p-0">
+              <ScrollArea className="h-105 px-4 pb-4">
+                <div className="space-y-3">
+                  <div className="space-y-1.5 pt-4">
+                    <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Tổng quan</p>
+                    <AdminNavButton tab={OVERVIEW_TAB} activeTab={activeTab} />
+                  </div>
 
-              <div className="space-y-1.5 rounded-md border p-2">
-                <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Quản lý tin</p>
-                {contentTabs.map((tab) => {
-                  const TabIcon = tab.icon
-                  return (
-                    <Button
-                      key={tab.key}
-                      asChild
-                      className="h-9 w-full justify-start gap-2.5"
-                      variant={activeTab === tab.key ? "secondary" : "ghost"}
-                    >
-                      <Link href={`/admin?tab=${tab.key}`}>
-                        <TabIcon className="size-4" />
-                        {tab.label}
-                      </Link>
-                    </Button>
-                  )
-                })}
-              </div>
+                  <Separator />
 
-              <div className="space-y-1.5 rounded-md border p-2">
-                <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Settings</p>
-                {settingsTabs.map((tab) => {
-                  const TabIcon = tab.icon
-                  return (
-                    <Button
-                      key={tab.key}
-                      asChild
-                      className="h-9 w-full justify-start gap-2.5"
-                      variant={activeTab === tab.key ? "secondary" : "ghost"}
-                    >
-                      <Link href={`/admin?tab=${tab.key}`}>
-                        <TabIcon className="size-4" />
-                        {tab.label}
-                      </Link>
-                    </Button>
-                  )
-                })}
-              </div>
+                  <div className="space-y-1.5">
+                    <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Quản lý tin</p>
+                    {contentTabs.map((tab) => (
+                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} />
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-1.5">
+                    <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Cài đặt</p>
+                    {settingsTabs.map((tab) => (
+                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} />
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
 

@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -103,14 +104,14 @@ export function PendingPostsTab({ isAdmin, rows, approvePendingPost, rejectPendi
                       <>
                         <form action={approvePendingPost}>
                           <input type="hidden" name="postId" value={post.id} />
-                          <Button type="submit" size="sm">Duyệt & xuất bản</Button>
+                          <PendingSubmitButton type="submit" size="sm" pendingText="Đang duyệt...">Duyệt & xuất bản</PendingSubmitButton>
                         </form>
                         <ConfirmActionForm
                           action={rejectPendingPost}
                           fields={[{ name: "postId", value: post.id }]}
                           confirmMessage="Từ chối bài viết này?"
                         >
-                          <Button type="submit" size="sm" variant="destructive">Từ chối</Button>
+                          <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang từ chối...">Từ chối</PendingSubmitButton>
                         </ConfirmActionForm>
                       </>
                     ) : null}

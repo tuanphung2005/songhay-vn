@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -146,7 +147,7 @@ export function PersonalArchiveTab({ data, filters, movePostToTrash }: PersonalA
                 fields={[{ name: "postId", value: post.id }, { name: "sourceTab", value: "personal-archive" }]}
                 confirmMessage="Chuyển bài viết này vào thùng rác?"
               >
-                <Button type="submit" size="sm" variant="destructive">Chuyển vào thùng rác</Button>
+                <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang chuyển...">Chuyển vào thùng rác</PendingSubmitButton>
               </ConfirmActionForm>
             </div>
           </div>

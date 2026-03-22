@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 
 type PendingComment = {
   id: string
@@ -41,12 +41,12 @@ export function CommentsTab({ pendingComments, moderateComment }: CommentsTabPro
                 <form action={moderateComment}>
                   <input type="hidden" name="commentId" value={comment.id} />
                   <input type="hidden" name="action" value="approve" />
-                  <Button type="submit" size="sm">Duyệt</Button>
+                  <PendingSubmitButton type="submit" size="sm" pendingText="Đang duyệt...">Duyệt</PendingSubmitButton>
                 </form>
                 <form action={moderateComment}>
                   <input type="hidden" name="commentId" value={comment.id} />
                   <input type="hidden" name="action" value="delete" />
-                  <Button type="submit" size="sm" variant="destructive">Xóa</Button>
+                  <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang xóa...">Xóa</PendingSubmitButton>
                 </form>
               </div>
             </div>

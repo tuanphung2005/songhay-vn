@@ -1,5 +1,6 @@
 'use client'
 import { useState, useMemo } from "react"
+import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 
 export function CategorySelector({
@@ -36,11 +37,11 @@ export function CategorySelector({
   return (
     <>
       <div className="space-y-1.5">
-        <label htmlFor="mainCategorySelect" className="text-sm font-medium leading-none">Danh mục chính</label>
-        <Select 
-          id="mainCategorySelect" 
-          name="mainCategoryId" 
-          required 
+        <Label htmlFor="mainCategorySelect">Danh mục chính</Label>
+        <Select
+          id="mainCategorySelect"
+          name="mainCategoryId"
+          required
           value={mainCatId}
           onChange={(e) => {
             setMainCatId(e.target.value)
@@ -55,10 +56,10 @@ export function CategorySelector({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="subCategorySelect" className="text-sm font-medium leading-none">Chuyên mục con (không bắt buộc)</label>
-        <Select 
-          id="subCategorySelect" 
-          name="subcategoryId" 
+        <Label htmlFor="subCategorySelect">Chuyên mục con (không bắt buộc)</Label>
+        <Select
+          id="subCategorySelect"
+          name="subcategoryId"
           value={subCatId}
           onChange={(e) => setSubCatId(e.target.value)}
           disabled={!mainCatId || subCategories.length === 0}
