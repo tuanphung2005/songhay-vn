@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { prisma } from "@/lib/prisma"
+import { canCreateSubordinateAccount, canDeleteAnyMedia } from "@/lib/permissions"
 
 const SESSION_COOKIE_NAME = "songhay_session"
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
@@ -120,7 +121,23 @@ export async function requireAdminUser() {
     redirect("/login?admin=1")
   }
 
-  if (user.role !== "ADMIN") {
+  const hasElevatedAccess = canDeleteAnyMedia(user.role) || canCreateSubordinateAccount(user.role)
+
+  if (!hasElevatedAccess) {
+    redirect("/")
+  }
+
+  return user
+}
+
+export async function requireEditorInChiefUser() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login?admin=1")
+  }
+
+  if (!canCreateSubordinateAccount(user.role)) {
     redirect("/")
   }
 

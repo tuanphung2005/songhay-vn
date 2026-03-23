@@ -2,56 +2,34 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MediaAssetType } from "@/generated/prisma/client"
+import { MediaAssetType, type UserRole } from "@/generated/prisma/client"
 
-import { requireAdminUser, requireCmsUser } from "@/lib/auth"
+import { requireAdminUser, requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
 import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
+import {
+  can,
+  canApprovePendingReview,
+  canCreateSubordinateAccount,
+  canPublishNow,
+  canViewAllPosts,
+  roleCanCreate,
+} from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { slugify } from "@/lib/slug"
+import { hashPassword } from "@/lib/password"
+import {
+  ensurePermission,
+  getPlainTextFromHtml,
+  resolveEditorialFromSubmitAction,
+  uniqueCategorySlug,
+  uniquePostSlug,
+} from "@/app/admin/actions-helpers"
 
 const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024
 
-function getPlainTextFromHtml(value: string) {
-  return value
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
-async function uniqueCategorySlug(baseName: string, currentId?: string) {
-  const base = slugify(baseName)
-  let candidate = base
-  let index = 1
-
-  while (true) {
-    const found = await prisma.category.findUnique({ where: { slug: candidate }, select: { id: true } })
-    if (!found || found.id === currentId) {
-      return candidate
-    }
-    candidate = `${base}-${index}`
-    index += 1
-  }
-}
-
-async function uniquePostSlug(baseTitle: string) {
-  const base = slugify(baseTitle)
-  let candidate = base
-  let index = 1
-
-  while (true) {
-    const found = await prisma.post.findUnique({ where: { slug: candidate }, select: { id: true } })
-    if (!found) {
-      return candidate
-    }
-    index += 1
-    candidate = `${base}-${index}`
-  }
-}
-
-
 export async function createCategory(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireAdminUser()
+  ensurePermission(can(currentUser.role, "create-category"), "/admin?tab=categories&toast=post_action_forbidden")
 
   const name = String(formData.get("name") || "").trim()
   const description = String(formData.get("description") || "").trim()
@@ -80,6 +58,7 @@ export async function createCategory(formData: FormData) {
 
 export async function createPost(formData: FormData) {
   const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=write&toast=post_action_forbidden")
 
   const title = String(formData.get("title") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
@@ -94,7 +73,6 @@ export async function createPost(formData: FormData) {
   const isSensitive = formData.get("isSensitive") === "on"
   const isFeatured = formData.get("isFeatured") === "on"
   const isTrending = formData.get("isTrending") === "on"
-  const requestedPublished = formData.get("isPublished") === "on"
   const submitAction = String(formData.get("submitAction") || "").trim()
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
@@ -110,12 +88,10 @@ export async function createPost(formData: FormData) {
       : thumbnailUrlInput || null
   const ogImage = thumbnailUrl || manualOgImage
 
-  const isAdmin = currentUser.role === "ADMIN"
-  const shouldSaveDraft = submitAction === "save-draft"
-  const shouldPublishNow = submitAction === "publish" || (submitAction.length === 0 && requestedPublished && isAdmin)
-  const editorialStatus = shouldPublishNow ? "PUBLISHED" : "PENDING_REVIEW"
-  const isPublished = editorialStatus === "PUBLISHED"
-  const isDraft = shouldSaveDraft
+  const { editorialStatus, isPublished, isDraft } = resolveEditorialFromSubmitAction({
+    submitAction,
+    role: currentUser.role,
+  })
 
   await prisma.post.create({
     data: {
@@ -146,7 +122,7 @@ export async function createPost(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
-  if (shouldSaveDraft) {
+  if (editorialStatus === "DRAFT") {
     redirect("/admin?tab=personal-archive&toast=post_saved_draft")
   }
 
@@ -154,11 +130,16 @@ export async function createPost(formData: FormData) {
     redirect("/admin?tab=posts&toast=post_published")
   }
 
-  redirect("/admin?tab=pending-posts&toast=post_submitted_review")
+  if (editorialStatus === "PENDING_PUBLISH") {
+    redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+  }
+
+  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")
 }
 
 export async function createPostForPreview(formData: FormData): Promise<{ postId: string } | { error: string }> {
   const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=write&toast=post_action_forbidden")
 
   const title = String(formData.get("title") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
@@ -201,7 +182,7 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
       isSensitive,
       isPublished: false,
       isDraft: true,
-      editorialStatus: "PENDING_REVIEW",
+      editorialStatus: "DRAFT",
       thumbnailUrl,
     },
   })
@@ -211,7 +192,8 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
 }
 
 export async function approvePendingPost(formData: FormData) {
-  const currentUser = await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -221,23 +203,28 @@ export async function approvePendingPost(formData: FormData) {
   await prisma.post.update({
     where: { id: postId },
     data: {
-      editorialStatus: "PUBLISHED",
-      isPublished: true,
+      editorialStatus: canPublishNow(currentUser.role) ? "PUBLISHED" : "PENDING_PUBLISH",
+      isPublished: canPublishNow(currentUser.role),
       isDraft: false,
       approverId: currentUser.id,
       approvedAt: new Date(),
-      publishedAt: new Date(),
+      publishedAt: canPublishNow(currentUser.role) ? new Date() : undefined,
     },
   })
 
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
-  redirect("/admin?tab=pending-posts&toast=post_approved")
+  redirect(
+    canPublishNow(currentUser.role)
+      ? "/admin?tab=posts&postsStatus=published&toast=post_approved"
+      : "/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish"
+  )
 }
 
 export async function rejectPendingPost(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -257,7 +244,164 @@ export async function rejectPendingPost(formData: FormData) {
 
   revalidatePath("/admin")
   clearDataCache()
-  redirect("/admin?tab=pending-posts&toast=post_rejected")
+  redirect("/admin?tab=posts&postsStatus=rejected&toast=post_rejected")
+}
+
+export async function submitPostToPendingReview(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "submit-pending-review"), "/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  })
+
+  if (!existingPost) {
+    redirect("/admin?tab=posts&postsStatus=all&toast=post_not_found")
+  }
+
+  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
+    redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "PENDING_REVIEW",
+      isPublished: false,
+      isDraft: false,
+      approverId: null,
+      approvedAt: null,
+      publishedAt: undefined,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")
+}
+
+export async function promotePostToPendingPublish(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "PENDING_PUBLISH",
+      isPublished: false,
+      isDraft: false,
+      approverId: currentUser.id,
+      approvedAt: new Date(),
+      publishedAt: undefined,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+}
+
+export async function returnPostToPendingReview(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "PENDING_REVIEW",
+      isPublished: false,
+      isDraft: false,
+      approverId: null,
+      approvedAt: null,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_returned_review")
+}
+
+export async function returnPostToPendingPublish(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(canPublishNow(currentUser.role), "/admin?tab=posts&postsStatus=published&toast=post_action_forbidden")
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "PENDING_PUBLISH",
+      isPublished: false,
+      isDraft: false,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_returned_publish_queue")
+}
+
+export async function returnPostToDraft(formData: FormData) {
+  const currentUser = await requireCmsUser()
+
+  const postId = String(formData.get("postId") || "")
+  if (!postId) {
+    return
+  }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  })
+
+  if (!existingPost) {
+    redirect("/admin?tab=posts&postsStatus=all&toast=post_not_found")
+  }
+
+  const canManageWorkflow = canApprovePendingReview(currentUser.role) || canPublishNow(currentUser.role)
+  if (!canManageWorkflow && existingPost.authorId !== currentUser.id) {
+    redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+  }
+
+  await prisma.post.update({
+    where: { id: postId },
+    data: {
+      editorialStatus: "DRAFT",
+      isPublished: false,
+      isDraft: true,
+      approverId: null,
+      approvedAt: null,
+      publishedAt: undefined,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  clearDataCache()
+  redirect("/admin?tab=posts&postsStatus=draft&toast=post_returned_draft")
 }
 
 export async function uploadMediaAsset(formData: FormData) {
@@ -306,7 +450,7 @@ export async function uploadMediaAsset(formData: FormData) {
   await prisma.mediaAsset.create({
     data: {
       assetType: selectedType,
-      visibility: selectedType === MediaAssetType.VIDEO ? "SHARED" : "PRIVATE",
+      visibility: "SHARED",
       url,
       filename: file.name,
       mimeType: file.type || "application/octet-stream",
@@ -326,7 +470,8 @@ export async function updatePasswordMock() {
 }
 
 export async function updatePostFlags(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(canPublishNow(currentUser.role), "/admin?tab=posts&toast=post_action_forbidden")
 
   const postId = String(formData.get("postId") || "")
   const isFeatured = formData.get("isFeatured") === "on"
@@ -385,7 +530,7 @@ export async function movePostToTrash(formData: FormData) {
     redirect(`/admin?tab=${sourceTab}&toast=post_not_found`)
   }
 
-  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
+  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
     redirect(`/admin?tab=${sourceTab}&toast=post_action_forbidden`)
   }
 
@@ -427,7 +572,7 @@ export async function restorePostFromTrash(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
+  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
@@ -464,7 +609,7 @@ export async function deletePostPermanently(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (currentUser.role !== "ADMIN" && existingPost.authorId !== currentUser.id) {
+  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
@@ -477,7 +622,8 @@ export async function deletePostPermanently(formData: FormData) {
 }
 
 export async function moderateComment(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "moderate-comment"), "/admin?tab=comments&toast=post_action_forbidden")
 
   const commentId = String(formData.get("commentId") || "")
   const action = String(formData.get("action") || "")
@@ -500,7 +646,8 @@ export async function moderateComment(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "edit-category"), "/admin?tab=categories&toast=post_action_forbidden")
 
   const categoryId = String(formData.get("categoryId") || "")
   const name = String(formData.get("name") || "").trim()
@@ -542,7 +689,8 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function reorderCategory(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "edit-category"), "/admin?tab=categories&toast=post_action_forbidden")
 
   const categoryId = String(formData.get("categoryId") || "")
   const direction = String(formData.get("direction") || "")
@@ -590,7 +738,8 @@ export async function reorderCategory(formData: FormData) {
 }
 
 export async function deleteCategory(formData: FormData) {
-  await requireAdminUser()
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "delete-category"), "/admin?tab=categories&toast=post_action_forbidden")
 
   const categoryId = String(formData.get("categoryId") || "")
   const moveToCategoryId = String(formData.get("moveToCategoryId") || "")
@@ -640,4 +789,39 @@ export async function deleteCategory(formData: FormData) {
   revalidatePath(`/${category.slug}`)
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_deleted")
+}
+
+export async function createSubordinateAccount(formData: FormData) {
+  const currentUser = await requireEditorInChiefUser()
+  ensurePermission(canCreateSubordinateAccount(currentUser.role), "/admin?tab=settings-password&toast=account_create_failed")
+
+  const email = String(formData.get("email") || "").trim().toLowerCase()
+  const name = String(formData.get("name") || "").trim()
+  const password = String(formData.get("password") || "")
+  const role = String(formData.get("role") || "").trim() as UserRole
+
+  if (!email || !name || !password || password.length < 8) {
+    redirect("/admin?tab=settings-password&toast=account_create_failed")
+  }
+
+  if (!roleCanCreate(currentUser.role, role)) {
+    redirect("/admin?tab=settings-password&toast=account_create_forbidden")
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } })
+  if (existingUser) {
+    redirect("/admin?tab=settings-password&toast=account_create_duplicated")
+  }
+
+  await prisma.user.create({
+    data: {
+      email,
+      name,
+      role,
+      passwordHash: hashPassword(password),
+    },
+  })
+
+  clearDataCache()
+  redirect("/admin?tab=settings-password&toast=account_created")
 }

@@ -15,6 +15,7 @@ describe("media library and editor picker", () => {
     expect(schema).toContain("model MediaAsset")
     expect(schema).toContain("assetType   MediaAssetType")
     expect(schema).toContain("visibility  MediaAssetVisibility")
+    expect(schema).toContain("@default(SHARED)")
   })
 
   test("media upload action persists asset records", () => {
@@ -38,7 +39,7 @@ describe("media library and editor picker", () => {
     expect(source).toContain('asset.assetType === "IMAGE"')
     expect(source).toContain("<figure>")
     expect(source).toContain("<figcaption>")
-    
+
     expect(source).toContain('<div class="video-wrap">')
     expect(source).toContain("<video controls")
   })
@@ -48,6 +49,6 @@ describe("media library and editor picker", () => {
 
     expect(source).toContain("Upload vào kho")
     expect(source).toContain("items.map")
-    expect(source).toContain("Admin có thể lọc theo người upload")
+    expect(source).toContain("tái sử dụng toàn CMS")
   })
 })

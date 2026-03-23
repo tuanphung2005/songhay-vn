@@ -1,32 +1,30 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import type { LucideIcon } from "lucide-react"
 import {
   Activity,
-  Clock3,
   FolderKanban,
-  KeyRound,
-  LayoutDashboard,
-  LibraryBig,
   MessageSquareMore,
   Newspaper,
-  PenSquare,
   ShieldCheck,
-  Trash2,
-  UserSquare2,
 } from "lucide-react"
 
 import {
   approvePendingPost,
+  createSubordinateAccount,
   createCategory,
   createPost,
   deleteCategory,
   deletePostPermanently,
   moderateComment,
   movePostToTrash,
+  promotePostToPendingPublish,
   rejectPendingPost,
+  returnPostToDraft,
+  returnPostToPendingPublish,
+  returnPostToPendingReview,
   reorderCategory,
   restorePostFromTrash,
+  submitPostToPendingReview,
   updatePasswordMock,
   updateCategory,
 } from "@/app/admin/actions"
@@ -36,12 +34,17 @@ import { CategoriesTab } from "@/components/admin/categories-tab"
 import { CommentsTab } from "@/components/admin/comments-tab"
 import { MediaLibraryTab } from "@/components/admin/media-library-tab"
 import { OverviewTab } from "@/components/admin/overview-tab"
-import { PendingPostsTab } from "@/components/admin/pending-posts-tab"
 import { PersonalArchiveTab } from "@/components/admin/personal-archive-tab"
 import { PostsTab } from "@/components/admin/posts-tab"
 import { SettingsPasswordTab } from "@/components/admin/settings-password-tab"
 import { TrashTab } from "@/components/admin/trash-tab"
 import { WriteTab } from "@/components/admin/write-tab"
+import {
+  getVisibleTabs,
+  OVERVIEW_TAB,
+  parseAdminSearchParams,
+  type NavLeaf,
+} from "@/app/admin/page-helpers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -49,6 +52,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { requireCmsUser } from "@/lib/auth"
+import {
+  can,
+  canApprovePendingReview,
+  canCreateSubordinateAccount,
+  canEditByStatus,
+  canPublishNow,
+  canViewAllPosts,
+  canSubmitPendingPublish,
+  ROLE_LABELS_VI,
+} from "@/lib/permissions"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -59,36 +72,6 @@ export const metadata: Metadata = {
   },
 }
 
-type NavLeaf = {
-  key: AdminTab
-  label: string
-  description: string
-  icon: LucideIcon
-  adminOnly?: boolean
-}
-
-const OVERVIEW_TAB: NavLeaf = {
-  key: "overview",
-  label: "Tổng quan",
-  description: "Bức tranh tổng quan trạng thái CMS",
-  icon: LayoutDashboard,
-}
-
-const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
-  { key: "write", label: "Viết bài mới", description: "Soạn nội dung và gửi duyệt/xuất bản", icon: PenSquare },
-  { key: "pending-posts", label: "Kho bài chờ duyệt", description: "Admin duyệt, CTV theo dõi trạng thái", icon: Clock3 },
-  { key: "media-library", label: "Kho dữ liệu", description: "Tái sử dụng ảnh/video đã upload", icon: LibraryBig },
-  { key: "personal-archive", label: "Lưu trữ cá nhân", description: "Bài viết theo tài khoản đăng nhập", icon: UserSquare2 },
-  { key: "posts", label: "Kho bài", description: "Kho bài đã xuất bản", icon: Newspaper },
-  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
-]
-
-const SETTINGS_TABS: NavLeaf[] = [
-  { key: "settings-password", label: "Đổi mật khẩu", description: "Mock UI đổi mật khẩu", icon: KeyRound },
-  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban, adminOnly: true },
-  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore, adminOnly: true },
-]
-
 type AdminPageProps = {
   searchParams?: Promise<{
     tab?: string
@@ -96,6 +79,7 @@ type AdminPageProps = {
     direction?: string
     postsQ?: string
     postsAuthor?: string
+    postsStatus?: string
     postsApproval?: string
     postsFrom?: string
     postsTo?: string
@@ -141,69 +125,15 @@ function AdminNavButton({
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const currentUser = await requireCmsUser()
-  const isAdmin = currentUser.role === "ADMIN"
+  const canSeeAllPosts = canViewAllPosts(currentUser.role)
+  const canManageSettings = can(currentUser.role, "create-category")
 
-  const contentTabs = CONTENT_MANAGEMENT_TABS.filter((item) => (item.adminOnly ? isAdmin : true))
-  const settingsTabs = SETTINGS_TABS.filter((item) => (item.adminOnly ? isAdmin : true))
-  const visibleTabs: NavLeaf[] = [OVERVIEW_TAB, ...contentTabs, ...settingsTabs]
+  const { contentTabs, settingsTabs, visibleTabs } = getVisibleTabs({
+    canManageSettings,
+  })
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const tabFromQuery = resolvedSearchParams?.tab
-  const movedCategoryId = resolvedSearchParams?.moved
-  const movedDirection = resolvedSearchParams?.direction
-
-  const postsQuery = (resolvedSearchParams?.postsQ || "").trim().slice(0, 120)
-  const postsAuthorRaw = (resolvedSearchParams?.postsAuthor || "").trim()
-  const postsAuthor = postsAuthorRaw === "all" ? "" : postsAuthorRaw
-  const postsApproval = ["all", "approved", "unapproved"].includes(resolvedSearchParams?.postsApproval || "")
-    ? (resolvedSearchParams?.postsApproval as "all" | "approved" | "unapproved")
-    : "all"
-  const postsFrom = (resolvedSearchParams?.postsFrom || "").trim()
-  const postsTo = (resolvedSearchParams?.postsTo || "").trim()
-  const rawPostsPage = Number.parseInt(resolvedSearchParams?.postsPage || "1", 10)
-  const requestedPostsPage = Number.isFinite(rawPostsPage) && rawPostsPage > 0 ? rawPostsPage : 1
-
-  const personalQuery = (resolvedSearchParams?.personalQ || "").trim().slice(0, 120)
-  const personalStatus = ["all", "draft", "pending", "published", "rejected"].includes(resolvedSearchParams?.personalStatus || "")
-    ? (resolvedSearchParams?.personalStatus as "all" | "draft" | "pending" | "published" | "rejected")
-    : "all"
-  const personalFrom = (resolvedSearchParams?.personalFrom || "").trim()
-  const personalTo = (resolvedSearchParams?.personalTo || "").trim()
-  const rawPersonalPage = Number.parseInt(resolvedSearchParams?.personalPage || "1", 10)
-  const requestedPersonalPage = Number.isFinite(rawPersonalPage) && rawPersonalPage > 0 ? rawPersonalPage : 1
-
-  const trashQuery = (resolvedSearchParams?.trashQ || "").trim().slice(0, 120)
-  const trashAuthorRaw = (resolvedSearchParams?.trashAuthor || "").trim()
-  const trashAuthor = trashAuthorRaw === "all" ? "" : trashAuthorRaw
-  const trashFrom = (resolvedSearchParams?.trashFrom || "").trim()
-  const trashTo = (resolvedSearchParams?.trashTo || "").trim()
-  const rawTrashPage = Number.parseInt(resolvedSearchParams?.trashPage || "1", 10)
-  const requestedTrashPage = Number.isFinite(rawTrashPage) && rawTrashPage > 0 ? rawTrashPage : 1
-
-  const postsFilters = {
-    query: postsQuery,
-    authorId: postsAuthor,
-    approval: postsApproval,
-    fromDate: postsFrom,
-    toDate: postsTo,
-    requestedPage: requestedPostsPage,
-  } as const
-
-  const personalArchiveFilters = {
-    query: personalQuery,
-    status: personalStatus,
-    fromDate: personalFrom,
-    toDate: personalTo,
-    requestedPage: requestedPersonalPage,
-  } as const
-
-  const trashFilters = {
-    query: trashQuery,
-    authorId: trashAuthor,
-    fromDate: trashFrom,
-    toDate: trashTo,
-    requestedPage: requestedTrashPage,
-  } as const
+  const { tabFromQuery, movedCategoryId, movedDirection, postsFilters, personalArchiveFilters, trashFilters } = parseAdminSearchParams(resolvedSearchParams)
 
   const activeTab: AdminTab = visibleTabs.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
@@ -219,7 +149,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     categoriesForWrite,
     postsData,
     postsPaginationItems,
-    pendingPostsData,
     personalPostsData,
     mediaLibraryData,
     trashedPosts,
@@ -285,7 +214,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
           <Badge variant="secondary" className="hidden h-7 items-center gap-1.5 px-3 md:inline-flex">
             <ShieldCheck className="size-3.5" />
-            {isAdmin ? "Quyền quản trị" : "Quyền cộng tác viên"}
+            {ROLE_LABELS_VI[currentUser.role]}
           </Badge>
         </div>
       </header>
@@ -361,14 +290,35 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeTab === "overview" ? <OverviewTab overviewStats={overviewStats} overviewAnalytics={overviewAnalytics} /> : null}
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}
-          {activeTab === "write" ? <WriteTab isAdmin={isAdmin} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
-          {activeTab === "pending-posts" ? <PendingPostsTab isAdmin={isAdmin} rows={pendingPostsData} approvePendingPost={approvePendingPost} rejectPendingPost={rejectPendingPost} /> : null}
-          {activeTab === "media-library" ? <MediaLibraryTab isAdmin={isAdmin} rows={mediaLibraryData} /> : null}
-          {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={isAdmin} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
+          {activeTab === "write" ? <WriteTab canPublishNow={canPublishNow(currentUser.role)} canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
+          {activeTab === "media-library" ? <MediaLibraryTab isAdmin={canSeeAllPosts} rows={mediaLibraryData} /> : null}
+          {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={canSeeAllPosts} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}
-          {activeTab === "posts" ? <PostsTab isAdmin={isAdmin} postsData={postsData} filters={postsFilters} postsPaginationItems={postsPaginationItems} movePostToTrash={movePostToTrash} /> : null}
-          {activeTab === "trash" ? <TrashTab isAdmin={isAdmin} data={trashedPosts} filters={trashFilters} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
-          {activeTab === "settings-password" ? <SettingsPasswordTab updatePasswordMock={updatePasswordMock} /> : null}
+          {activeTab === "posts" ? (
+            <PostsTab
+              isAdmin={canSeeAllPosts}
+              canSubmitPendingReview={can(currentUser.role, "submit-pending-review")}
+              canReviewPending={canApprovePendingReview(currentUser.role)}
+              canPublishNow={canPublishNow(currentUser.role)}
+              canEditDraft={canEditByStatus(currentUser.role, "DRAFT")}
+              canEditPendingReview={canEditByStatus(currentUser.role, "PENDING_REVIEW")}
+              canEditPendingPublish={canEditByStatus(currentUser.role, "PENDING_PUBLISH")}
+              canEditPublished={canEditByStatus(currentUser.role, "PUBLISHED")}
+              postsData={postsData}
+              filters={postsFilters}
+              postsPaginationItems={postsPaginationItems}
+              movePostToTrash={movePostToTrash}
+              submitPostToPendingReview={submitPostToPendingReview}
+              promotePostToPendingPublish={promotePostToPendingPublish}
+              approvePendingPost={approvePendingPost}
+              rejectPendingPost={rejectPendingPost}
+              returnPostToDraft={returnPostToDraft}
+              returnPostToPendingReview={returnPostToPendingReview}
+              returnPostToPendingPublish={returnPostToPendingPublish}
+            />
+          ) : null}
+          {activeTab === "trash" ? <TrashTab isAdmin={canSeeAllPosts} data={trashedPosts} filters={trashFilters} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
+          {activeTab === "settings-password" ? <SettingsPasswordTab updatePasswordMock={updatePasswordMock} createSubordinateAccount={createSubordinateAccount} canCreateSubordinateAccount={canCreateSubordinateAccount(currentUser.role)} /> : null}
         </section>
       </div>
     </main>

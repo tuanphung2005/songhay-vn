@@ -21,7 +21,7 @@ type PersonalPostRow = {
   title: string
   slug: string
   thumbnailUrl: string | null
-  editorialStatus: "PENDING_REVIEW" | "PUBLISHED" | "REJECTED"
+  editorialStatus: "DRAFT" | "PENDING_REVIEW" | "PENDING_PUBLISH" | "PUBLISHED" | "REJECTED"
   isPublished: boolean
   isDraft: boolean
   createdAt: Date
@@ -55,7 +55,7 @@ type PersonalArchiveTabProps = {
   }
   filters: {
     query: string
-    status: "all" | "draft" | "pending" | "published" | "rejected"
+    status: "all" | "draft" | "pending" | "pending-publish" | "published" | "rejected"
     fromDate: string
     toDate: string
   }
@@ -63,6 +63,8 @@ type PersonalArchiveTabProps = {
 }
 
 function statusLabel(status: PersonalPostRow["editorialStatus"]) {
+  if (status === "DRAFT") return "Bản nháp"
+  if (status === "PENDING_PUBLISH") return "Chờ xuất bản"
   if (status === "PUBLISHED") return "Đã xuất bản"
   if (status === "REJECTED") return "Bị từ chối"
   return "Chờ duyệt"
@@ -92,6 +94,7 @@ export function PersonalArchiveTab({ data, filters, movePostToTrash }: PersonalA
             <option value="all">Tất cả trạng thái</option>
             <option value="draft">Bản nháp</option>
             <option value="pending">Chờ duyệt</option>
+            <option value="pending-publish">Chờ xuất bản</option>
             <option value="published">Đã xuất bản</option>
             <option value="rejected">Bị từ chối</option>
           </Select>

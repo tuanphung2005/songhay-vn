@@ -23,7 +23,7 @@ describe("admin write tab UI", () => {
     expect(source).toContain("name=\"submitAction\" value=\"publish\"")
   })
 
-  test("write tab has preview button and hides publish button for non-admin", () => {
+  test("write tab has preview button and capability-gated publish actions", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
 
     // Preview button opens new tab
@@ -31,9 +31,8 @@ describe("admin write tab UI", () => {
     expect(source).toContain("createPostForPreview")
     expect(source).toContain("window.open")
 
-    // Publish only rendered for admin
-    expect(source).toContain("isAdmin")
-    // No longer shows a disabled publish button for BTV
+    expect(source).toContain("canPublishNow")
+    expect(source).toContain("canSubmitPendingPublish")
     expect(source).not.toContain("Xuất bản (chỉ admin)")
   })
 

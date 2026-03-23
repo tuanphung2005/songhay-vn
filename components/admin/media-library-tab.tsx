@@ -212,7 +212,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       <CardHeader>
         <CardTitle>Kho dữ liệu</CardTitle>
         <CardDescription>
-          Upload media một lần để tái sử dụng. Admin có thể lọc theo người upload để quản trị nhanh.
+          Upload media một lần để tái sử dụng toàn CMS. Vai trò cao có thể lọc theo người upload để quản trị nhanh.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -289,7 +289,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="line-clamp-1 font-semibold">{asset.displayName || asset.filename}</p>
                     <Badge variant="outline">{asset.assetType === "IMAGE" ? "Ảnh" : "Video"}</Badge>
-                    <Badge variant="outline">{asset.visibility === "SHARED" ? "Shared" : "Private"}</Badge>
+                    <Badge variant="outline">Shared</Badge>
                   </div>
                   <p className="text-muted-foreground line-clamp-1 text-xs">File: {asset.filename}</p>
                   <p className="text-muted-foreground text-xs">

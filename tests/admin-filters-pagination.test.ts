@@ -13,8 +13,8 @@ describe("admin filters and pagination", () => {
     expect(source).toContain("postsFilters")
     expect(source).toContain("personalArchiveFilters")
     expect(source).toContain("trashFilters")
-    expect(source).toContain("PERSONAL_ARCHIVE_PAGE_SIZE")
-    expect(source).toContain("TRASH_PAGE_SIZE")
+    expect(source).toContain("getPersonalPostsData")
+    expect(source).toContain("getTrashedPostsData")
   })
 
   test("posts tab exposes advanced filter inputs", () => {

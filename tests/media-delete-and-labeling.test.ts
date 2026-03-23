@@ -44,7 +44,8 @@ describe("media delete and labeling", () => {
     expect(videoSource).toContain("search")
     expect(videoSource).toContain("uploaderId")
     expect(videoSource).toContain("uploaderOptions")
-    expect(videoSource).toContain("...(isAdmin ? {} : { uploaderId: session.userId })")
+    expect(videoSource).toContain("uploaderIdFilter")
+    expect(videoSource).not.toContain("...(isAdmin ? {} : { uploaderId: session.userId })")
     expect(videoSource).toContain("pagination")
   })
 
@@ -53,13 +54,13 @@ describe("media delete and labeling", () => {
 
     expect(source).toContain("export async function DELETE")
     expect(source).toContain("decodeSession")
-    expect(source).toContain("session.role !== \"ADMIN\" && asset.uploaderId !== session.userId")
+    expect(source).toContain("!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId")
     expect(source).toContain("await prisma.mediaAsset.delete")
   })
 
   test("schema and picker consume displayName field", () => {
     const schema = readWorkspaceFile("prisma/schema.prisma")
-    const dataSource = readWorkspaceFile("app/admin/data.ts")
+    const dataSource = readWorkspaceFile("app/admin/data-loaders/shared.ts")
     const editorSource = readWorkspaceFile("components/admin/rich-text-field.tsx")
 
     expect(schema).toContain("displayName String?")

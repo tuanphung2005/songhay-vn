@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { authCookieName, decodeSession } from "@/lib/auth"
+import { canDeleteAnyMedia } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 
 type RouteContext = {
@@ -46,7 +47,7 @@ export async function DELETE(request: unknown, context: RouteContext) {
     return NextResponse.json({ error: "not_found" }, { status: 404 })
   }
 
-  if (session.role !== "ADMIN" && asset.uploaderId !== session.userId) {
+  if (!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
   }
 

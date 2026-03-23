@@ -9,51 +9,55 @@ function readWorkspaceFile(relativePath: string) {
 // ── Role scoping in data queries ─────────────────────────────────────────────
 
 describe("role-based data scoping", () => {
-  test("pending posts query scopes non-admin to own posts via authorId", () => {
-    const source = readWorkspaceFile("app/admin/data.ts")
+  test("posts data loader supports unified editorial status filtering", () => {
+    const source = readWorkspaceFile("app/admin/data-loaders/posts.ts")
 
-    // Admin sees all; non-admin sees only own
-    expect(source).toContain("currentUser.role === \"ADMIN\" ? {} : { authorId: currentUser.id }")
-    // Filter is applied within the pending posts query block
-    expect(source).toContain("editorialStatus: \"PENDING_REVIEW\"")
+    expect(source).toContain("postsFilters.status === \"pending-review\"")
+    expect(source).toContain("postsFilters.status === \"pending-publish\"")
+    expect(source).toContain("postsFilters.status === \"published\"")
+    expect(source).toContain("canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }")
   })
 
-  test("trash query scopes non-admin to own archived posts", () => {
-    const source = readWorkspaceFile("app/admin/data.ts")
+  test("personal archive is always scoped to current user", () => {
+    const source = readWorkspaceFile("app/admin/data-loaders/personal.ts")
 
-    // Trash: admin sees all, others see own
+    expect(source).toContain("authorId: currentUser.id")
+    expect(source).not.toContain("canViewAllPosts(currentUser.role)")
+  })
+
+  test("trash query scopes by canViewAllPosts capability", () => {
+    const source = readWorkspaceFile("app/admin/data-loaders/trash.ts")
+
     expect(source).toContain("isDeleted: true")
-    // The ownserhip clause for trash
-    expect(source).toContain("currentUser.role === \"ADMIN\" ? {} : { authorId: currentUser.id }")
+    expect(source).toContain("canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }")
   })
 
-  test("media library write-tab view scopes non-admin to own uploads plus shared videos", () => {
-    const source = readWorkspaceFile("app/admin/data.ts")
+  test("media library now exposes shared assets for all CMS users", () => {
+    const source = readWorkspaceFile("app/admin/data-loaders/shared.ts")
 
-    // For write tab
-    expect(source).toContain("OR: [{ uploaderId: currentUser.id }, { visibility: \"SHARED\", assetType: \"VIDEO\" }]")
+    expect(source).toContain("visibility: \"SHARED\"")
   })
 
-  test("media upload DELETE endpoint enforces ownership or admin role", () => {
+  test("media upload DELETE endpoint enforces ownership or elevated role", () => {
     const source = readWorkspaceFile("app/api/media/[id]/route.ts")
 
-    expect(source).toContain("session.role !== \"ADMIN\" && asset.uploaderId !== session.userId")
+    expect(source).toContain("!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId")
   })
 
-  test("image upload GET endpoint scopes non-admin to own assets", () => {
+  test("image upload GET endpoint lists shared assets for all CMS users", () => {
     const source = readWorkspaceFile("app/api/uploads/image/route.ts")
 
     expect(source).toContain("uploaderId")
-    // Image route uses uploaderIdFilter variable to scope access
     expect(source).toContain("uploaderIdFilter")
-    // Non-admin users are forced to their own userId when no specific filter is requested
-    expect(source).toContain("isAdmin ? \"\" : session.userId")
+    expect(source).toContain("const uploaderIdFilter = uploaderIdParam.length > 0 ? uploaderIdParam : \"\"")
+    expect(source).not.toContain("canViewAllPosts(session.role)")
   })
 
-  test("video upload GET endpoint scopes non-admin to own assets", () => {
+  test("video upload GET endpoint lists shared assets for all CMS users", () => {
     const source = readWorkspaceFile("app/api/uploads/video/route.ts")
 
-    expect(source).toContain("...(isAdmin ? {} : { uploaderId: session.userId })")
+    expect(source).toContain("uploaderIdFilter")
+    expect(source).not.toContain("...(isAdmin ? {} : { uploaderId: session.userId })")
   })
 })
 
@@ -63,26 +67,23 @@ describe("role-based UI gates", () => {
   test("write tab hides publish button for non-admin users", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
 
-    // Publish button is conditionally rendered only for admin
-    expect(source).toContain("isAdmin ? (")
-    // No longer shows a disabled publish button — fully hidden for BTV
+    expect(source).toContain("canPublishNow ? (")
+    expect(source).toContain("canSubmitPendingPublish ? (")
     expect(source).not.toContain("Xuất bản (chỉ admin)")
   })
 
   test("admin-only tabs are gated with adminOnly flag", () => {
     const source = readWorkspaceFile("app/admin/page.tsx")
 
-    // Categories and Comments tabs have adminOnly: true
-    expect(source).toContain("adminOnly: true")
-    // Tabs are filtered based on isAdmin
-    expect(source).toContain("CONTENT_MANAGEMENT_TABS.filter((item) => (item.adminOnly ? isAdmin : true))")
-    expect(source).toContain("SETTINGS_TABS.filter((item) => (item.adminOnly ? isAdmin : true))")
+    expect(source).toContain("canManageSettings")
+    expect(source).toContain("canApprovePendingReview(currentUser.role)")
   })
 
-  test("pending posts tab shows approve/reject only to admin via isAdmin prop", () => {
-    const source = readWorkspaceFile("components/admin/pending-posts-tab.tsx")
+  test("posts tab shows review controls based on role capabilities", () => {
+    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
 
-    expect(source).toContain("isAdmin")
+    expect(source).toContain("canReviewPending")
+    expect(source).toContain("canPublishNow")
   })
 
   test("posts tab exposes move-to-trash to all authenticated users", () => {
@@ -103,31 +104,30 @@ describe("role-based UI gates", () => {
 // ── Server-side ownership checks in actions ───────────────────────────────────
 
 describe("server-side ownership enforcement in actions", () => {
-  test("movePostToTrash checks ownership before allowing non-admin deletion", () => {
+  test("movePostToTrash checks ownership for roles without view-all capability", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    expect(source).toContain("currentUser.role !== \"ADMIN\" && existingPost.authorId !== currentUser.id")
+    expect(source).toContain("!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id")
     expect(source).toContain("post_action_forbidden")
   })
 
   test("restorePostFromTrash checks ownership before restoring for non-admin", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?currentUser\.role !== "ADMIN" && existingPost\.authorId !== currentUser\.id/)
+    expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
   })
 
   test("deletePostPermanently checks ownership for non-admin", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    expect(source).toMatch(/export async function deletePostPermanently[\s\S]*?currentUser\.role !== "ADMIN" && existingPost\.authorId !== currentUser\.id/)
+    expect(source).toMatch(/export async function deletePostPermanently[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
   })
 
-  test("approvePendingPost sets isDraft false and editorialStatus PUBLISHED", () => {
+  test("approvePendingPost sets isDraft false and promotes to publish or pending publish", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    // Approval must explicitly clear isDraft and set status
     expect(source).toMatch(/approvePendingPost[\s\S]*?isDraft: false/)
-    expect(source).toMatch(/approvePendingPost[\s\S]*?editorialStatus: "PUBLISHED"/)
+    expect(source).toMatch(/approvePendingPost[\s\S]*?editorialStatus: canPublishNow\(currentUser\.role\) \? "PUBLISHED" : "PENDING_PUBLISH"/)
   })
 
   test("rejectPendingPost sets isPublished false and clears approver", () => {
@@ -137,11 +137,10 @@ describe("server-side ownership enforcement in actions", () => {
     expect(source).toMatch(/rejectPendingPost[\s\S]*?approverId: null/)
   })
 
-  test("createPost derives isDraft from submitAction, not from isPublished field alone", () => {
+  test("createPost derives editorial state via resolveEditorialFromSubmitAction", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    // The critical fix: isDraft is computed from submitAction
-    expect(source).toContain("const isDraft = shouldSaveDraft")
-    expect(source).toContain("const shouldPublishNow = submitAction === \"publish\"")
+    expect(source).toContain("resolveEditorialFromSubmitAction")
+    expect(source).toContain("editorialStatus === \"DRAFT\"")
   })
 })

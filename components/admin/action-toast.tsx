@@ -55,6 +55,11 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Bài viết của bạn đã vào kho chờ duyệt.",
     type: "success",
   },
+  post_submitted_publish: {
+    title: "Đã gửi chờ xuất bản",
+    description: "Bài viết đã được chuyển sang kho chờ xuất bản.",
+    type: "success",
+  },
   post_updated_published: {
     title: "Đã cập nhật và xuất bản",
     description: "Thay đổi đã được lưu và bài đang ở trạng thái xuất bản.",
@@ -73,6 +78,21 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
   post_rejected: {
     title: "Đã từ chối bài",
     description: "Bài viết đã được chuyển sang trạng thái từ chối.",
+    type: "success",
+  },
+  post_returned_review: {
+    title: "Đã trả về chờ duyệt",
+    description: "Bài viết đã được trả về kho chờ duyệt để biên tập lại.",
+    type: "success",
+  },
+  post_returned_publish_queue: {
+    title: "Đã trả về chờ xuất bản",
+    description: "Bài viết đã được chuyển về kho chờ xuất bản.",
+    type: "success",
+  },
+  post_returned_draft: {
+    title: "Đã trả về kho",
+    description: "Bài viết đã được trả về kho nháp.",
     type: "success",
   },
   post_moved_trash: {
@@ -144,6 +164,26 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     title: "Mock đổi mật khẩu",
     description: "Đã ghi nhận thao tác mock. Chưa có logic đổi mật khẩu thật.",
     type: "success",
+  },
+  account_created: {
+    title: "Đã tạo tài khoản",
+    description: "Tài khoản cấp dưới đã được tạo thành công.",
+    type: "success",
+  },
+  account_create_failed: {
+    title: "Không thể tạo tài khoản",
+    description: "Vui lòng kiểm tra lại thông tin đầu vào.",
+    type: "error",
+  },
+  account_create_forbidden: {
+    title: "Không đủ quyền",
+    description: "Bạn không có quyền tạo role đã chọn.",
+    type: "error",
+  },
+  account_create_duplicated: {
+    title: "Email đã tồn tại",
+    description: "Vui lòng chọn email khác.",
+    type: "error",
   },
 }
 

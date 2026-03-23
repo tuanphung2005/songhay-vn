@@ -1,0 +1,81 @@
+import { describe, expect, test } from "bun:test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
+
+function readWorkspaceFile(relativePath: string) {
+  return readFileSync(join(process.cwd(), relativePath), "utf8")
+}
+
+describe("workflow edge cases coverage", () => {
+  test("server actions exist for all required transitions", () => {
+    const source = readWorkspaceFile("app/admin/actions.ts")
+
+    expect(source).toContain("export async function submitPostToPendingReview")
+    expect(source).toContain("export async function promotePostToPendingPublish")
+    expect(source).toContain("export async function approvePendingPost")
+    expect(source).toContain("export async function returnPostToDraft")
+    expect(source).toContain("export async function returnPostToPendingReview")
+    expect(source).toContain("export async function returnPostToPendingPublish")
+    expect(source).toContain("export async function movePostToTrash")
+  })
+
+  test("submit-to-review edge cases: permission, ownership, and redirect are enforced", () => {
+    const source = readWorkspaceFile("app/admin/actions.ts")
+
+    expect(source).toContain("ensurePermission(can(currentUser.role, \"submit-pending-review\")")
+    expect(source).toContain("redirect(\"/admin?tab=posts&postsStatus=all&toast=post_not_found\")")
+    expect(source).toContain("!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id")
+    expect(source).toContain("redirect(\"/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review\")")
+  })
+
+  test("promote-to-pending-publish edge cases: review permission and metadata are enforced", () => {
+    const source = readWorkspaceFile("app/admin/actions.ts")
+
+    expect(source).toContain("ensurePermission(canApprovePendingReview(currentUser.role)")
+    expect(source).toContain("editorialStatus: \"PENDING_PUBLISH\"")
+    expect(source).toContain("approverId: currentUser.id")
+    expect(source).toContain("approvedAt: new Date()")
+  })
+
+  test("return-to-draft edge cases: forbidden ownership and destination status are enforced", () => {
+    const source = readWorkspaceFile("app/admin/actions.ts")
+
+    expect(source).toContain("const canManageWorkflow = canApprovePendingReview(currentUser.role) || canPublishNow(currentUser.role)")
+    expect(source).toContain("if (!canManageWorkflow && existingPost.authorId !== currentUser.id)")
+    expect(source).toContain("editorialStatus: \"DRAFT\"")
+    expect(source).toContain("isDraft: true")
+    expect(source).toContain("redirect(\"/admin?tab=posts&postsStatus=draft&toast=post_returned_draft\")")
+  })
+})
+
+describe("role-action button visibility coverage", () => {
+  test("posts tab includes all requested action labels", () => {
+    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
+
+    expect(source).toContain("Lên chờ xuất bản")
+    expect(source).toContain("Lên chờ duyệt")
+    expect(source).toContain("Sửa bài")
+    expect(source).toContain("Xóa")
+    expect(source).toContain("Trả về kho")
+    expect(source).toContain("Trả về chờ xuất bản")
+  })
+
+  test("posts tab keeps capability gates for sensitive actions", () => {
+    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
+
+    expect(source).toContain("canSubmitPendingReview")
+    expect(source).toContain("canReviewPending")
+    expect(source).toContain("canPublishNow")
+    expect(source).toContain("canEditRow(post")
+  })
+
+  test("admin page wires all new post workflow actions", () => {
+    const source = readWorkspaceFile("app/admin/page.tsx")
+
+    expect(source).toContain("submitPostToPendingReview={submitPostToPendingReview}")
+    expect(source).toContain("promotePostToPendingPublish={promotePostToPendingPublish}")
+    expect(source).toContain("returnPostToDraft={returnPostToDraft}")
+    expect(source).toContain("returnPostToPendingReview={returnPostToPendingReview}")
+    expect(source).toContain("returnPostToPendingPublish={returnPostToPendingPublish}")
+  })
+})

@@ -12,24 +12,24 @@ function readWorkspaceFile(relativePath: string) {
 
 describe("session encoding / decoding", () => {
   test("encodes and decodes a valid session round-trip", () => {
-    const token = encodeSession({ userId: "user-abc", role: "USER" })
+    const token = encodeSession({ userId: "user-abc", role: "CONTRIBUTOR" })
     const decoded = decodeSession(token)
 
     expect(decoded).not.toBeNull()
     expect(decoded?.userId).toBe("user-abc")
-    expect(decoded?.role).toBe("USER")
+    expect(decoded?.role).toBe("CONTRIBUTOR")
   })
 
-  test("decodes ADMIN role correctly", () => {
-    const token = encodeSession({ userId: "admin-xyz", role: "ADMIN" })
+  test("decodes EDITOR_IN_CHIEF role correctly", () => {
+    const token = encodeSession({ userId: "chief-xyz", role: "EDITOR_IN_CHIEF" })
     const decoded = decodeSession(token)
 
-    expect(decoded?.role).toBe("ADMIN")
-    expect(decoded?.userId).toBe("admin-xyz")
+    expect(decoded?.role).toBe("EDITOR_IN_CHIEF")
+    expect(decoded?.userId).toBe("chief-xyz")
   })
 
   test("returns null for a tampered token (signature mismatch)", () => {
-    const token = encodeSession({ userId: "user-abc", role: "USER" })
+    const token = encodeSession({ userId: "user-abc", role: "CONTRIBUTOR" })
     const [data] = token.split(".")
     const tampered = `${data}.invalidsig`
 
@@ -38,7 +38,7 @@ describe("session encoding / decoding", () => {
 
   test("returns null for an expired session", () => {
     // TTL of -1 second → already expired
-    const token = encodeSession({ userId: "user-abc", role: "USER" }, -1)
+    const token = encodeSession({ userId: "user-abc", role: "CONTRIBUTOR" }, -1)
     expect(decodeSession(token)).toBeNull()
   })
 
@@ -63,11 +63,11 @@ describe("session encoding / decoding", () => {
 // ── Auth guard source assertions ─────────────────────────────────────────────
 
 describe("auth guard source checks", () => {
-  test("requireAdminUser redirects to / when user role is USER", () => {
+  test("requireAdminUser keeps elevated guard behavior", () => {
     const source = readWorkspaceFile("lib/auth.ts")
 
-    // Non-admin → redirect home
-    expect(source).toContain("if (user.role !== \"ADMIN\")")
+    expect(source).toContain("export async function requireAdminUser")
+    expect(source).toContain("const hasElevatedAccess")
     expect(source).toContain("redirect(\"/\")")
   })
 
@@ -80,22 +80,21 @@ describe("auth guard source checks", () => {
     expect(source).toContain("export async function requireAdminUser")
   })
 
-  test("admin-only actions use requireAdminUser not requireCmsUser", () => {
+  test("category and system-sensitive actions still enforce elevated checks", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    // These must be admin-gated
-    expect(source).toMatch(/export async function approvePendingPost[\s\S]*?requireAdminUser/)
-    expect(source).toMatch(/export async function rejectPendingPost[\s\S]*?requireAdminUser/)
     expect(source).toMatch(/export async function createCategory[\s\S]*?requireAdminUser/)
-    expect(source).toMatch(/export async function updateCategory[\s\S]*?requireAdminUser/)
-    expect(source).toMatch(/export async function deleteCategory[\s\S]*?requireAdminUser/)
+    expect(source).toMatch(/export async function createSubordinateAccount[\s\S]*?requireEditorInChiefUser/)
+    expect(source).toContain("ensurePermission(can(currentUser.role, \"edit-category\")")
+    expect(source).toContain("ensurePermission(can(currentUser.role, \"delete-category\")")
   })
 
-  test("non-admin actions use requireCmsUser (any authenticated CMS user)", () => {
+  test("CMS actions use requireCmsUser plus capability checks", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    // These should be available to all CMS users (editor + admin)
     expect(source).toMatch(/export async function createPost[\s\S]*?requireCmsUser/)
+    expect(source).toContain("resolveEditorialFromSubmitAction")
+    expect(source).toContain("canApprovePendingReview")
     expect(source).toMatch(/export async function movePostToTrash[\s\S]*?requireCmsUser/)
     expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?requireCmsUser/)
   })

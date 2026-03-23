@@ -46,11 +46,7 @@ export async function GET(request: unknown) {
   const page = toPaging(url.searchParams.get("page"), 1)
   const requestedPageSize = toPaging(url.searchParams.get("pageSize"), DEFAULT_PAGE_SIZE)
   const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE)
-  const isAdmin = session.role === "ADMIN"
-  const uploaderIdFilter =
-    uploaderIdParam.length > 0
-      ? (isAdmin || uploaderIdParam === session.userId ? uploaderIdParam : session.userId)
-      : (isAdmin ? "" : session.userId)
+  const uploaderIdFilter = uploaderIdParam.length > 0 ? uploaderIdParam : ""
 
   const where = {
     assetType: "IMAGE" as const,
@@ -93,24 +89,21 @@ export async function GET(request: unknown) {
     take: pageSize,
   })
 
-  const uploaderOptions =
-    isAdmin
-      ? await prisma.user.findMany({
-        where: {
-          mediaAssets: {
-            some: {
-              assetType: "IMAGE",
-            },
-          },
+  const uploaderOptions = await prisma.user.findMany({
+    where: {
+      mediaAssets: {
+        some: {
+          assetType: "IMAGE",
         },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-        orderBy: [{ name: "asc" }, { email: "asc" }],
-      })
-      : []
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+    orderBy: [{ name: "asc" }, { email: "asc" }],
+  })
 
   return NextResponse.json({
     items,
@@ -159,7 +152,7 @@ export async function POST(request: unknown) {
     const asset = await prisma.mediaAsset.create({
       data: {
         assetType: "IMAGE",
-        visibility: "PRIVATE",
+        visibility: "SHARED",
         url,
         displayName: displayNameInput.length > 0 ? displayNameInput.slice(0, 120) : null,
         filename: file.name,

@@ -28,20 +28,34 @@ type PendingPostRow = {
 
 type PendingPostsTabProps = {
   isAdmin: boolean
+  canEditRows?: boolean
+  title?: string
+  description?: string
+  approveLabel?: string
   rows: PendingPostRow[]
   approvePendingPost: (formData: FormData) => Promise<void>
   rejectPendingPost: (formData: FormData) => Promise<void>
 }
 
-export function PendingPostsTab({ isAdmin, rows, approvePendingPost, rejectPendingPost }: PendingPostsTabProps) {
+export function PendingPostsTab({
+  isAdmin,
+  canEditRows = true,
+  title,
+  description,
+  approveLabel,
+  rows,
+  approvePendingPost,
+  rejectPendingPost,
+}: PendingPostsTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Kho bài chờ duyệt</CardTitle>
+        <CardTitle>{title || "Kho bài chờ duyệt"}</CardTitle>
         <CardDescription>
-          {isAdmin
-            ? "Admin có thể duyệt hoặc từ chối bài trước khi xuất bản."
-            : "Danh sách bài của bạn đang chờ admin duyệt."}
+          {description ||
+            (isAdmin
+              ? "Biên tập viên phụ trách có thể duyệt hoặc từ chối bài trước khi xuất bản."
+              : "Danh sách bài của bạn đang chờ duyệt.")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -94,9 +108,11 @@ export function PendingPostsTab({ isAdmin, rows, approvePendingPost, rejectPendi
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-2">
-                    <Link href={`/admin/edit/${post.id}`}>
-                      <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
-                    </Link>
+                    {canEditRows ? (
+                      <Link href={`/admin/edit/${post.id}`}>
+                        <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
+                      </Link>
+                    ) : null}
                     <a href={`/admin/preview/${post.id}`} target="_blank" rel="noopener noreferrer">
                       <Button type="button" size="sm" variant="outline">Xem trước</Button>
                     </a>
@@ -104,7 +120,7 @@ export function PendingPostsTab({ isAdmin, rows, approvePendingPost, rejectPendi
                       <>
                         <form action={approvePendingPost}>
                           <input type="hidden" name="postId" value={post.id} />
-                          <PendingSubmitButton type="submit" size="sm" pendingText="Đang duyệt...">Duyệt & xuất bản</PendingSubmitButton>
+                          <PendingSubmitButton type="submit" size="sm" pendingText="Đang duyệt...">{approveLabel || "Duyệt & xuất bản"}</PendingSubmitButton>
                         </form>
                         <ConfirmActionForm
                           action={rejectPendingPost}

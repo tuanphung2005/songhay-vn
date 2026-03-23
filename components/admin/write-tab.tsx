@@ -21,7 +21,8 @@ type CategoryWriteRow = {
 }
 
 type WriteTabProps = {
-  isAdmin: boolean
+  canPublishNow: boolean
+  canSubmitPendingPublish: boolean
   categoriesForWrite: CategoryWriteRow[]
   mediaAssets: Array<{
     id: string
@@ -34,7 +35,7 @@ type WriteTabProps = {
   createPost: (formData: FormData) => Promise<void>
 }
 
-export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
+export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
   const [hasVideo, setHasVideo] = useState(false)
   const [isSensitive, setIsSensitive] = useState(false)
   const [isPreviewing, startPreviewTransition] = useTransition()
@@ -146,13 +147,16 @@ export function WriteTab({ isAdmin, categoriesForWrite, mediaAssets, createPost 
 
           {isSensitive ? <input type="hidden" name="isSensitive" value="on" /> : null}
 
-          <div className={`grid gap-2 ${isAdmin ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+          <div className={`grid gap-2 ${(canPublishNow || canSubmitPendingPublish) ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
             <PendingSubmitButton type="submit" name="submitAction" value="save-draft" variant="outline" pendingText="Đang lưu...">Lưu nháp</PendingSubmitButton>
             <PendingSubmitButton type="submit" name="submitAction" value="submit-review" className="w-full" variant="destructive" pendingText="Đang gửi duyệt...">Gửi chờ duyệt</PendingSubmitButton>
             <Button type="button" className="w-full" variant="secondary" onClick={handlePreview} disabled={isPreviewing}>
               {isPreviewing ? "Đang lưu..." : "Xem trước"}
             </Button>
-            {isAdmin ? (
+            {canSubmitPendingPublish ? (
+              <PendingSubmitButton type="submit" name="submitAction" value="submit-publish" className="w-full" variant="secondary" pendingText="Đang chuyển kho...">Gửi chờ xuất bản</PendingSubmitButton>
+            ) : null}
+            {canPublishNow ? (
               <PendingSubmitButton type="submit" name="submitAction" value="publish" className="w-full" pendingText="Đang xuất bản...">Xuất bản</PendingSubmitButton>
             ) : null}
           </div>

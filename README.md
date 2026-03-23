@@ -180,3 +180,7 @@ bun run db:push
 bun run db:migrate
 bun run db:seed
 ```
+
+## CMS RBAC Workflow Test Guide
+
+See docs/cms-rbac-workflow-readme.md for role-action matrix, workflow edge cases, and test commands.

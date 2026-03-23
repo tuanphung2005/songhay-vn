@@ -11,11 +11,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CategorySelector } from "@/components/admin/category-selector"
-import { uploadImageToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
+import { uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { requireCmsUser } from "@/lib/auth"
+import { canEditByStatus, canPublishNow, canSubmitPendingPublish, canViewAllPosts } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { slugify } from "@/lib/slug"
+import {
+  getPlainTextFromHtml,
+  resolveEditorialFromSubmitAction,
+  sortCategoriesByTree,
+  uniquePostSlug,
+} from "@/app/admin/edit/[id]/helpers"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -26,34 +32,6 @@ export const metadata: Metadata = {
   },
 }
 
-function getPlainTextFromHtml(value: string) {
-  return value
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
-// Ensure unique slug, unless it's the exact same post
-async function uniquePostSlug(baseTitle: string, currentId: string) {
-  const base = slugify(baseTitle)
-  let candidate = base
-  let index = 1
-
-  while (true) {
-    const found = await prisma.post.findUnique({
-      where: { slug: candidate },
-      select: { id: true },
-    })
-    // If no slug conflict, or the conflict happens to be the same post
-    if (!found || found.id === currentId) {
-      return candidate
-    }
-    candidate = `${base}-${index}`
-    index++
-  }
-}
-
-
 interface EditPostPageProps {
   params: Promise<{ id: string }>
 }
@@ -61,7 +39,7 @@ interface EditPostPageProps {
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params
   const currentUser = await requireCmsUser()
-  const isAdmin = currentUser.role === "ADMIN"
+  const canPublish = canPublishNow(currentUser.role)
 
   const post = await prisma.post.findUnique({
     where: { id },
@@ -72,25 +50,24 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     redirect("/admin?tab=posts")
   }
 
-  if (!isAdmin && post.authorId !== currentUser.id) {
+  const canSeeAllPosts = canViewAllPosts(currentUser.role)
+  if (!canSeeAllPosts && post.authorId !== currentUser.id) {
     redirect("/admin?tab=personal-archive")
+  }
+
+  if (!canEditByStatus(currentUser.role, post.editorialStatus)) {
+    redirect("/admin?tab=personal-archive&toast=post_action_forbidden")
   }
 
   const rawCategories = await prisma.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: { id: true, name: true, parentId: true },
   })
-  
-  const roots = rawCategories.filter(c => !c.parentId)
-  const categories = []
-  for (const root of roots) {
-    categories.push(root)
-    categories.push(...rawCategories.filter(c => c.parentId === root.id))
-  }
+  const categories = sortCategoriesByTree(rawCategories)
 
   const mediaAssets = await prisma.mediaAsset.findMany({
     where: {
-      OR: [{ uploaderId: currentUser.id }, { visibility: "SHARED", assetType: "VIDEO" }],
+      visibility: "SHARED",
     },
     select: {
       id: true,
@@ -125,8 +102,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const isSensitive = formData.get("isSensitive") === "on"
     const submitAction = String(formData.get("submitAction") || "").trim()
 
-    const requestedPublished = formData.get("isPublished") === "on"
-
     const thumbnailUpload = formData.get("thumbnailUpload")
     const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
@@ -149,11 +124,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const ogImage = thumbnailUrl || manualOgImage
 
-    const shouldSaveDraft = submitAction === "save-draft"
-    const shouldPublishNow = submitAction === "publish" || (submitAction.length === 0 && requestedPublished && isAdmin)
-    const editorialStatus = shouldPublishNow ? "PUBLISHED" : "PENDING_REVIEW"
-    const isPublished = editorialStatus === "PUBLISHED"
-    const isDraft = shouldSaveDraft
+    const { editorialStatus, isPublished, isDraft } = resolveEditorialFromSubmitAction({
+      submitAction,
+      role: currentUser.role,
+    })
 
     const currentPost = await prisma.post.findUnique({
       where: { id: postId },
@@ -200,11 +174,19 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     revalidatePath(`/${currentPost.category.slug}/${currentPost.slug}`)
     revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
     clearDataCache()
-    if (shouldSaveDraft) {
+    if (isDraft) {
       redirect("/admin?tab=personal-archive&toast=post_saved_draft")
     }
 
-    redirect(isPublished ? "/admin?tab=posts&toast=post_updated_published" : "/admin?tab=pending-posts&toast=post_updated_review")
+    if (isPublished) {
+      redirect("/admin?tab=posts&toast=post_updated_published")
+    }
+
+    if (editorialStatus === "PENDING_PUBLISH") {
+      redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+    }
+
+    redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_updated_review")
   }
 
   return (
@@ -333,11 +315,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             <div className="grid gap-2 md:grid-cols-3">
               <Button type="submit" name="submitAction" value="save-draft" variant="outline">Lưu nháp</Button>
               <Button type="submit" name="submitAction" value="submit-review" variant="secondary">Gửi chờ duyệt</Button>
-              {isAdmin ? (
-                <Button type="submit" name="submitAction" value="publish">Xuất bản</Button>
-              ) : (
-                <Button type="button" disabled>Xuất bản (chỉ admin)</Button>
-              )}
+              {canSubmitPendingPublish(currentUser.role) ? (
+                <Button type="submit" name="submitAction" value="submit-publish" variant="secondary">Gửi chờ xuất bản</Button>
+              ) : null}
+              {canPublish ? <Button type="submit" name="submitAction" value="publish">Xuất bản</Button> : null}
             </div>
           </form>
         </CardContent>

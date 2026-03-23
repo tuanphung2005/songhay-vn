@@ -30,12 +30,16 @@ describe("seed data integrity", () => {
     expect(count).toBeGreaterThanOrEqual(4)
   })
 
-  test("seed creates at least 2 editor (USER role) accounts", () => {
+  test("seed creates five editorial roles", () => {
     const source = readWorkspaceFile("prisma/seed.ts")
 
     expect(source).toContain("editor1@songhay.vn")
     expect(source).toContain("editor2@songhay.vn")
-    expect(source).toContain("role: \"USER\"")
+    expect(source).toContain("role: \"EDITOR_IN_CHIEF\"")
+    expect(source).toContain("role: \"MANAGING_EDITOR\"")
+    expect(source).toContain("role: \"TEAM_LEAD\"")
+    expect(source).toContain("role: \"REPORTER_TRANSLATOR\"")
+    expect(source).toContain("role: \"CONTRIBUTOR\"")
   })
 
   test("seed creates posts with PENDING_REVIEW status for editor workflow", () => {
@@ -63,10 +67,10 @@ describe("seed data integrity", () => {
     expect(source).toContain("editor2@songhay.vn")
   })
 
-  test("seed creates admin-approved editor posts with approverId set to admin", () => {
+  test("seed creates approved editor posts with approverId set to editor in chief", () => {
     const source = readWorkspaceFile("prisma/seed.ts")
 
-    expect(source).toContain("approverId: admin.id")
+    expect(source).toContain("approverId: editorInChief.id")
     expect(source).toContain("approvedAt: publishedAt")
   })
 })
@@ -81,22 +85,23 @@ describe("schema default field awareness", () => {
     expect(schema).toContain("isDraft        Boolean  @default(true)")
   })
 
-  test("schema defaults editorialStatus to PUBLISHED — drafts/pending must override", () => {
+  test("schema defaults editorialStatus to DRAFT", () => {
     const schema = readWorkspaceFile("prisma/schema.prisma")
 
-    expect(schema).toContain("editorialStatus EditorialStatus @default(PUBLISHED)")
+    expect(schema).toContain("editorialStatus EditorialStatus @default(DRAFT)")
     // The EditorialStatus enum includes PENDING_REVIEW
     expect(schema).toContain("PENDING_REVIEW")
+    expect(schema).toContain("PENDING_PUBLISH")
     expect(schema).toContain("REJECTED")
   })
 
-  test("kho-bai (posts tab) query filters isDraft: false AND isPublished: true", () => {
-    const source = readWorkspaceFile("app/admin/data.ts")
+  test("kho-bai (posts tab) query is unified by editorial status and scopes non-deleted posts", () => {
+    const source = readWorkspaceFile("app/admin/data-loaders/posts.ts")
 
-    // These two conditions together explain why seeded posts were invisible
-    expect(source).toContain("isPublished: true")
-    expect(source).toContain("isDraft: false")
     expect(source).toContain("isDeleted: false")
+    expect(source).toContain("postsFilters.status === \"published\"")
+    expect(source).toContain("postsFilters.status === \"pending-review\"")
+    expect(source).toContain("postsFilters.status === \"pending-publish\"")
   })
 
   test("public-facing API routes also filter isDraft: false to prevent draft leaks", () => {

@@ -1,0 +1,92 @@
+import { redirect } from "next/navigation"
+
+import { type EditorialStatus, type UserRole } from "@/generated/prisma/client"
+
+import { canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
+import { prisma } from "@/lib/prisma"
+import { slugify } from "@/lib/slug"
+
+export function ensurePermission(condition: boolean, redirectTo: string) {
+  if (!condition) {
+    redirect(redirectTo)
+  }
+}
+
+export function resolveEditorialFromSubmitAction({
+  submitAction,
+  role,
+}: {
+  submitAction: string
+  role: UserRole
+}): {
+  editorialStatus: EditorialStatus
+  isDraft: boolean
+  isPublished: boolean
+} {
+  if (submitAction === "save-draft") {
+    return {
+      editorialStatus: "DRAFT",
+      isDraft: true,
+      isPublished: false,
+    }
+  }
+
+  if (submitAction === "submit-publish" && canSubmitPendingPublish(role)) {
+    return {
+      editorialStatus: "PENDING_PUBLISH",
+      isDraft: false,
+      isPublished: false,
+    }
+  }
+
+  if (submitAction === "publish" && canPublishNow(role)) {
+    return {
+      editorialStatus: "PUBLISHED",
+      isDraft: false,
+      isPublished: true,
+    }
+  }
+
+  return {
+    editorialStatus: "PENDING_REVIEW",
+    isDraft: false,
+    isPublished: false,
+  }
+}
+
+export function getPlainTextFromHtml(value: string) {
+  return value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+export async function uniqueCategorySlug(baseName: string, currentId?: string) {
+  const base = slugify(baseName)
+  let candidate = base
+  let index = 1
+
+  while (true) {
+    const found = await prisma.category.findUnique({ where: { slug: candidate }, select: { id: true } })
+    if (!found || found.id === currentId) {
+      return candidate
+    }
+    candidate = `${base}-${index}`
+    index += 1
+  }
+}
+
+export async function uniquePostSlug(baseTitle: string) {
+  const base = slugify(baseTitle)
+  let candidate = base
+  let index = 1
+
+  while (true) {
+    const found = await prisma.post.findUnique({ where: { slug: candidate }, select: { id: true } })
+    if (!found) {
+      return candidate
+    }
+    index += 1
+    candidate = `${base}-${index}`
+  }
+}

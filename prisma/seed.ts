@@ -286,42 +286,64 @@ async function main() {
   const adminEmail = process.env.ADMIN_EMAIL || "admin@songhay.vn"
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123456"
 
-  const admin = await prisma.user.upsert({
+  const editorInChief = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {
-      name: "Songhay Admin",
-      role: "ADMIN",
+      name: "Tổng biên tập Songhay",
+      role: "EDITOR_IN_CHIEF",
       passwordHash: hashPassword(adminPassword),
     },
     create: {
       email: adminEmail,
-      name: "Songhay Admin",
-      role: "ADMIN",
+      name: "Tổng biên tập Songhay",
+      role: "EDITOR_IN_CHIEF",
       passwordHash: hashPassword(adminPassword),
     },
   })
 
-  // ── Editor / contributor accounts ───────────────────────────────────────
+  // ── Editorial accounts for RBAC matrix ─────────────────────────────────
   const editorPassword = "Editor@123456"
+
+  const managingEditor = await prisma.user.upsert({
+    where: { email: "managing.editor@songhay.vn" },
+    update: { name: "Lê Thu Hà (Thư ký biên tập)", role: "MANAGING_EDITOR", passwordHash: hashPassword(editorPassword) },
+    create: {
+      email: "managing.editor@songhay.vn",
+      name: "Lê Thu Hà (Thư ký biên tập)",
+      role: "MANAGING_EDITOR",
+      passwordHash: hashPassword(editorPassword),
+    },
+  })
+
+  const teamLead = await prisma.user.upsert({
+    where: { email: "team.lead@songhay.vn" },
+    update: { name: "Phạm Duy Anh (Trưởng nhóm)", role: "TEAM_LEAD", passwordHash: hashPassword(editorPassword) },
+    create: {
+      email: "team.lead@songhay.vn",
+      name: "Phạm Duy Anh (Trưởng nhóm)",
+      role: "TEAM_LEAD",
+      passwordHash: hashPassword(editorPassword),
+    },
+  })
 
   const editor1 = await prisma.user.upsert({
     where: { email: "editor1@songhay.vn" },
-    update: { name: "Nguyễn Thị Lan (BTV)", role: "USER", passwordHash: hashPassword(editorPassword) },
+    update: { name: "Nguyễn Thị Lan (Phóng viên)", role: "REPORTER_TRANSLATOR", passwordHash: hashPassword(editorPassword) },
     create: {
       email: "editor1@songhay.vn",
-      name: "Nguyễn Thị Lan (BTV)",
-      role: "USER",
+      name: "Nguyễn Thị Lan (Phóng viên)",
+      role: "REPORTER_TRANSLATOR",
       passwordHash: hashPassword(editorPassword),
     },
   })
 
   const editor2 = await prisma.user.upsert({
     where: { email: "editor2@songhay.vn" },
-    update: { name: "Trần Minh Khoa (BTV)", role: "USER", passwordHash: hashPassword(editorPassword) },
+    update: { name: "Trần Minh Khoa (CTV)", role: "CONTRIBUTOR", passwordHash: hashPassword(editorPassword) },
     create: {
       email: "editor2@songhay.vn",
-      name: "Trần Minh Khoa (BTV)",
-      role: "USER",
+      name: "Trần Minh Khoa (CTV)",
+      role: "CONTRIBUTOR",
       passwordHash: hashPassword(editorPassword),
     },
   })
@@ -451,7 +473,7 @@ async function main() {
         thumbnailUrl: post.thumbnailUrl,
         categoryId,
         authorId: post.author.id,
-        approverId: admin.id,
+        approverId: editorInChief.id,
         approvedAt: publishedAt,
         isPublished: true,
         isDraft: false,
@@ -467,7 +489,7 @@ async function main() {
         thumbnailUrl: post.thumbnailUrl,
         categoryId,
         authorId: post.author.id,
-        approverId: admin.id,
+        approverId: editorInChief.id,
         approvedAt: publishedAt,
         isPublished: true,
         isDraft: false,

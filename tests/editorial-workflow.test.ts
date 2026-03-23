@@ -10,10 +10,10 @@ describe("editorial workflow", () => {
   test("post creation supports draft and pending review flow", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
-    expect(source).toContain("const shouldSaveDraft = submitAction === \"save-draft\"")
-    expect(source).toContain("const shouldPublishNow = submitAction === \"publish\"")
-    expect(source).toContain("const isDraft = shouldSaveDraft")
-    expect(source).toContain("redirect(\"/admin?tab=pending-posts&toast=post_submitted_review\")")
+    expect(source).toContain("resolveEditorialFromSubmitAction")
+    expect(source).toContain("editorialStatus === \"DRAFT\"")
+    expect(source).toContain("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+    expect(source).toContain("redirect(\"/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review\")")
     expect(source).toContain("redirect(\"/admin?tab=personal-archive&toast=post_saved_draft\")")
     expect(source).toContain("authorId: currentUser.id")
   })
@@ -22,21 +22,28 @@ describe("editorial workflow", () => {
     const source = readWorkspaceFile("app/admin/actions.ts")
 
     expect(source).toContain("export async function approvePendingPost")
-    expect(source).toContain("editorialStatus: \"PUBLISHED\"")
+    expect(source).toContain("editorialStatus: canPublishNow(currentUser.role) ? \"PUBLISHED\" : \"PENDING_PUBLISH\"")
     expect(source).toContain("approverId: currentUser.id")
     expect(source).toContain("approvedAt: new Date()")
     expect(source).toContain("export async function rejectPendingPost")
     expect(source).toContain("editorialStatus: \"REJECTED\"")
+    expect(source).toContain("export async function returnPostToPendingReview")
+    expect(source).toContain("editorialStatus: \"PENDING_REVIEW\"")
+    expect(source).toContain("export async function returnPostToPendingPublish")
+    expect(source).toContain("editorialStatus: \"PENDING_PUBLISH\"")
   })
 
-  test("pending and personal archive UI components are wired", () => {
+  test("posts and personal archive UI components are wired", () => {
     const pageSource = readWorkspaceFile("app/admin/page.tsx")
-    const pendingSource = readWorkspaceFile("components/admin/pending-posts-tab.tsx")
+    const postsSource = readWorkspaceFile("components/admin/posts-tab.tsx")
     const personalSource = readWorkspaceFile("components/admin/personal-archive-tab.tsx")
 
-    expect(pageSource).toContain("<PendingPostsTab")
+    expect(pageSource).toContain("<PostsTab")
     expect(pageSource).toContain("<PersonalArchiveTab")
-    expect(pendingSource).toContain("Duyệt & xuất bản")
+    expect(postsSource).toContain("Lên chờ xuất bản")
+    expect(postsSource).toContain("Lên chờ duyệt")
+    expect(postsSource).toContain("Trả về kho")
+    expect(postsSource).toContain("Trả về chờ xuất bản")
     expect(personalSource).toContain("statusLabel")
   })
 })
