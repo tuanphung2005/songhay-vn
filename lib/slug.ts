@@ -1,5 +1,7 @@
 export function slugify(value: string): string {
   return value
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -7,4 +9,5 @@ export function slugify(value: string): string {
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
 }

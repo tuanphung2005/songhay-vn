@@ -1,16 +1,20 @@
 export function normalizeArticleHtml(rawHtml: string) {
   return rawHtml
-    .replace(/<span([^>]*)style="([^"]*)"([^>]*)>([\s\S]*?)<\/span>/gi, (_match, _before, styleValue, _after, content) => {
+    .replace(/<span([^>]*)style="([^"]*)"([^>]*)>([\s\S]*?)<\/span>/gi, (match, before, styleValue, after, content) => {
+      const hasUnderline = /text-decoration\s*:\s*underline/i.test(styleValue)
+      const hasStrikethrough = /text-decoration\s*:\s*line-through/i.test(styleValue)
+      const hasOtherStyles = styleValue.split(";").map((s: string) => s.trim()).filter((s: string) => s && !s.toLowerCase().startsWith("text-decoration")).length > 0
+
+      if (hasOtherStyles) {
+        let inner = String(content)
+        if (hasUnderline) inner = `<u>${inner}</u>`
+        if (hasStrikethrough) inner = `<s>${inner}</s>`
+        return `<span${before}style="${styleValue}"${after}>${inner}</span>`
+      }
+
       let result = String(content)
-
-      if (/text-decoration\s*:\s*underline/i.test(styleValue)) {
-        result = `<u>${result}</u>`
-      }
-
-      if (/text-decoration\s*:\s*line-through/i.test(styleValue)) {
-        result = `<s>${result}</s>`
-      }
-
+      if (hasUnderline) result = `<u>${result}</u>`
+      if (hasStrikethrough) result = `<s>${result}</s>`
       return result
     })
     .replace(/\sstyle="([^"]*)"/gi, (_match, styleValue) => {

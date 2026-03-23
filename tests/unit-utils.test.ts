@@ -20,6 +20,18 @@ describe("Unit: BMI Calculation", () => {
     expect(result.bmi).toBeCloseTo(17.57, 1)
     expect(result.category).toBe("Thiếu cân")
     expect(result.genderLabel).toBe("Nữ")
+
+    // Normal female: 160cm, 55kg -> 21.48
+    const normal = calculateBmi(160, 55, "female")
+    expect(normal.category).toBe("Bình thường")
+
+    // Overweight female: 160cm, 65kg -> 25.39
+    const overweight = calculateBmi(160, 65, "female")
+    expect(overweight.category).toBe("Thừa cân")
+
+    // Obese female: 160cm, 80kg -> 31.25
+    const obese = calculateBmi(160, 80, "female")
+    expect(obese.category).toBe("Béo phì")
   })
 
   test("identifies overweight and obesity correctly", () => {
@@ -30,6 +42,22 @@ describe("Unit: BMI Calculation", () => {
     // Male Obese: 175cm, 100kg -> 100 / (1.75 * 1.75) = 32.65
     const obese = calculateBmi(175, 100, "male")
     expect(obese.category).toBe("Béo phì")
+  })
+
+  test("handles boundary cases correctly", () => {
+    // Male boundary underweight: BMI = 20
+    // weight = 20 * (1.75 * 1.75) = 61.25
+    const maleUnderweight = calculateBmi(175, 61.2, "male")
+    expect(maleUnderweight.category).toBe("Thiếu cân")
+    const maleNormal = calculateBmi(175, 61.3, "male")
+    expect(maleNormal.category).toBe("Bình thường")
+
+    // Female boundary underweight: BMI = 19
+    // weight = 19 * (1.6 * 1.6) = 48.64
+    const femaleUnderweight = calculateBmi(160, 48.6, "female")
+    expect(femaleUnderweight.category).toBe("Thiếu cân")
+    const femaleNormal = calculateBmi(160, 48.7, "female")
+    expect(femaleNormal.category).toBe("Bình thường")
   })
 })
 
@@ -45,6 +73,14 @@ describe("Unit: Slugification", () => {
     expect(slugify("Học lập trình")).toBe("hoc-lap-trinh")
     expect(slugify("Công nghệ thông tin")).toBe("cong-nghe-thong-tin")
     expect(slugify("Chào buổi sáng Việt Nam")).toBe("chao-buoi-sang-viet-nam")
+    expect(slugify("Đã có lỗi xảy ra")).toBe("da-co-loi-xay-ra") // testing Đ and accents
+    expect(slugify("Trường đại học bách khoa")).toBe("truong-dai-hoc-bach-khoa")
+  })
+
+  test("handles complex edge cases", () => {
+    expect(slugify("---Already-Slugified---")).toBe("already-slugified")
+    expect(slugify("123 Numbers 456")).toBe("123-numbers-456")
+    expect(slugify("Mixed CASE Content")).toBe("mixed-case-content")
   })
 })
 
@@ -89,6 +125,23 @@ describe("Unit: HTML Normalization", () => {
     const output = normalizeArticleHtml(input)
     expect(output).toContain('style="text-align:center;color:red;font-size:16px"')
     expect(output).not.toContain("margin-top")
+  })
+
+  test("supports float and layout styles", () => {
+    const input = '<div style="float: left; width: 100px; height: 50% !important; max-width: 500px">Box</div>'
+    const output = normalizeArticleHtml(input)
+    expect(output).toContain("float:left")
+    expect(output).toContain("width:100px")
+    // Note: normalizeArticleHtml doesn't handle !important explicitly in regex, so it might fail or include it depending on regex
+    expect(output).toContain("max-width:500px")
+  })
+
+  test("supports font-family and background colors", () => {
+    const input = '<span style="font-family: Arial, sans-serif; background-color: #fff; color: rgb(0,0,0)">Text</span>'
+    const output = normalizeArticleHtml(input)
+    expect(output).toContain("font-family:arial, sans-serif")
+    expect(output).toContain("background-color:#fff")
+    expect(output).toContain("color:rgb(0,0,0)")
   })
 
   test("preserves images and videos/iframes unaffected", () => {
