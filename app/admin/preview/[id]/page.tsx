@@ -4,7 +4,7 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
-import { AdPlaceholder } from "@/components/news/ad-placeholder"
+// import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
@@ -116,7 +116,7 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
-          <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" />
+          {/* <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" /> */}
 
           {post.videoEmbedUrl ? (
             <div className="overflow-hidden border border-zinc-200">

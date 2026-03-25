@@ -19,7 +19,7 @@ export function FloatingGiftButton() {
   }
 
   return (
-    <div className="fixed right-2 top-1/2 z-[70] -translate-y-1/2 md:right-5">
+    <div className="fixed right-2 bottom-20 z-[70] md:top-1/2 md:-translate-y-1/2 md:right-5">
       <button
         type="button"
         aria-label="Tắt nút nhận voucher"

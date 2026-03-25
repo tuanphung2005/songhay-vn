@@ -2,17 +2,19 @@ import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
 
-import { AdPlaceholder } from "@/components/news/ad-placeholder"
+// import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { DontMissWidget } from "@/components/news/dont-miss-widget"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
+import { RecommendedForYou } from "@/components/news/recommended-for-you"
+import { VideoMostWatched } from "@/components/news/video-most-watched"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { JsonLd } from "@/components/seo/json-ld"
-import { getHomepageData, getNavCategories, getTrendingPosts } from "@/lib/queries"
+import { getHomepageData, getNavCategories } from "@/lib/queries"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
@@ -44,46 +46,16 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [{ latest, mostRead }, trendingPosts, navCategories, latestByCategoryResponse] = await Promise.all([
+  const [
+    { latest, mostRead, recommended, mostWatched, trendingPosts, heroSlots = [] },
+    navCategories,
+  ] = await Promise.all([
     getHomepageData(),
-    getTrendingPosts(),
     getNavCategories(),
-    fetch(`${siteUrl}/api/posts/latest-by-category?perCategory=1&categories=6`, {
-      next: { revalidate: 300 },
-    }),
   ])
 
-  const latestByCategoryPayload = latestByCategoryResponse.ok
-    ? (await latestByCategoryResponse.json()) as {
-      items: Array<{
-        category: {
-          name: string
-          slug: string
-        }
-        posts: Array<{
-          id: string
-          title: string
-          slug: string
-          excerpt: string
-          thumbnailUrl: string | null
-          publishedAt: string
-        }>
-      }>
-    }
-    : { items: [] }
-
-  const featuredPosts = latestByCategoryPayload.items
-    .flatMap((section) =>
-      section.posts.map((post) => ({
-        ...post,
-        category: section.category,
-        publishedAt: new Date(post.publishedAt),
-      }))
-    )
-    .slice(0, 4)
-
-  const heroPost = featuredPosts[0]
-  const heroMini = featuredPosts.slice(1, 4)
+  const heroPost = heroSlots[0]
+  const heroMini = heroSlots.slice(1, 4)
 
   const groupedByCategory = latest.reduce<Record<string, typeof latest>>((acc, post) => {
     const key = post.category.slug
@@ -119,7 +91,7 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 md:px-6">
-        <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
+        {/* <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" /> */}
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
           <div className="space-y-8">
@@ -167,9 +139,9 @@ export default async function HomePage() {
             </section>
 
             <section className="space-y-4">
-              <SectionHeading title="Tin đọc nhiều" />
+              <SectionHeading title="Tin mới nhất" />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                {trendingPosts.map((post) => (
+                {latest.slice(0, 8).map((post) => (
                   <PostCard
                     key={post.id}
                     href={`/${post.category.slug}/${post.slug}`}
@@ -184,9 +156,13 @@ export default async function HomePage() {
               </div>
             </section>
 
-            <AdPlaceholder label="Between sections ad (Google AdSense)" className="min-h-24" />
+            {/* <AdPlaceholder label="Between sections ad (Google AdSense)" className="min-h-24" /> */}
 
-            <section className="space-y-8">
+            {/* Engagement Sections */}
+            <RecommendedForYou posts={recommended} />
+            <VideoMostWatched posts={mostWatched} />
+
+            <section className="space-y-8 pt-8 border-t border-zinc-100">
               {categoryBlocks.map((items) => {
                 const [first] = items
                 return (
@@ -246,9 +222,9 @@ export default async function HomePage() {
 
       <SiteFooter />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
+      {/* <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
         <AdPlaceholder label="Bottom page ad (Google AdSense)" className="min-h-24" />
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { cache } from "react"
 
-import { AdPlaceholder } from "@/components/news/ad-placeholder"
+// import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { CommentForm } from "@/components/news/comment-form"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
@@ -15,7 +15,10 @@ import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts } from "@/lib/queries"
+import { RecommendedForYou } from "@/components/news/recommended-for-you"
+import { VideoMostWatched } from "@/components/news/video-most-watched"
+import { SectionHeading } from "@/components/news/section-heading"
+import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts, getMostWatchedVideos, getRecommendedPosts } from "@/lib/queries"
 import { normalizeArticleHtml } from "@/lib/html"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
@@ -81,9 +84,11 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const article = post!
 
-  const [relatedPosts, trendingPosts] = await Promise.all([
-    getRelatedPosts(article.id, article.categoryId),
+  const [relatedPosts, trendingPosts, mostWatchedVideos, recommendedPosts] = await Promise.all([
+    getRelatedPosts(article.id, article.categoryId, 12),
     getTrendingPosts(),
+    getMostWatchedVideos(8),
+    getRecommendedPosts(article.id, article.categoryId, 12),
   ])
 
   const siteUrl = getSiteUrl()
@@ -176,12 +181,13 @@ export default async function PostPage({ params }: PostPageProps) {
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
-          <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" />
+          {/* <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" /> */}
 
           {article.videoEmbedUrl ? (
             <div className="overflow-hidden border border-zinc-200">
               <iframe
                 src={article.videoEmbedUrl}
+                title={`Video cho bài viết: ${article.title}`}
                 className="aspect-video w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -207,8 +213,30 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <CommentForm postId={article.id} currentUser={null} />
 
+          <RecommendedForYou posts={recommendedPosts} />
+
+          <VideoMostWatched posts={mostWatchedVideos} />
+
           <section className="space-y-4">
-            <h2 className="text-2xl font-extrabold">Các tin liên quan</h2>
+            <SectionHeading title="Đọc nhiều nhất" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {trendingPosts.slice(0, 10).map((trending) => (
+                <PostCard
+                  key={trending.id}
+                  href={`/${trending.category.slug}/${trending.slug}`}
+                  title={trending.title}
+                  excerpt={trending.excerpt}
+                  imageUrl={trending.thumbnailUrl}
+                  date={trending.publishedAt}
+                  categoryName={trending.category.name}
+                  compact
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionHeading title="Đọc thêm" />
             <div className="grid gap-4 sm:grid-cols-2"> 
               {relatedPosts.map((related) => (
                 <PostCard
