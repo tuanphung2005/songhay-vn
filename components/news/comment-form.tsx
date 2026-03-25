@@ -84,7 +84,6 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-3 border border-zinc-200 bg-white p-4">
       <h3 className="text-xl font-bold">Bình luận</h3>
-      <p className="text-sm text-zinc-600">Bình luận sẽ được duyệt trước khi hiển thị.</p>
       <input
         value={authorName}
         onChange={(event) => setAuthorName(event.target.value)}

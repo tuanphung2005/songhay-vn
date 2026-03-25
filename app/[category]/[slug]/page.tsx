@@ -208,8 +208,8 @@ export default async function PostPage({ params }: PostPageProps) {
           <CommentForm postId={article.id} currentUser={null} />
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-extrabold">Related posts</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <h2 className="text-2xl font-extrabold">Các tin liên quan</h2>
+            <div className="grid gap-4 sm:grid-cols-2"> 
               {relatedPosts.map((related) => (
                 <PostCard
                   key={related.id}
