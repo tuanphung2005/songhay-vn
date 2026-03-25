@@ -71,7 +71,7 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
       setContent("")
       setStatus("success")
       toast.success("Đã gửi bình luận", {
-        description: "Bình luận sẽ được duyệt trước khi hiển thị.",
+        description: "Cảm ơn bạn đã chia sẻ ý kiến. Bình luận của bạn sẽ được hiển thị trong chốc lát",
       })
     } catch {
       setStatus("error")
