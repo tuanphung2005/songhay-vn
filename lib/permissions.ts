@@ -10,7 +10,7 @@ export const ROLE_LABELS_VI: Record<UserRole, string> = {
   CONTRIBUTOR: "Cộng tác viên",
 }
 
-type PermissionAction =
+export type PermissionAction =
   | "create-category"
   | "edit-category"
   | "delete-category"
@@ -27,7 +27,52 @@ type PermissionAction =
   | "delete-any-media"
   | "create-subordinate-account"
 
-const PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
+export const ACTION_LABELS_VI: Record<PermissionAction, string> = {
+  "create-category": "Tạo chuyên mục",
+  "edit-category": "Sửa chuyên mục",
+  "delete-category": "Xóa chuyên mục",
+  "moderate-comment": "Kiểm duyệt bình luận",
+  "create-post": "Tạo bài viết",
+  "edit-pending-review": "Sửa bài chờ duyệt",
+  "submit-pending-review": "Gửi bài chờ duyệt",
+  "submit-pending-publish": "Gửi bài chờ xuất bản",
+  "approve-pending-review": "Duyệt bài viết",
+  "publish-pending-publish": "Xuất bản bài viết",
+  "edit-pending-publish": "Sửa bài chờ xuất bản",
+  "edit-published": "Sửa bài đã xuất bản",
+  "view-all-posts": "Xem tất cả bài viết",
+  "delete-any-media": "Xóa media của người khác",
+  "create-subordinate-account": "Tạo tài khoản cấp dưới",
+}
+
+export const ALL_PERMISSION_ACTIONS: PermissionAction[] = [
+  "create-category",
+  "edit-category",
+  "delete-category",
+  "moderate-comment",
+  "create-post",
+  "edit-pending-review",
+  "submit-pending-review",
+  "submit-pending-publish",
+  "approve-pending-review",
+  "publish-pending-publish",
+  "edit-pending-publish",
+  "edit-published",
+  "view-all-posts",
+  "delete-any-media",
+  "create-subordinate-account",
+]
+
+export const ALL_EDITABLE_ROLES: UserRole[] = [
+  "EDITOR_IN_CHIEF",
+  "MANAGING_EDITOR",
+  "TEAM_LEAD",
+  "REPORTER_TRANSLATOR",
+  "CONTRIBUTOR",
+]
+
+// Default permission sets – used for seeding and as fallback
+export const DEFAULT_PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
   ADMIN: new Set([
     "create-category",
     "edit-category",
@@ -104,8 +149,57 @@ const PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
   ]),
 }
 
+// Runtime-mutable permissions map (hydrated from DB on first use)
+let _runtimePermissions: Record<UserRole, Set<PermissionAction>> | null = null
+
+function cloneDefaults(): Record<UserRole, Set<PermissionAction>> {
+  return {
+    ADMIN: new Set(DEFAULT_PERMISSIONS.ADMIN),
+    USER: new Set(DEFAULT_PERMISSIONS.USER),
+    EDITOR_IN_CHIEF: new Set(DEFAULT_PERMISSIONS.EDITOR_IN_CHIEF),
+    MANAGING_EDITOR: new Set(DEFAULT_PERMISSIONS.MANAGING_EDITOR),
+    TEAM_LEAD: new Set(DEFAULT_PERMISSIONS.TEAM_LEAD),
+    REPORTER_TRANSLATOR: new Set(DEFAULT_PERMISSIONS.REPORTER_TRANSLATOR),
+    CONTRIBUTOR: new Set(DEFAULT_PERMISSIONS.CONTRIBUTOR),
+  }
+}
+
+export function getPermissions(): Record<UserRole, Set<PermissionAction>> {
+  if (!_runtimePermissions) {
+    _runtimePermissions = cloneDefaults()
+  }
+  return _runtimePermissions
+}
+
+/**
+ * Called server-side after loading rows from DB to hydrate the runtime map.
+ * rows: array of { role, action } records from the RolePermission table.
+ */
+export function hydratePermissionsFromDb(rows: Array<{ role: UserRole; action: string }>) {
+  const fresh = cloneDefaults()
+  // Clear all editable roles first
+  for (const role of ALL_EDITABLE_ROLES) {
+    fresh[role] = new Set()
+  }
+  for (const row of rows) {
+    if (ALL_PERMISSION_ACTIONS.includes(row.action as PermissionAction)) {
+      fresh[row.role]?.add(row.action as PermissionAction)
+    }
+  }
+  _runtimePermissions = fresh
+}
+
+/**
+ * Update a single role's permissions in the runtime map.
+ * Used after saving to DB to keep in-memory state consistent.
+ */
+export function setRolePermissions(role: UserRole, actions: PermissionAction[]) {
+  const perms = getPermissions()
+  perms[role] = new Set(actions)
+}
+
 export function can(role: UserRole, action: PermissionAction) {
-  return PERMISSIONS[role].has(action)
+  return getPermissions()[role].has(action)
 }
 
 export function canViewAllPosts(role: UserRole) {

@@ -7,8 +7,10 @@ import {
   MessageSquareMore,
   Newspaper,
   PenSquare,
+  ShieldCheck,
   Trash2,
   UserSquare2,
+  Users,
 } from "lucide-react"
 
 import type { AdminTab } from "@/app/admin/data"
@@ -40,6 +42,8 @@ export const SETTINGS_TABS: NavLeaf[] = [
   { key: "settings-password", label: "Đổi mật khẩu", description: "Mock UI đổi mật khẩu", icon: KeyRound },
   { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban, adminOnly: true },
   { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore, adminOnly: true },
+  { key: "settings-permissions", label: "Phân quyền", description: "Tùy chỉnh quyền theo từng role", icon: ShieldCheck, adminOnly: true },
+  { key: "settings-users", label: "Người dùng", description: "Quản lý tài khoản và phân quyền", icon: Users, adminOnly: true },
 ]
 
 type RawSearchParams = {

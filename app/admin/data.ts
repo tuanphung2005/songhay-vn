@@ -8,6 +8,8 @@ import {
   getPersonalPostsData,
   getPostsData,
   getTrashedPostsData,
+  getUsersData,
+  getRolePermissionsData,
 } from "@/app/admin/data-loaders/index"
 import { buildPaginationItems } from "@/app/admin/data-helpers"
 import type { GetAdminPageDataInput } from "@/app/admin/data-types"
@@ -38,6 +40,8 @@ export async function getAdminPageData({
     trashedPosts,
     pendingComments,
     overviewAnalytics,
+    usersData,
+    permissionsMatrix,
   ] = await Promise.all([
     getCategoriesForManage(activeTab),
     getCategoriesForWrite(activeTab),
@@ -47,6 +51,8 @@ export async function getAdminPageData({
     getTrashedPostsData(activeTab, trashFilters, currentUser),
     getPendingComments(activeTab),
     getOverviewAnalytics(activeTab),
+    getUsersData(activeTab),
+    getRolePermissionsData(activeTab),
   ])
 
   const postsPaginationItems = buildPaginationItems(postsData.currentPage, postsData.totalPages)
@@ -69,5 +75,7 @@ export async function getAdminPageData({
     trashFilters,
     pendingComments,
     overviewAnalytics,
+    usersData,
+    permissionsMatrix,
   }
 }

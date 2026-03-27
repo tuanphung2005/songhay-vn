@@ -14,6 +14,10 @@ import {
   canPublishNow,
   canViewAllPosts,
   roleCanCreate,
+  ALL_EDITABLE_ROLES,
+  ALL_PERMISSION_ACTIONS,
+  setRolePermissions,
+  type PermissionAction,
 } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/password"
@@ -824,4 +828,84 @@ export async function createSubordinateAccount(formData: FormData) {
 
   clearDataCache()
   redirect("/admin?tab=settings-password&toast=account_created")
+}
+
+export async function updateRolePermissions(formData: FormData) {
+  const currentUser = await requireEditorInChiefUser()
+  ensurePermission(canCreateSubordinateAccount(currentUser.role), "/admin?tab=settings-permissions&toast=permissions_update_failed")
+
+  const role = String(formData.get("role") || "").trim() as UserRole
+  if (!ALL_EDITABLE_ROLES.includes(role)) {
+    redirect("/admin?tab=settings-permissions&toast=permissions_update_failed")
+  }
+
+  const selected = ALL_PERMISSION_ACTIONS.filter(
+    (action) => formData.get(`perm_${action}`) === "on"
+  ) as PermissionAction[]
+
+  await prisma.$transaction([
+    prisma.rolePermission.deleteMany({ where: { role } }),
+    ...selected.map((action) =>
+      prisma.rolePermission.create({ data: { role, action } })
+    ),
+  ])
+
+  setRolePermissions(role, selected)
+
+  revalidatePath("/admin")
+  redirect("/admin?tab=settings-permissions&toast=permissions_updated")
+}
+
+export async function updateUserRole(formData: FormData) {
+  const currentUser = await requireEditorInChiefUser()
+  ensurePermission(canCreateSubordinateAccount(currentUser.role), "/admin?tab=settings-users&toast=user_role_update_failed")
+
+  const userId = String(formData.get("userId") || "").trim()
+  const newRole = String(formData.get("newRole") || "").trim() as UserRole
+
+  if (!userId || !ALL_EDITABLE_ROLES.includes(newRole)) {
+    redirect("/admin?tab=settings-users&toast=user_role_update_failed")
+  }
+
+  if (userId === currentUser.id) {
+    redirect("/admin?tab=settings-users&toast=user_role_update_failed")
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (!target) {
+    redirect("/admin?tab=settings-users&toast=user_role_update_failed")
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { role: newRole } })
+
+  clearDataCache()
+  redirect("/admin?tab=settings-users&toast=user_role_updated")
+}
+
+export async function deleteUser(formData: FormData) {
+  const currentUser = await requireEditorInChiefUser()
+  ensurePermission(canCreateSubordinateAccount(currentUser.role), "/admin?tab=settings-users&toast=user_delete_forbidden")
+
+  const userId = String(formData.get("userId") || "").trim()
+  if (!userId) {
+    redirect("/admin?tab=settings-users&toast=user_delete_failed")
+  }
+
+  if (userId === currentUser.id) {
+    redirect("/admin?tab=settings-users&toast=user_delete_forbidden")
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (!target) {
+    redirect("/admin?tab=settings-users&toast=user_delete_failed")
+  }
+
+  if (target.role === "EDITOR_IN_CHIEF" && currentUser.role !== "ADMIN") {
+    redirect("/admin?tab=settings-users&toast=user_delete_forbidden")
+  }
+
+  await prisma.user.delete({ where: { id: userId } })
+
+  clearDataCache()
+  redirect("/admin?tab=settings-users&toast=user_deleted")
 }

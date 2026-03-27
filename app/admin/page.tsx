@@ -27,6 +27,9 @@ import {
   submitPostToPendingReview,
   updatePasswordMock,
   updateCategory,
+  updateRolePermissions,
+  updateUserRole,
+  deleteUser,
 } from "@/app/admin/actions"
 import { type AdminTab, getAdminPageData } from "@/app/admin/data"
 import { AdminActionToast } from "@/components/admin/action-toast"
@@ -37,6 +40,8 @@ import { OverviewTab } from "@/components/admin/overview-tab"
 import { PersonalArchiveTab } from "@/components/admin/personal-archive-tab"
 import { PostsTab } from "@/components/admin/posts-tab"
 import { SettingsPasswordTab } from "@/components/admin/settings-password-tab"
+import { SettingsPermissionsTab } from "@/components/admin/settings-permissions-tab"
+import { SettingsUsersTab } from "@/components/admin/settings-users-tab"
 import { TrashTab } from "@/components/admin/trash-tab"
 import { WriteTab } from "@/components/admin/write-tab"
 import {
@@ -154,6 +159,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     trashedPosts,
     pendingComments,
     overviewAnalytics,
+    usersData,
+    permissionsMatrix,
   } = await getAdminPageData({
     activeTab,
     postsFilters,
@@ -319,6 +326,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           ) : null}
           {activeTab === "trash" ? <TrashTab isAdmin={canSeeAllPosts} data={trashedPosts} filters={trashFilters} restorePostFromTrash={restorePostFromTrash} deletePostPermanently={deletePostPermanently} /> : null}
           {activeTab === "settings-password" ? <SettingsPasswordTab updatePasswordMock={updatePasswordMock} createSubordinateAccount={createSubordinateAccount} canCreateSubordinateAccount={canCreateSubordinateAccount(currentUser.role)} /> : null}
+          {activeTab === "settings-permissions" ? <SettingsPermissionsTab permissionsMatrix={permissionsMatrix} updateRolePermissions={updateRolePermissions} /> : null}
+          {activeTab === "settings-users" ? <SettingsUsersTab users={usersData} currentUserId={currentUser.id} updateUserRole={updateUserRole} deleteUser={deleteUser} /> : null}
         </section>
       </div>
     </main>

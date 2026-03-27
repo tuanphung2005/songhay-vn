@@ -4,6 +4,7 @@ import { PrismaClient } from "../generated/prisma/client"
 import { NAV_CATEGORIES } from "../lib/categories"
 import { hashPassword } from "../lib/password"
 import { slugify } from "../lib/slug"
+import { DEFAULT_PERMISSIONS, ALL_EDITABLE_ROLES, ALL_PERMISSION_ACTIONS } from "../lib/permissions"
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL || "" }),
@@ -602,6 +603,36 @@ async function main() {
       editorialStatus: "PENDING_REVIEW",
     },
   })
+  // ── Role permissions (seed from DEFAULT_PERMISSIONS) ─────────────────────
+  // Seeds every role×action pair that is currently in DEFAULT_PERMISSIONS.
+  // Roles not in ALL_EDITABLE_ROLES (ADMIN, USER) are deliberately skipped
+  // since they are not customisable via the admin UI.
+  console.log("  Seeding role permissions…")
+  const permUpserts: Array<Promise<unknown>> = []
+  for (const role of ALL_EDITABLE_ROLES) {
+    const actions = DEFAULT_PERMISSIONS[role]
+    // Remove any stale rows for this role that are no longer valid actions
+    for (const action of ALL_PERMISSION_ACTIONS) {
+      if (actions.has(action)) {
+        permUpserts.push(
+          prisma.rolePermission.upsert({
+            where: { role_action: { role, action } },
+            update: {},
+            create: { role, action },
+          })
+        )
+      }
+    }
+  }
+  // Delete rows for actions that no longer exist in the defaults
+  await prisma.rolePermission.deleteMany({
+    where: {
+      role: { in: ALL_EDITABLE_ROLES },
+      action: { notIn: ALL_PERMISSION_ACTIONS },
+    },
+  })
+  await Promise.all(permUpserts)
+  console.log("  ✓ Role permissions seeded")
 }
 
 

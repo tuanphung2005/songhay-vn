@@ -185,6 +185,41 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Vui lòng chọn email khác.",
     type: "error",
   },
+  permissions_updated: {
+    title: "Đã cập nhật phân quyền",
+    description: "Quyền hạn của role đã được lưu thành công.",
+    type: "success",
+  },
+  permissions_update_failed: {
+    title: "Không thể cập nhật phân quyền",
+    description: "Bạn không có quyền thực hiện thao tác này.",
+    type: "error",
+  },
+  user_role_updated: {
+    title: "Đã cập nhật vai trò",
+    description: "Vai trò người dùng đã được thay đổi thành công.",
+    type: "success",
+  },
+  user_role_update_failed: {
+    title: "Không thể đổi vai trò",
+    description: "Thao tác không hợp lệ hoặc không có quyền.",
+    type: "error",
+  },
+  user_deleted: {
+    title: "Đã xóa tài khoản",
+    description: "Tài khoản người dùng đã được xóa khỏi hệ thống.",
+    type: "success",
+  },
+  user_delete_failed: {
+    title: "Không thể xóa tài khoản",
+    description: "Người dùng không tồn tại hoặc có lỗi xảy ra.",
+    type: "error",
+  },
+  user_delete_forbidden: {
+    title: "Không đủ quyền xóa",
+    description: "Bạn không thể xóa tài khoản này.",
+    type: "error",
+  },
 }
 
 export function AdminActionToast() {

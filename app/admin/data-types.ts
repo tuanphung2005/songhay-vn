@@ -10,6 +10,8 @@ export type AdminTab =
   | "posts"
   | "trash"
   | "settings-password"
+  | "settings-permissions"
+  | "settings-users"
 
 export type PostsFilters = {
   query: string
@@ -40,6 +42,14 @@ export type TrashFilters = {
 export type AdminCurrentUser = {
   id: string
   role: UserRole
+}
+
+export type UserRow = {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  createdAt: Date
 }
 
 export type GetAdminPageDataInput = {
