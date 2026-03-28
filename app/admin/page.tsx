@@ -231,7 +231,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <Card>
             <CardHeader>
               <CardTitle>Điều hướng CMS</CardTitle>
-              <CardDescription>Chuyển nhanh theo nghiệp vụ quản trị.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-105 px-4 pb-4">
@@ -297,7 +296,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeTab === "overview" ? <OverviewTab overviewStats={overviewStats} overviewAnalytics={overviewAnalytics} /> : null}
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}
-          {activeTab === "write" ? <WriteTab canPublishNow={canPublishNow(currentUser.role)} canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} createPost={createPost} /> : null}
+          {activeTab === "write" ? <WriteTab canPublishNow={canPublishNow(currentUser.role)} canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} currentUserId={currentUser.id} createPost={createPost} /> : null}
           {activeTab === "media-library" ? <MediaLibraryTab isAdmin={canSeeAllPosts} rows={mediaLibraryData} /> : null}
           {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={canSeeAllPosts} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}

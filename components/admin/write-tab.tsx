@@ -31,11 +31,17 @@ type WriteTabProps = {
     url: string
     displayName: string | null
     filename: string
+    uploader?: {
+      id: string
+      name: string
+      email?: string
+    }
   }>
+  currentUserId: string
   createPost: (formData: FormData) => Promise<void>
 }
 
-export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesForWrite, mediaAssets, createPost }: WriteTabProps) {
+export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesForWrite, mediaAssets, currentUserId, createPost }: WriteTabProps) {
   const [hasVideo, setHasVideo] = useState(false)
   const [isSensitive, setIsSensitive] = useState(false)
   const [isPreviewing, startPreviewTransition] = useTransition()
@@ -76,6 +82,7 @@ export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesFor
               name="content"
               placeholder="Viết nội dung bài báo tại đây..."
               mediaAssets={mediaAssets}
+              currentUserId={currentUserId}
             />
           </div>
 

@@ -19,6 +19,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { UploadTab } from "./media-picker/upload-tab"
 
 type MediaAssetRow = {
   id: string
@@ -65,7 +67,6 @@ function getInitialUploaderOptions(rows: MediaAssetRow[]) {
 }
 
 export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
-  const [isUploading, setIsUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<"image" | "video">("image")
@@ -131,41 +132,6 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
     }
   }
 
-  async function handleUpload(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const form = event.currentTarget
-    const formData = new FormData(form)
-    const file = formData.get("file")
-    if (!(file instanceof File) || file.size === 0) {
-      window.location.assign("/admin?tab=media-library&toast=media_upload_failed")
-      return
-    }
-
-    const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
-
-    setIsUploading(true)
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        window.location.assign("/admin?tab=media-library&toast=media_upload_failed")
-        return
-      }
-
-      window.location.assign("/admin?tab=media-library&toast=media_uploaded")
-      form.reset()
-    } catch {
-      window.location.assign("/admin?tab=media-library&toast=media_upload_failed")
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
   async function handleDelete(assetId: string) {
     setDeletingId(assetId)
 
@@ -210,26 +176,27 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Kho dữ liệu</CardTitle>
-        <CardDescription>
-          Upload media một lần để tái sử dụng toàn CMS. Vai trò cao có thể lọc theo người upload để quản trị nhanh.
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={handleUpload} className="grid gap-3 rounded-lg border p-3 md:grid-cols-[160px_1fr_auto] md:items-end">
-          <div className="space-y-1.5">
-            <Label htmlFor="assetDisplayName">Tên media (để tìm kiếm)</Label>
-            <Input id="assetDisplayName" name="displayName" placeholder="VD: Anh bia tu vi thang 3" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="assetFile">Tệp upload</Label>
-            <Input id="assetFile" name="file" type="file" required />
-          </div>
-          <Button type="submit" disabled={isUploading}>{isUploading ? "Đang upload..." : "Upload vào kho"}</Button>
-          <p className="text-muted-foreground text-xs md:col-span-3">Loại media sẽ tự nhận diện theo tệp upload (ảnh/video).</p>
-        </form>
+        <Tabs defaultValue="library" className="space-y-4">
+          <TabsList className="bg-muted w-full justify-start rounded-lg h-auto p-1 overflow-x-auto">
+            <TabsTrigger value="library" className="px-6 py-2.5 rounded-md">
+              Danh sách quy chuẩn
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="px-6 py-2.5 rounded-md font-bold text-primary">
+              + Tải lên mới
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="space-y-3">
+          <TabsContent value="upload" className="rounded-2xl border bg-zinc-50/50 overflow-hidden m-0 shadow-sm">
+            <UploadTab 
+              hideSaveToLibrary
+              submitText="Đẩy lên Kho Media"
+              onSelect={() => window.location.assign("/admin?tab=media-library&toast=media_uploaded")}
+            />
+          </TabsContent>
+
+          <TabsContent value="library" className="space-y-4 m-0">
           <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] lg:grid-cols-[180px_260px_1fr_auto] md:items-end">
             <div className="space-y-1.5">
               <Label htmlFor="mediaFilterType">Lọc loại media</Label>
@@ -367,7 +334,8 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </Button>
             </div>
           </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   )

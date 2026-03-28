@@ -66,9 +66,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   const categories = sortCategoriesByTree(rawCategories)
 
   const mediaAssets = await prisma.mediaAsset.findMany({
-    where: {
-      visibility: "SHARED",
-    },
     select: {
       id: true,
       assetType: true,
@@ -76,6 +73,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       url: true,
       displayName: true,
       filename: true,
+      uploader: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
     orderBy: [{ uploadedAt: "desc" }],
     take: 200,
@@ -240,6 +244,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 name="content"
                 defaultValue={post.content}
                 mediaAssets={mediaAssets}
+                currentUserId={currentUser.id}
               />
             </div>
 

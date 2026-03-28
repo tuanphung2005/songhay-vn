@@ -11,9 +11,6 @@ export async function getMediaLibraryData(activeTab: AdminTab) {
   }
 
   return prisma.mediaAsset.findMany({
-    where: {
-      visibility: "SHARED",
-    },
     select: {
       id: true,
       assetType: true,

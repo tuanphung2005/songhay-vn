@@ -129,6 +129,7 @@ export async function POST(request: unknown) {
   const formData = await incomingRequest.formData()
   const file = formData.get("file")
   const displayNameInput = String(formData.get("displayName") || "").trim()
+  const skipLibrary = formData.get("skipLibrary") === "true"
 
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "invalid_file" }, { status: 400 })
@@ -147,24 +148,28 @@ export async function POST(request: unknown) {
       filename: file.name,
       mimeType: file.type,
       folder: "songhay/editor",
+      transformation: "c_limit,w_1920",
     })
 
-    const asset = await prisma.mediaAsset.create({
-      data: {
-        assetType: "IMAGE",
-        visibility: "SHARED",
-        url,
-        displayName: displayNameInput.length > 0 ? displayNameInput.slice(0, 120) : null,
-        filename: file.name,
-        mimeType: file.type || "image/jpeg",
-        sizeBytes: file.size,
-        uploaderId: session.userId,
-      },
-      select: {
-        id: true,
-        url: true,
-      },
-    })
+    let asset = null
+    if (!skipLibrary) {
+      asset = await prisma.mediaAsset.create({
+        data: {
+          assetType: "IMAGE",
+          visibility: "SHARED",
+          url,
+          displayName: displayNameInput.length > 0 ? displayNameInput.slice(0, 120) : null,
+          filename: file.name,
+          mimeType: file.type || "image/jpeg",
+          sizeBytes: file.size,
+          uploaderId: session.userId,
+        },
+        select: {
+          id: true,
+          url: true,
+        },
+      })
+    }
 
     return NextResponse.json({ url, asset })
   } catch (error) {
