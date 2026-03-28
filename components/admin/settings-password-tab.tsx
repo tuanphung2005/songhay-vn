@@ -45,7 +45,6 @@ export function SettingsPasswordTab({
         <Card>
           <CardHeader>
             <CardTitle>Tạo tài khoản cấp dưới</CardTitle>
-            <CardDescription>Chỉ Tổng biên tập có quyền tạo tài khoản cấp dưới trong CMS.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={createSubordinateAccount} className="grid gap-3 md:grid-cols-2">

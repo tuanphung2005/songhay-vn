@@ -35,7 +35,7 @@ export function SettingsUsersTab({
         <CardHeader>
           <CardTitle>Danh sách người dùng</CardTitle>
           <CardDescription>
-            Quản lý vai trò và tài khoản trong hệ thống CMS. Không thể xóa chính mình hoặc tài khoản {ROLE_LABELS_VI["EDITOR_IN_CHIEF"]}.
+            Quản lý vai trò và tài khoản trong hệ thống CMS.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">

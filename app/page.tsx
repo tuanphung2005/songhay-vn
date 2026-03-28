@@ -206,7 +206,7 @@ export default async function HomePage() {
       </main>
 
       <nav className="bg-red-700">
-        <ul className="mx-auto flex w-full max-w-7xl min-w-max items-center gap-8 overflow-x-auto px-4 py-3 text-xl font-bold text-white md:px-6">
+        <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-x-4 gap-y-3 px-4 py-5 text-lg font-bold text-white md:flex md:min-w-max md:items-center md:gap-8 md:overflow-x-auto md:px-6 md:py-3 md:text-xl">
           {navCategories.map((item) => (
             <li key={`bottom-${item.slug}`}>
               <Link
