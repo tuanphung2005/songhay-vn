@@ -3,6 +3,7 @@ import { Search } from "lucide-react"
 
 import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { getNavCategories } from "@/lib/queries"
+import { MobileNav } from "./mobile-nav"
 
 export async function SiteHeader() {
   const [user, navCategories] = await Promise.all([getCurrentUser(), getNavCategories()])
@@ -13,16 +14,16 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="border-b border-zinc-200 bg-zinc-50">
+    <header className="border-b border-red-800 bg-red-700 md:border-zinc-200 md:bg-zinc-50">
       <div className="mx-auto flex w-full max-w-7xl items-start justify-between px-4 py-5 md:px-6 md:py-6">
         <Link href="/" className="group block">
           <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-flex h-14 w-14 items-center justify-center bg-red-700 text-4xl font-black text-white transition group-hover:bg-red-800 md:h-16 md:w-16">
+            <span className="inline-flex h-14 w-14 items-center justify-center bg-white text-4xl font-black text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-16 md:w-16">
               S
             </span>
             <div>
-              <p className="text-3xl font-black uppercase leading-none tracking-tight text-red-700 md:text-5xl">Sống Hay</p>
-              <p className="mt-1 text-sm font-extrabold uppercase tracking-wide text-zinc-900 md:text-xl">Kho Tàng Điều Hay</p>
+              <p className="text-3xl font-black uppercase leading-none tracking-tight text-white md:text-red-700 md:text-5xl">Sống Hay</p>
+              <p className="mt-1 text-sm font-extrabold uppercase tracking-wide text-white/90 md:text-zinc-900 md:text-xl">Kho Tàng Điều Hay</p>
             </div>
           </div>
         </Link>
@@ -32,15 +33,15 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/admin"
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                className="rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/20 md:border-zinc-300 md:bg-white md:text-zinc-700 md:hover:bg-zinc-100"
               >
                 CMS
               </Link>
-              <span className="hidden text-sm font-semibold text-zinc-700 md:inline">{user.name}</span>
+              <span className="hidden text-sm font-semibold text-white md:inline md:text-zinc-700">{user.name}</span>
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                  className="rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/20 md:border-zinc-300 md:bg-white md:text-zinc-700 md:hover:bg-zinc-100"
                 >
                   Đăng xuất
                 </button>
@@ -50,14 +51,15 @@ export async function SiteHeader() {
           <button
             type="button"
             aria-label="Tìm kiếm"
-            className="rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100"
+            className="hidden rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100 md:flex"
           >
             <Search className="size-5" />
           </button>
+          <MobileNav navCategories={navCategories} />
         </div>
       </div>
 
-      <nav className="bg-red-700">
+      <nav className="hidden bg-red-700 md:block">
         <ul className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-8 gap-y-4 px-4 py-3 text-xl font-bold text-white md:px-6">
           {navCategories.map((item) => (
             <li key={item.slug} className="group relative">
