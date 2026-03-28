@@ -1,4 +1,6 @@
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 
@@ -48,6 +50,11 @@ export function CommentsTab({ pendingComments, moderateComment }: CommentsTabPro
                   <input type="hidden" name="action" value="delete" />
                   <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang xóa...">Xóa</PendingSubmitButton>
                 </form>
+                <Button asChild variant="outline" size="sm" className="ml-auto">
+                  <Link href={`/${comment.post.category.slug}/${comment.post.slug}`} target="_blank">
+                    Xem bài viết
+                  </Link>
+                </Button>
               </div>
             </div>
           ))
