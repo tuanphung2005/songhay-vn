@@ -8,7 +8,7 @@ function readWorkspaceFile(relativePath: string) {
 
 describe("editorial workflow", () => {
   test("post creation supports draft and pending review flow", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toContain("resolveEditorialFromSubmitAction")
     expect(source).toContain("editorialStatus === \"DRAFT\"")
@@ -19,7 +19,7 @@ describe("editorial workflow", () => {
   })
 
   test("admin actions include approval metadata updates", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain("export async function approvePendingPost")
     expect(source).toContain("editorialStatus: canPublishNow(currentUser.role) ? \"PUBLISHED\" : \"PENDING_PUBLISH\"")

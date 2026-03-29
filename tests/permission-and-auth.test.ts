@@ -81,22 +81,24 @@ describe("auth guard source checks", () => {
   })
 
   test("category and system-sensitive actions still enforce elevated checks", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const categoriesSource = readWorkspaceFile("app/admin/actions/categories.ts")
+    const settingsSource = readWorkspaceFile("app/admin/actions/settings.ts")
 
-    expect(source).toMatch(/export async function createCategory[\s\S]*?requireAdminUser/)
-    expect(source).toMatch(/export async function createSubordinateAccount[\s\S]*?requireEditorInChiefUser/)
-    expect(source).toContain("ensurePermission(can(currentUser.role, \"edit-category\")")
-    expect(source).toContain("ensurePermission(can(currentUser.role, \"delete-category\")")
+    expect(categoriesSource).toMatch(/export async function createCategory[\s\S]*?requireAdminUser/)
+    expect(settingsSource).toMatch(/export async function createSubordinateAccount[\s\S]*?requireEditorInChiefUser/)
+    expect(categoriesSource).toContain("ensurePermission(can(currentUser.role, \"edit-category\")")
+    expect(categoriesSource).toContain("ensurePermission(can(currentUser.role, \"delete-category\")")
   })
 
   test("CMS actions use requireCmsUser plus capability checks", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const postsSource = readWorkspaceFile("app/admin/actions/posts.ts")
+    const workflowSource = readWorkspaceFile("app/admin/actions/workflow.ts")
 
-    expect(source).toMatch(/export async function createPost[\s\S]*?requireCmsUser/)
-    expect(source).toContain("resolveEditorialFromSubmitAction")
-    expect(source).toContain("canApprovePendingReview")
-    expect(source).toMatch(/export async function movePostToTrash[\s\S]*?requireCmsUser/)
-    expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?requireCmsUser/)
+    expect(postsSource).toMatch(/export async function createPost[\s\S]*?requireCmsUser/)
+    expect(postsSource).toContain("resolveEditorialFromSubmitAction")
+    expect(workflowSource).toContain("canApprovePendingReview")
+    expect(postsSource).toMatch(/export async function movePostToTrash[\s\S]*?requireCmsUser/)
+    expect(postsSource).toMatch(/export async function restorePostFromTrash[\s\S]*?requireCmsUser/)
   })
 
   test("session cookie is httpOnly and uses lax sameSite", () => {

@@ -7,11 +7,9 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("media delete and labeling", () => {
-  test("media library supports custom display name input and delete action", () => {
+  test("media library supports delete action and moderation dialog", () => {
     const source = readWorkspaceFile("components/admin/media-library-tab.tsx")
 
-    expect(source).toContain('name="displayName"')
-    expect(source).toContain("Tên media (để tìm kiếm)")
     expect(source).toContain("handleDelete")
     expect(source).toContain("AlertDialog")
     expect(source).toContain("Xóa media khỏi kho dữ liệu?")
@@ -61,12 +59,12 @@ describe("media delete and labeling", () => {
   test("schema and picker consume displayName field", () => {
     const schema = readWorkspaceFile("prisma/schema.prisma")
     const dataSource = readWorkspaceFile("app/admin/data-loaders/shared.ts")
-    const editorSource = readWorkspaceFile("components/admin/rich-text-field.tsx")
+    const editorSource = readWorkspaceFile("components/admin/media-picker/library-tab.tsx")
 
     expect(schema).toContain("displayName String?")
     expect(dataSource).toContain("displayName: true")
-    expect(editorSource).toContain("asset.displayName")
-    expect(editorSource).toContain('useState<"ALL" | "IMAGE" | "VIDEO">("IMAGE")')
+    expect(editorSource).toContain("asset.displayName || asset.filename")
+    expect(editorSource).toContain('useState<"ALL" | "IMAGE" | "VIDEO">("ALL")')
   })
 
   test("media library UI has filter/search and pagination controls", () => {

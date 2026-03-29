@@ -8,19 +8,20 @@ function readWorkspaceFile(relativePath: string) {
 
 describe("workflow edge cases coverage", () => {
   test("server actions exist for all required transitions", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const workflowSource = readWorkspaceFile("app/admin/actions/workflow.ts")
+    const postsSource = readWorkspaceFile("app/admin/actions/posts.ts")
 
-    expect(source).toContain("export async function submitPostToPendingReview")
-    expect(source).toContain("export async function promotePostToPendingPublish")
-    expect(source).toContain("export async function approvePendingPost")
-    expect(source).toContain("export async function returnPostToDraft")
-    expect(source).toContain("export async function returnPostToPendingReview")
-    expect(source).toContain("export async function returnPostToPendingPublish")
-    expect(source).toContain("export async function movePostToTrash")
+    expect(workflowSource).toContain("export async function submitPostToPendingReview")
+    expect(workflowSource).toContain("export async function promotePostToPendingPublish")
+    expect(workflowSource).toContain("export async function approvePendingPost")
+    expect(workflowSource).toContain("export async function returnPostToDraft")
+    expect(workflowSource).toContain("export async function returnPostToPendingReview")
+    expect(workflowSource).toContain("export async function returnPostToPendingPublish")
+    expect(postsSource).toContain("export async function movePostToTrash")
   })
 
   test("submit-to-review edge cases: permission, ownership, and redirect are enforced", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain("ensurePermission(can(currentUser.role, \"submit-pending-review\")")
     expect(source).toContain("redirect(\"/admin?tab=posts&postsStatus=all&toast=post_not_found\")")
@@ -29,7 +30,7 @@ describe("workflow edge cases coverage", () => {
   })
 
   test("promote-to-pending-publish edge cases: review permission and metadata are enforced", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain("ensurePermission(canApprovePendingReview(currentUser.role)")
     expect(source).toContain("editorialStatus: \"PENDING_PUBLISH\"")
@@ -38,7 +39,7 @@ describe("workflow edge cases coverage", () => {
   })
 
   test("return-to-draft edge cases: forbidden ownership and destination status are enforced", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain("const canManageWorkflow = canApprovePendingReview(currentUser.role) || canPublishNow(currentUser.role)")
     expect(source).toContain("if (!canManageWorkflow && existingPost.authorId !== currentUser.id)")

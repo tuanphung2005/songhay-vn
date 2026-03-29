@@ -44,10 +44,10 @@ describe("admin write tab UI", () => {
   })
 
   test("rich text field media picker has pagination controls", () => {
-    const source = readWorkspaceFile("components/admin/rich-text-field.tsx")
+    const source = readWorkspaceFile("components/admin/media-picker/library-tab.tsx")
 
-    expect(source).toContain("const [pickerPage, setPickerPage] = useState(1)")
-    expect(source).toContain("Trang {safePickerPage}/{pickerTotalPages}")
-    expect(source).toContain("setPickerPage((value) => Math.max(1, value - 1))")
+    expect(source).toContain("const [page, setPage] = useState(1)")
+    expect(source).toContain("Trang {safePage} / {totalPages}")
+    expect(source).toContain("setPage((v) => Math.max(1, v - 1))")
   })
 })

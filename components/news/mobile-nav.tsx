@@ -57,7 +57,7 @@ export function MobileNav({ navCategories, defaultSearchQuery }: MobileNavProps)
             </SheetTitle>
           </div>
         </SheetHeader>
-        
+
         <div className="flex flex-1 flex-col overflow-y-auto">
           {/* Search section */}
           <div className="border-b border-zinc-100 p-4">

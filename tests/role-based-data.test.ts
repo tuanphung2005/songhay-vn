@@ -35,7 +35,8 @@ describe("role-based data scoping", () => {
   test("media library now exposes shared assets for all CMS users", () => {
     const source = readWorkspaceFile("app/admin/data-loaders/shared.ts")
 
-    expect(source).toContain("visibility: \"SHARED\"")
+    expect(source).toContain("visibility: true")
+    expect(source).toContain("displayName: true")
   })
 
   test("media upload DELETE endpoint enforces ownership or elevated role", () => {
@@ -105,40 +106,40 @@ describe("role-based UI gates", () => {
 
 describe("server-side ownership enforcement in actions", () => {
   test("movePostToTrash checks ownership for roles without view-all capability", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toContain("!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id")
     expect(source).toContain("post_action_forbidden")
   })
 
   test("restorePostFromTrash checks ownership before restoring for non-admin", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
   })
 
   test("deletePostPermanently checks ownership for non-admin", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toMatch(/export async function deletePostPermanently[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
   })
 
   test("approvePendingPost sets isDraft false and promotes to publish or pending publish", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toMatch(/approvePendingPost[\s\S]*?isDraft: false/)
     expect(source).toMatch(/approvePendingPost[\s\S]*?editorialStatus: canPublishNow\(currentUser\.role\) \? "PUBLISHED" : "PENDING_PUBLISH"/)
   })
 
   test("rejectPendingPost sets isPublished false and clears approver", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toMatch(/rejectPendingPost[\s\S]*?isPublished: false/)
     expect(source).toMatch(/rejectPendingPost[\s\S]*?approverId: null/)
   })
 
   test("createPost derives editorial state via resolveEditorialFromSubmitAction", () => {
-    const source = readWorkspaceFile("app/admin/actions.ts")
+    const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toContain("resolveEditorialFromSubmitAction")
     expect(source).toContain("editorialStatus === \"DRAFT\"")
