@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Menu, Search, X } from "lucide-react"
+import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Sheet,
   SheetClose,
@@ -14,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { NewsSearchForm } from "./search"
 
 interface Category {
   id: string
@@ -28,10 +28,14 @@ interface Category {
 
 interface MobileNavProps {
   navCategories: Category[]
+  defaultSearchQuery?: string
 }
 
-export function MobileNav({ navCategories }: MobileNavProps) {
+export function MobileNav({ navCategories, defaultSearchQuery }: MobileNavProps) {
   const [open, setOpen] = React.useState(false)
+  const handleSearchNavigate = React.useCallback(() => {
+    setOpen(false)
+  }, [])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -57,15 +61,19 @@ export function MobileNav({ navCategories }: MobileNavProps) {
         <div className="flex flex-1 flex-col overflow-y-auto">
           {/* Search section */}
           <div className="border-b border-zinc-100 p-4">
-            <form action="/search" method="GET" className="relative">
-              <Input
-                name="q"
-                type="search"
-                placeholder="Tìm kiếm nội dung..."
-                className="h-11 w-full pl-10 pr-4 text-base focus-visible:border-red-500 focus-visible:ring-red-500/20"
-              />
-              <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-zinc-400" />
-            </form>
+            <NewsSearchForm
+              className="w-full"
+              defaultValue={defaultSearchQuery}
+              placeholder="Tìm kiếm nội dung..."
+              submitAriaLabel="Tìm kiếm nội dung"
+              enableSuggestions
+              suggestionsLimit={6}
+              inputClassName="h-11 border-zinc-200 pl-10 pr-12 text-base focus-visible:border-red-500 focus-visible:ring-red-500/20"
+              buttonVariant="default"
+              buttonClassName="bg-red-700 text-white hover:bg-red-800"
+              onSubmit={handleSearchNavigate}
+              onNavigate={handleSearchNavigate}
+            />
           </div>
 
           {/* Navigation lists */}

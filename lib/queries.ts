@@ -1,9 +1,31 @@
 import { cache } from "react"
+import type { Prisma } from "@prisma/client"
 
 import { memoizeWithTtl } from "./data-cache"
 import { prisma } from "@/lib/prisma"
 
 const CACHE_WINDOW_SECONDS = 300
+const SEARCH_PAGE_SIZE_DEFAULT = 12
+const SEARCH_PAGE_SIZE_MAX = 24
+const SEARCH_SUGGEST_LIMIT_MAX = 10
+
+function normalizeSearchQuery(query: string) {
+  return query.trim().replace(/\s+/g, " ")
+}
+
+function createPublishedSearchWhere(normalizedQuery: string): Prisma.PostWhereInput {
+  return {
+    isPublished: true,
+    isDeleted: false,
+    isDraft: false,
+    OR: [
+      { title: { contains: normalizedQuery, mode: "insensitive" } },
+      { excerpt: { contains: normalizedQuery, mode: "insensitive" } },
+      { content: { contains: normalizedQuery, mode: "insensitive" } },
+      { category: { name: { contains: normalizedQuery, mode: "insensitive" } } },
+    ],
+  }
+}
 
 export const getHomepageData = cache(async () => {
   return memoizeWithTtl("homepage-data-v2", CACHE_WINDOW_SECONDS, async () => {
@@ -57,6 +79,154 @@ export const getPostsByCategory = cache(async (categorySlug: string) => {
       take: 20,
     })
   })
+})
+
+export const searchPublishedPosts = cache(async (query: string, limit = 24) => {
+  const normalizedQuery = normalizeSearchQuery(query)
+  const safeLimit = Math.min(Math.max(limit, 1), 48)
+
+  if (!normalizedQuery) {
+    return []
+  }
+
+  return memoizeWithTtl(
+    `search-published-posts:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safeLimit}`,
+    CACHE_WINDOW_SECONDS,
+    async () => {
+      return prisma.post.findMany({
+        where: {
+          isPublished: true,
+          isDeleted: false,
+          isDraft: false,
+          OR: [
+            { title: { contains: normalizedQuery, mode: "insensitive" } },
+            { excerpt: { contains: normalizedQuery, mode: "insensitive" } },
+            { category: { name: { contains: normalizedQuery, mode: "insensitive" } } },
+          ],
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          thumbnailUrl: true,
+          publishedAt: true,
+          category: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: { publishedAt: "desc" },
+        take: safeLimit,
+      })
+    }
+  )
+})
+
+export const getPublishedSearchResults = cache(
+  async (query: string, page = 1, pageSize = SEARCH_PAGE_SIZE_DEFAULT) => {
+    const normalizedQuery = normalizeSearchQuery(query)
+    const safePage = Math.max(page, 1)
+    const safePageSize = Math.min(Math.max(pageSize, 1), SEARCH_PAGE_SIZE_MAX)
+
+    if (!normalizedQuery) {
+      return {
+        query: "",
+        items: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: safePageSize,
+        totalPages: 0,
+      }
+    }
+
+    return memoizeWithTtl(
+      `search-published-results:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safePage}:${safePageSize}`,
+      CACHE_WINDOW_SECONDS,
+      async () => {
+        const where = createPublishedSearchWhere(normalizedQuery)
+        const totalCount = await prisma.post.count({ where })
+
+        if (totalCount === 0) {
+          return {
+            query: normalizedQuery,
+            items: [],
+            totalCount: 0,
+            page: 1,
+            pageSize: safePageSize,
+            totalPages: 0,
+          }
+        }
+
+        const totalPages = Math.ceil(totalCount / safePageSize)
+        const currentPage = Math.min(safePage, totalPages)
+
+        const items = await prisma.post.findMany({
+          where,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            thumbnailUrl: true,
+            publishedAt: true,
+            category: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
+          orderBy: { publishedAt: "desc" },
+          skip: (currentPage - 1) * safePageSize,
+          take: safePageSize,
+        })
+
+        return {
+          query: normalizedQuery,
+          items,
+          totalCount,
+          page: currentPage,
+          pageSize: safePageSize,
+          totalPages,
+        }
+      }
+    )
+  }
+)
+
+export const searchPublishedPostSuggestions = cache(async (query: string, limit = 6) => {
+  const normalizedQuery = normalizeSearchQuery(query)
+  const safeLimit = Math.min(Math.max(limit, 1), SEARCH_SUGGEST_LIMIT_MAX)
+
+  if (normalizedQuery.length < 2) {
+    return []
+  }
+
+  return memoizeWithTtl(
+    `search-published-suggestions:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safeLimit}`,
+    CACHE_WINDOW_SECONDS,
+    async () => {
+      return prisma.post.findMany({
+        where: createPublishedSearchWhere(normalizedQuery),
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: { publishedAt: "desc" },
+        take: safeLimit,
+      })
+    }
+  )
 })
 
 export const getCategoryBySlug = cache(async (categorySlug: string) => {
@@ -137,7 +307,7 @@ export const getRecommendedPosts = cache(
   async (postId?: string, categoryId?: string, limit = 4) => {
     const cacheKey = `recommended-posts:${postId || "home"}:${categoryId || "all"}:${limit}`
     return memoizeWithTtl(cacheKey, CACHE_WINDOW_SECONDS, async () => {
-      const where: any = {
+      const where: Prisma.PostWhereInput = {
         isPublished: true,
         isDeleted: false,
       }
@@ -146,7 +316,7 @@ export const getRecommendedPosts = cache(
         where.id = { not: postId }
       }
 
-      const orConditions: any[] = [{ isFeatured: true }, { isTrending: true }]
+      const orConditions: Prisma.PostWhereInput[] = [{ isFeatured: true }, { isTrending: true }]
       if (categoryId) {
         orConditions.push({ categoryId })
       }

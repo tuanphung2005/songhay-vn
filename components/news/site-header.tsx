@@ -1,11 +1,15 @@
 import Link from "next/link"
-import { Search } from "lucide-react"
 
 import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { getNavCategories } from "@/lib/queries"
 import { MobileNav } from "./mobile-nav"
+import { NewsSearchForm } from "./search"
 
-export async function SiteHeader() {
+type SiteHeaderProps = {
+  defaultSearchQuery?: string
+}
+
+export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
   const [user, navCategories] = await Promise.all([getCurrentUser(), getNavCategories()])
 
   async function logoutAction() {
@@ -48,14 +52,17 @@ export async function SiteHeader() {
               </form>
             </>
           ) : null}
-          <button
-            type="button"
-            aria-label="Tìm kiếm"
-            className="hidden rounded-full border border-zinc-300 bg-white p-2 text-zinc-700 transition hover:bg-zinc-100 md:flex"
-          >
-            <Search className="size-5" />
-          </button>
-          <MobileNav navCategories={navCategories} />
+          <NewsSearchForm
+            className="hidden w-72 md:block"
+            defaultValue={defaultSearchQuery}
+            placeholder="Tìm bài viết..."
+            submitAriaLabel="Tìm bài viết"
+            enableSuggestions
+            suggestionsLimit={6}
+            inputClassName="h-10 border-zinc-300 bg-white pl-10 pr-11 text-sm"
+            buttonClassName="border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100"
+          />
+          <MobileNav navCategories={navCategories} defaultSearchQuery={defaultSearchQuery} />
         </div>
       </div>
 
