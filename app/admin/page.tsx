@@ -1,4 +1,3 @@
-import Link from "next/link"
 import type { Metadata } from "next"
 import {
   Activity,
@@ -33,6 +32,7 @@ import {
 } from "@/app/admin/actions"
 import { type AdminTab, getAdminPageData } from "@/app/admin/data"
 import { AdminActionToast } from "@/components/admin/action-toast"
+import { AdminNavButton } from "@/components/admin/admin-nav-button"
 import { CategoriesTab } from "@/components/admin/categories-tab"
 import { CommentsTab } from "@/components/admin/comments-tab"
 import { MediaLibraryTab } from "@/components/admin/media-library-tab"
@@ -48,14 +48,12 @@ import {
   getVisibleTabs,
   OVERVIEW_TAB,
   parseAdminSearchParams,
-  type NavLeaf,
+  type NavCountKey,
 } from "@/app/admin/page-helpers"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { requireCmsUser } from "@/lib/auth"
 import {
   can,
@@ -100,32 +98,6 @@ type AdminPageProps = {
     trashTo?: string
     trashPage?: string
   }>
-}
-
-function AdminNavButton({
-  tab,
-  activeTab,
-}: {
-  tab: NavLeaf
-  activeTab: AdminTab
-}) {
-  const TabIcon = tab.icon
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button asChild className="h-9 w-full justify-start gap-2.5" variant={activeTab === tab.key ? "secondary" : "ghost"}>
-          <Link href={`/admin?tab=${tab.key}`}>
-            <TabIcon className="size-4" />
-            <span className="truncate">{tab.label}</span>
-          </Link>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right" className="max-w-72">
-        {tab.description}
-      </TooltipContent>
-    </Tooltip>
-  )
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -174,6 +146,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const activeTabMeta = visibleTabs.find((item) => item.key === activeTab) || visibleTabs[0]
   const ActiveTabIcon = activeTabMeta.icon
+  const navCountByKey: Record<NavCountKey, number> = {
+    postCount,
+    categoryCount,
+    pendingCommentCount,
+    trashedPostCount,
+  }
 
   const overviewStats = [
     {
@@ -227,13 +205,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       </header>
 
       <div className="grid w-full gap-4 p-4 md:grid-cols-[280px_1fr] md:p-6 xl:gap-6 xl:px-8">
-        <aside className="space-y-4">
+        <aside className="space-y-4 md:sticky md:top-24 md:self-start">
           <Card>
             <CardHeader>
               <CardTitle>Điều hướng CMS</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="h-105 px-4 pb-4">
+              <ScrollArea className="max-h-[70dvh] px-4 pb-4 md:max-h-[calc(100dvh-8rem)]">
                 <div className="space-y-3">
                   <div className="space-y-1.5 pt-4">
                     <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Tổng quan</p>
@@ -245,7 +223,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <div className="space-y-1.5">
                     <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Quản lý tin</p>
                     {contentTabs.map((tab) => (
-                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} />
+                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} count={tab.countKey ? navCountByKey[tab.countKey] : undefined} />
                     ))}
                   </div>
 
@@ -254,25 +232,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <div className="space-y-1.5">
                     <p className="text-muted-foreground px-2 text-[11px] font-semibold uppercase tracking-[0.12em]">Cài đặt</p>
                     {settingsTabs.map((tab) => (
-                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} />
+                      <AdminNavButton key={tab.key} tab={tab} activeTab={activeTab} count={tab.countKey ? navCountByKey[tab.countKey] : undefined} />
                     ))}
                   </div>
                 </div>
               </ScrollArea>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Snapshot hệ thống</CardTitle>
-              <CardDescription>Những chỉ số cần theo dõi mỗi ngày.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-2 text-sm">
-              <div className="flex items-center justify-between rounded-md border px-3 py-2"><span className="text-muted-foreground">Bài viết</span><span className="font-semibold">{postCount}</span></div>
-              <div className="flex items-center justify-between rounded-md border px-3 py-2"><span className="text-muted-foreground">Chuyên mục</span><span className="font-semibold">{categoryCount}</span></div>
-              <div className="flex items-center justify-between rounded-md border px-3 py-2"><span className="text-muted-foreground">Comment chờ duyệt</span><span className="font-semibold">{pendingCommentCount}</span></div>
-              <div className="flex items-center justify-between rounded-md border px-3 py-2"><span className="text-muted-foreground">Thùng rác</span><span className="font-semibold">{trashedPostCount}</span></div>
-              <div className="flex items-center justify-between rounded-md border px-3 py-2"><span className="text-muted-foreground">Tổng lượt xem</span><span className="font-semibold">{totalPostViews.toLocaleString("vi-VN")}</span></div>
             </CardContent>
           </Card>
         </aside>

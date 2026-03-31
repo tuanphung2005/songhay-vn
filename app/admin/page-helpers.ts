@@ -21,7 +21,10 @@ export type NavLeaf = {
   description: string
   icon: LucideIcon
   adminOnly?: boolean
+  countKey?: NavCountKey
 }
+
+export type NavCountKey = "postCount" | "categoryCount" | "pendingCommentCount" | "trashedPostCount"
 
 export const OVERVIEW_TAB: NavLeaf = {
   key: "overview",
@@ -34,14 +37,14 @@ export const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
   { key: "write", label: "Viết bài mới", description: "Soạn nội dung và gửi duyệt/xuất bản", icon: PenSquare },
   { key: "media-library", label: "Kho dữ liệu", description: "Tái sử dụng ảnh/video đã upload", icon: LibraryBig },
   { key: "personal-archive", label: "Lưu trữ cá nhân", description: "Bài viết theo tài khoản đăng nhập", icon: UserSquare2 },
-  { key: "posts", label: "Kho bài", description: "Tổng hợp bài viết theo trạng thái biên tập", icon: Newspaper },
-  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2 },
+  { key: "posts", label: "Kho bài", description: "Tổng hợp bài viết theo trạng thái biên tập", icon: Newspaper, countKey: "postCount" },
+  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", icon: Trash2, countKey: "trashedPostCount" },
 ]
 
 export const SETTINGS_TABS: NavLeaf[] = [
   { key: "settings-password", label: "Đổi mật khẩu", description: "Mock UI đổi mật khẩu", icon: KeyRound },
-  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban, adminOnly: true },
-  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore, adminOnly: true },
+  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", icon: FolderKanban, adminOnly: true, countKey: "categoryCount" },
+  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", icon: MessageSquareMore, adminOnly: true, countKey: "pendingCommentCount" },
   { key: "settings-permissions", label: "Phân quyền", description: "Tùy chỉnh quyền theo từng role", icon: ShieldCheck, adminOnly: true },
   { key: "settings-users", label: "Người dùng", description: "Quản lý tài khoản và phân quyền", icon: Users, adminOnly: true },
 ]

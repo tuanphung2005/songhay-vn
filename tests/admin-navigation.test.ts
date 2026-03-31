@@ -28,6 +28,25 @@ describe("admin navigation submenu", () => {
     expect(source).toContain('key: "settings-password"')
   })
 
+  test("maps sidebar counts to related tabs", () => {
+    const source = readWorkspaceFile("app/admin/page-helpers.ts")
+
+    expect(source).toContain('countKey: "postCount"')
+    expect(source).toContain('countKey: "trashedPostCount"')
+    expect(source).toContain('countKey: "categoryCount"')
+    expect(source).toContain('countKey: "pendingCommentCount"')
+  })
+
+  test("removes snapshot card and renders counts in nav buttons", () => {
+    const pageSource = readWorkspaceFile("app/admin/page.tsx")
+    const navButtonSource = readWorkspaceFile("components/admin/admin-nav-button.tsx")
+
+    expect(pageSource).not.toContain("Snapshot hệ thống")
+    expect(pageSource).toContain("navCountByKey")
+    expect(navButtonSource).toContain("count?: number")
+    expect(navButtonSource).toContain("toLocaleString(\"vi-VN\")")
+  })
+
   test("keeps admin-only gates on sensitive tabs", () => {
     const source = readWorkspaceFile("app/admin/page-helpers.ts")
     const pageSource = readWorkspaceFile("app/admin/page.tsx")
