@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-const ADSENSE_CLIENT = "pub-1176898129958487"
+const ADSENSE_CLIENT = "ca-pub-1176898129958487"
 
 type AdPlaceholderProps = {
   label: string

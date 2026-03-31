@@ -132,6 +132,8 @@ export default async function HomePage() {
                 ))}
               </div>
 
+              <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" className="min-h-24" />
+
               <section className="space-y-4">
                 <SectionHeading title="Đừng bỏ lỡ!" />
                 <DontMissWidget />
@@ -156,20 +158,23 @@ export default async function HomePage() {
               </div>
             </section>
 
+            <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" className="min-h-24" />
+
             <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-24" />
 
             {/* Engagement Sections */}
             <RecommendedForYou posts={recommended} />
+            <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" className="min-h-24" />
             <VideoMostWatched posts={mostWatched} />
 
             <section className="space-y-8 pt-8 border-t border-zinc-100">
-              {categoryBlocks.map((items) => {
+              {categoryBlocks.map((items, index) => {
                 const [first] = items
                 return (
                   <div key={first.category.slug} className="space-y-4">
                     <SectionHeading title={first.category.name} />
                     <div className="grid gap-4 sm:grid-cols-2">
-                      {items.slice(0, 4).map((post, index) => (
+                      {items.slice(0, 4).map((post, cardIndex) => (
                         <PostCard
                           key={post.id}
                           href={`/${post.category.slug}/${post.slug}`}
@@ -178,10 +183,13 @@ export default async function HomePage() {
                           imageUrl={post.thumbnailUrl}
                           date={post.publishedAt}
                           categoryName={post.category.name}
-                          compact={index > 1}
+                          compact={cardIndex > 1}
                         />
                       ))}
                     </div>
+                    {(index + 1) % 2 === 0 ? (
+                      <AdPlaceholder label="Giữa các cụm chuyên mục (Google AdSense)" className="min-h-24" />
+                    ) : null}
                   </div>
                 )
               })}
@@ -200,8 +208,10 @@ export default async function HomePage() {
                 categorySlug: post.category.slug,
               }))}
             />
+            <AdPlaceholder label="Sidebar giữa widgets (Google AdSense)" className="min-h-40" />
             <LunarCalendarWidget />
             <AiWeatherWidget />
+            <AdPlaceholder label="Sidebar cuối trang chủ (Google AdSense)" className="min-h-40" />
           </aside>
         </div>
       </main>

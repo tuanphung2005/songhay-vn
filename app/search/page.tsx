@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 
+import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
@@ -85,65 +86,82 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <SiteHeader defaultSearchQuery={query} />
 
       <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
-        <SectionHeading title="Tìm kiếm" />
+        <AdPlaceholder label="Top trang tìm kiếm (Google AdSense)" className="min-h-20" />
 
-        {query ? (
-          <p className="text-sm text-zinc-600">
-            {result.totalCount > 0
-              ? `Tìm thấy ${result.totalCount} kết quả cho từ khóa "${query}".`
-              : `Không tìm thấy bài viết nào cho từ khóa "${query}".`}
-          </p>
-        ) : (
-          <p className="text-sm text-zinc-600">Nhập từ khóa để tìm bài viết đã xuất bản.</p>
-        )}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="space-y-6">
+            <SectionHeading title="Tìm kiếm" />
 
-        {result.items.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {result.items.map((post) => (
-              <PostCard
-                key={post.id}
-                href={`/${post.category.slug}/${post.slug}`}
-                title={post.title}
-                excerpt={post.excerpt}
-                imageUrl={post.thumbnailUrl}
-                date={post.publishedAt}
-                categoryName={post.category.name}
-              />
-            ))}
-          </div>
-        ) : null}
+            {query ? (
+              <p className="text-sm text-zinc-600">
+                {result.totalCount > 0
+                  ? `Tìm thấy ${result.totalCount} kết quả cho từ khóa "${query}".`
+                  : `Không tìm thấy bài viết nào cho từ khóa "${query}".`}
+              </p>
+            ) : (
+              <p className="text-sm text-zinc-600">Nhập từ khóa để tìm bài viết đã xuất bản.</p>
+            )}
 
-        {hasPagination ? (
-          <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
-            <div className="text-sm text-zinc-600">
-              Trang {result.page}/{result.totalPages}
-            </div>
+            {result.items.length > 0 ? (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {result.items.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      href={`/${post.category.slug}/${post.slug}`}
+                      title={post.title}
+                      excerpt={post.excerpt}
+                      imageUrl={post.thumbnailUrl}
+                      date={post.publishedAt}
+                      categoryName={post.category.name}
+                    />
+                  ))}
+                </div>
 
-            <div className="flex items-center gap-2">
-              {result.page > 1 ? (
-                <Link
-                  href={buildSearchHref(result.query, result.page - 1)}
-                  className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-                >
-                  Trước
-                </Link>
-              ) : (
-                <span className="rounded-md border border-zinc-100 px-3 py-1.5 text-sm text-zinc-400">Trước</span>
-              )}
+                <AdPlaceholder label="Giữa kết quả tìm kiếm (Google AdSense)" className="min-h-24" />
+              </>
+            ) : null}
 
-              {result.page < result.totalPages ? (
-                <Link
-                  href={buildSearchHref(result.query, result.page + 1)}
-                  className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-                >
-                  Sau
-                </Link>
-              ) : (
-                <span className="rounded-md border border-zinc-100 px-3 py-1.5 text-sm text-zinc-400">Sau</span>
-              )}
-            </div>
-          </nav>
-        ) : null}
+            {hasPagination ? (
+              <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
+                <div className="text-sm text-zinc-600">
+                  Trang {result.page}/{result.totalPages}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {result.page > 1 ? (
+                    <Link
+                      href={buildSearchHref(result.query, result.page - 1)}
+                      className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      Trước
+                    </Link>
+                  ) : (
+                    <span className="rounded-md border border-zinc-100 px-3 py-1.5 text-sm text-zinc-400">Trước</span>
+                  )}
+
+                  {result.page < result.totalPages ? (
+                    <Link
+                      href={buildSearchHref(result.query, result.page + 1)}
+                      className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+                    >
+                      Sau
+                    </Link>
+                  ) : (
+                    <span className="rounded-md border border-zinc-100 px-3 py-1.5 text-sm text-zinc-400">Sau</span>
+                  )}
+                </div>
+              </nav>
+            ) : null}
+
+            <AdPlaceholder label="Cuối trang tìm kiếm (Google AdSense)" className="min-h-24" />
+          </section>
+
+          <aside className="space-y-4">
+            <AdPlaceholder label="Sidebar tìm kiếm trên (Google AdSense)" className="min-h-40" />
+            <AdPlaceholder label="Sidebar tìm kiếm dưới (Google AdSense)" className="min-h-40" />
+          </aside>
+        </div>
       </main>
 
       <SiteFooter />

@@ -177,6 +177,8 @@ export default async function PostPage({ params }: PostPageProps) {
             priority
           />
 
+          <AdPlaceholder label="Sau ảnh bài viết (Google AdSense)" className="min-h-24" />
+
           <div
             className="article-content ck-content max-w-none text-zinc-800"
             dangerouslySetInnerHTML={{ __html: articleHtml }}
@@ -193,6 +195,8 @@ export default async function PostPage({ params }: PostPageProps) {
               />
             </div>
           ) : null}
+
+            <AdPlaceholder label="Sau video nội dung (Google AdSense)" className="min-h-24" />
 
           <SocialShare title={article.title} url={fullUrl} />
 
@@ -212,9 +216,13 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
           </section>
 
+          <AdPlaceholder label="Trước form bình luận (Google AdSense)" className="min-h-24" />
+
           <CommentForm postId={article.id} currentUser={null} />
 
           <RecommendedForYou posts={recommendedPosts} />
+
+          <AdPlaceholder label="Giữa các cụm liên quan (Google AdSense)" className="min-h-24" />
 
           <VideoMostWatched posts={mostWatchedVideos} />
 
@@ -236,6 +244,8 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </section>
 
+          <AdPlaceholder label="Sau cụm đọc nhiều (Google AdSense)" className="min-h-24" />
+
           <section className="space-y-4">
             <SectionHeading title="Đọc thêm" />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -256,6 +266,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
         <aside className="space-y-4">
           <AdPlaceholder label="Sidebar (Google AdSense)" className="min-h-44" />
+          <AdPlaceholder label="Sidebar thứ 2 (Google AdSense)" className="min-h-40" />
           <MostRead
             posts={trendingPosts.map((post) => ({
               id: post.id,
@@ -266,8 +277,10 @@ export default async function PostPage({ params }: PostPageProps) {
               categorySlug: post.category.slug,
             }))}
           />
+          <AdPlaceholder label="Sidebar giữa tiện ích (Google AdSense)" className="min-h-40" />
           <LunarCalendarWidget />
           <AiWeatherWidget />
+          <AdPlaceholder label="Sidebar cuối bài (Google AdSense)" className="min-h-40" />
         </aside>
       </main>
 

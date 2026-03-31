@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
@@ -102,24 +103,45 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       <SiteHeader />
       <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
-        <SectionHeading title={currentCategory.name} />
-        {posts.length === 0 ? (
-          <p className="text-zinc-600">Chuyên mục này chưa có bài viết.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                href={`/${post.category.slug}/${post.slug}`}
-                title={post.title}
-                excerpt={post.excerpt}
-                imageUrl={post.thumbnailUrl}
-                date={post.publishedAt}
-                categoryName={post.category.name}
-              />
-            ))}
-          </div>
-        )}
+        <AdPlaceholder label="Top chuyên mục (Google AdSense)" className="min-h-20" />
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="space-y-6">
+            <SectionHeading title={currentCategory.name} />
+
+            {posts.length === 0 ? (
+              <p className="text-zinc-600">Chuyên mục này chưa có bài viết.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {posts.map((post, index) => (
+                  <div key={post.id} className="contents">
+                    <PostCard
+                      href={`/${post.category.slug}/${post.slug}`}
+                      title={post.title}
+                      excerpt={post.excerpt}
+                      imageUrl={post.thumbnailUrl}
+                      date={post.publishedAt}
+                      categoryName={post.category.name}
+                    />
+                    {(index + 1) % 6 === 0 ? (
+                      <div className="sm:col-span-2 lg:col-span-3">
+                        <AdPlaceholder label="Giữa danh sách chuyên mục (Google AdSense)" className="min-h-24" />
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <AdPlaceholder label="Cuối danh sách chuyên mục (Google AdSense)" className="min-h-24" />
+          </section>
+
+          <aside className="space-y-4">
+            <AdPlaceholder label="Sidebar chuyên mục trên (Google AdSense)" className="min-h-40" />
+            <AdPlaceholder label="Sidebar chuyên mục giữa (Google AdSense)" className="min-h-40" />
+            <AdPlaceholder label="Sidebar chuyên mục dưới (Google AdSense)" className="min-h-40" />
+          </aside>
+        </div>
       </main>
 
 
