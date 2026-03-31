@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Be_Vietnam_Pro, Merriweather } from "next/font/google"
+import Script from "next/script"
 import { Suspense } from "react"
 
 import "./globals.css"
@@ -74,6 +75,9 @@ export const metadata: Metadata = {
     description: defaultDescription,
     images: [defaultOgImage],
   },
+  other: {
+    "google-adsense-account": "ca-pub-1176898129958487",
+  },
 }
 
 export default function RootLayout({
@@ -119,6 +123,12 @@ export default function RootLayout({
       className={cn("antialiased", fontSans.variable, fontSerif.variable)}
     >
       <body>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1176898129958487"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <TooltipProvider>
           <Suspense fallback={null}>
             <ScrollToTopOnRouteChange />
