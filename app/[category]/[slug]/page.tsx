@@ -196,7 +196,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           ) : null}
 
-            <AdPlaceholder label="Sau video nội dung (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder label="Sau video nội dung (Google AdSense)" className="min-h-24" />
 
           <SocialShare title={article.title} url={fullUrl} />
 
