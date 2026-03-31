@@ -93,10 +93,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const siteUrl = getSiteUrl()
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
-  const articleHtml = injectInlineAdAfterSecondParagraph(
-    normalizeArticleHtml(article.content),
-    "Giữa bài viết (Google AdSense)"
-  )
+  const articleHtml = injectInlineAdAfterSecondParagraph(normalizeArticleHtml(article.content))
   const articleImage = toAbsoluteUrl(article.ogImage || article.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
 
   const articleJsonLd = {

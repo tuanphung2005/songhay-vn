@@ -42,13 +42,18 @@ describe("seo governance and moderation", () => {
 })
 
 describe("ads and indexing", () => {
-  test("article page includes all requested ad placeholders", () => {
-    const source = readWorkspaceFile("app/[category]/[slug]/page.tsx")
+  test("article and homepage render real Google Adsense slots", () => {
+    const articleSource = readWorkspaceFile("app/[category]/[slug]/page.tsx")
+    const homeSource = readWorkspaceFile("app/page.tsx")
+    const adComponentSource = readWorkspaceFile("components/news/ad-placeholder.tsx")
+    const htmlHelperSource = readWorkspaceFile("lib/html.ts")
 
-    expect(source).toContain("Dưới tiêu đề (Google AdSense)")
-    expect(source).toContain("Giữa bài viết (Google AdSense)")
-    expect(source).toContain("Sidebar (Google AdSense)")
-    expect(source).toContain("Sau bài viết (Google AdSense)")
+    expect(articleSource).toContain("AdPlaceholder")
+    expect(homeSource).toContain("Top banner (Google AdSense)")
+    expect(homeSource).toContain("Bottom page ad (Google AdSense)")
+    expect(adComponentSource).toContain("className=\"adsbygoogle")
+    expect(adComponentSource).toContain("data-ad-client")
+    expect(htmlHelperSource).toContain("adsbygoogle block w-full")
   })
 
   test("disclaimer page is noindexed", () => {

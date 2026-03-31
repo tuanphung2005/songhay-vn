@@ -91,7 +91,7 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 md:px-6">
-        {/* <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" /> */}
+        <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
           <div className="space-y-8">
@@ -223,9 +223,9 @@ export default async function HomePage() {
 
       <SiteFooter />
 
-      {/* <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
         <AdPlaceholder label="Bottom page ad (Google AdSense)" className="min-h-24" />
-      </div> */}
+      </div>
     </div>
   )
 }

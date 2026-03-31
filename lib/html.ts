@@ -79,8 +79,10 @@ export function normalizeArticleHtml(rawHtml: string) {
     .trim()
 }
 
-export function injectInlineAdAfterSecondParagraph(html: string, label: string) {
-  const adSlot = `<div class="my-6"><div class="flex min-h-24 items-center justify-center border border-dashed border-rose-300 bg-rose-50 px-4 text-center text-sm text-rose-700">Quảng cáo: ${label}</div></div>`
+const ADSENSE_CLIENT = "ca-pub-1176898129958487"
+
+export function injectInlineAdAfterSecondParagraph(html: string) {
+  const adSlot = `<div class="my-6"><ins class="adsbygoogle block w-full" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-format="auto" data-full-width-responsive="true" aria-label="Giữa bài viết (Google AdSense)"></ins></div>`
 
   let paragraphCount = 0
   let inserted = false

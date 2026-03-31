@@ -5,6 +5,7 @@ import { Suspense } from "react"
 
 import "./globals.css"
 import "ckeditor5/ckeditor5-content.css"
+import { AdsenseHydrator } from "@/components/news/adsense-hydrator"
 import { FloatingGiftButton } from "@/components/news/floating-gift-button"
 import { JsonLd } from "@/components/seo/json-ld"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
@@ -129,6 +130,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <AdsenseHydrator />
         <TooltipProvider>
           <Suspense fallback={null}>
             <ScrollToTopOnRouteChange />

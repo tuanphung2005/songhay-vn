@@ -1,19 +1,27 @@
+import { cn } from "@/lib/utils"
+
+const ADSENSE_CLIENT = "pub-1176898129958487"
+
 type AdPlaceholderProps = {
   label: string
   className?: string
+  slot?: string
 }
 
-export function AdPlaceholder({ label, className }: AdPlaceholderProps) {
+export function AdPlaceholder({ label, className, slot }: AdPlaceholderProps) {
+  const slotProps = slot ? { "data-ad-slot": slot } : {}
+
   return (
-    <div
-      className={[
-        "flex min-h-24 items-center justify-center border border-dashed border-rose-300 bg-rose-50 px-4 text-center text-sm text-rose-700",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      Quảng cáo: {label}
+    <div className={cn("w-full overflow-hidden", className)} data-ad-label={label}>
+      <ins
+        className="adsbygoogle block w-full"
+        style={{ display: "block" }}
+        data-ad-client={ADSENSE_CLIENT}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+        aria-label={label}
+        {...slotProps}
+      />
     </div>
   )
 }
