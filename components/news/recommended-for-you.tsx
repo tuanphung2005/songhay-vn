@@ -24,7 +24,7 @@ export function RecommendedForYou({ posts }: RecommendedForYouProps) {
   if (posts.length === 0) return null
 
   return (
-    <section className="space-y-4 pt-6">
+    <section className="space-y-3 pt-4">
       <SectionHeading title="Dành cho bạn" />
       <div className="grid gap-4 sm:grid-cols-2">
         {posts.map((post) => (

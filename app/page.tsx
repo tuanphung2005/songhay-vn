@@ -86,18 +86,18 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <JsonLd data={homepageJsonLd} />
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-[1200px] space-y-6 px-4 py-5 md:px-6 md:py-6">
         <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
-          <div className="space-y-8">
-            <section className="space-y-4">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-6">
+            <section className="space-y-3">
               {heroPost ? (
-                <article className="overflow-hidden border border-zinc-200 bg-white">
+                <article className="overflow-hidden rounded-sm border border-zinc-300 bg-white shadow-sm">
                   <PostCard
                     href={`/${heroPost.category.slug}/${heroPost.slug}`}
                     title={heroPost.title}
@@ -109,14 +109,14 @@ export default async function HomePage() {
                 </article>
               ) : null}
 
-              <div className="grid gap-3 border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-3">
+              <div className="grid gap-3 rounded-sm border border-zinc-300 bg-white p-3 sm:grid-cols-3">
                 {heroMini.map((post) => (
                   <Link
                     key={post.id}
                     href={`/${post.category.slug}/${post.slug}`}
-                    className="group overflow-hidden rounded-md border border-zinc-200 bg-white transition hover:border-rose-200"
+                    className="group overflow-hidden rounded-sm border border-zinc-300 bg-zinc-50 transition hover:shadow-md"
                   >
-                    <div className="h-28 w-full overflow-hidden">
+                    <div className="h-32 w-full overflow-hidden">
                       <Image
                         src={post.thumbnailUrl || "/placeholder-news.svg"}
                         alt={post.title}
@@ -125,16 +125,16 @@ export default async function HomePage() {
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />
                     </div>
-                    <div className="p-2">
-                      <p className="line-clamp-2 text-sm font-bold text-zinc-800 transition group-hover:text-rose-600">{post.title}</p>
+                    <div className="p-3">
+                      <p className="line-clamp-2 text-sm font-bold leading-snug text-zinc-800 transition group-hover:text-rose-600">{post.title}</p>
                     </div>
                   </Link>
                 ))}
               </div>
 
-              <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" className="min-h-24" />
+              <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" className="min-h-20" />
 
-              <section className="space-y-4">
+              <section className="space-y-3">
                 <SectionHeading title="Đừng bỏ lỡ!" />
                 <DontMissWidget />
               </section>
@@ -158,16 +158,16 @@ export default async function HomePage() {
               </div>
             </section>
 
-            <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" className="min-h-24" />
+            <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" className="min-h-20" />
 
-            <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-24" />
+            <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-20" />
 
             {/* Engagement Sections */}
             <RecommendedForYou posts={recommended} />
-            <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" className="min-h-24" />
+            <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" className="min-h-20" />
             <VideoMostWatched posts={mostWatched} />
 
-            <section className="space-y-8 pt-8 border-t border-zinc-100">
+            <section className="space-y-6 pt-6 border-t border-zinc-200">
               {categoryBlocks.map((items, index) => {
                 const [first] = items
                 return (
@@ -217,7 +217,7 @@ export default async function HomePage() {
       </main>
 
       <nav className="bg-red-700">
-        <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-x-4 gap-y-3 px-4 py-5 text-lg font-bold text-white md:flex md:min-w-max md:items-center md:gap-8 md:overflow-x-auto md:px-6 md:py-3 md:text-xl">
+        <ul className="mx-auto grid w-full max-w-[1200px] grid-cols-2 gap-x-3 gap-y-2 px-4 py-4 text-base font-bold text-white md:flex md:min-w-max md:items-center md:gap-6 md:overflow-x-auto md:px-6 md:py-3">
           {navCategories.map((item) => (
             <li key={`bottom-${item.slug}`}>
               <Link

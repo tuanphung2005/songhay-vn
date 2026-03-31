@@ -6,7 +6,7 @@ import { GoodDayByAgeTool } from "@/components/news/good-day-by-age-tool"
 
 export function DontMissWidget() {
   return (
-    <div className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-3 md:grid-cols-[1.2fr_1fr] md:p-4">
+    <div className="grid gap-3 rounded-sm border border-zinc-300 bg-white p-3 shadow-sm md:grid-cols-[1.2fr_1fr] md:p-4">
       <div className="space-y-3 md:border-r md:border-zinc-200 md:pr-4">
         <p className="text-lg font-semibold text-zinc-800">Xem ngày tốt xấu theo tuổi?</p>
         <GoodDayByAgeTool />

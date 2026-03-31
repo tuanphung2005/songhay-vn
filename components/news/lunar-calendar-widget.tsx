@@ -116,11 +116,11 @@ export function LunarCalendarWidget() {
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-      <h3 className="text-xl font-bold text-zinc-800 px-4 py-3">Âm lịch - Dương lịch</h3>
+    <section className="overflow-hidden rounded-sm border border-zinc-300 bg-white shadow-sm">
+      <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-base font-bold text-zinc-800">Âm lịch - Dương lịch</h3>
 
-      <div className="space-y-3 p-4">
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-center">
+      <div className="space-y-3 p-3">
+        <div className="rounded-sm border border-zinc-300 bg-zinc-50 px-3 py-2 text-center">
           <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
             {isCurrentToday ? "Hôm nay" : ""}
           </p>

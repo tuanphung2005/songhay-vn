@@ -69,23 +69,23 @@ export function MostRead({ posts }: MostReadProps) {
   }, [])
 
   return (
-    <section className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4">
-      <h3 className="text-xl font-bold text-zinc-900">Đọc nhiều nhất</h3>
+    <section className="space-y-3 rounded-sm border border-zinc-300 bg-white p-4 shadow-sm">
+      <h3 className="text-lg font-bold text-zinc-900">Đọc nhiều nhất</h3>
       <ul className="space-y-3">
         {items.slice(0, 5).map((post) => (
-          <li key={post.id} className="flex gap-3 border-b border-zinc-100 pb-3 last:border-b-0 last:pb-0">
+          <li key={post.id} className="flex gap-3 border-b border-zinc-200 pb-3 last:border-b-0 last:pb-0">
             <Image
               src={post.thumbnailUrl || "/placeholder-news.svg"}
               alt={post.title}
               width={120}
               height={80}
               loading="lazy"
-              className="h-16 w-24 object-cover"
+              className="h-16 w-24 flex-shrink-0 rounded-sm object-cover"
             />
-            <div className="space-y-1">
+            <div className="flex-1 space-y-1">
               <Link
                 href={`/${post.categorySlug}/${post.slug}`}
-                className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-800 transition hover:text-rose-600"
+                className="line-clamp-2 text-sm font-bold leading-snug text-zinc-800 transition hover:text-rose-600"
               >
                 {post.title}
               </Link>

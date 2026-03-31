@@ -44,8 +44,8 @@ const socials = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-zinc-50">
-      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-10 md:grid-cols-[1.3fr_1fr] md:px-6">
+    <footer className="border-t border-zinc-200 bg-zinc-100">
+      <div className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 py-8 md:grid-cols-[1.3fr_1fr] md:px-6">
         <div className="space-y-3 text-zinc-700">
           <p className="text-2xl font-black text-zinc-900">Songhay.vn</p>
           <p className="text-sm font-semibold uppercase tracking-wide text-rose-700">Liên hệ quảng cáo</p>

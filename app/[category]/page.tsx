@@ -99,14 +99,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-zinc-50">
       <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       <SiteHeader />
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
+      <main className="mx-auto w-full max-w-[1200px] space-y-5 px-4 py-6 md:px-6 md:py-6">
         <AdPlaceholder label="Top chuyên mục (Google AdSense)" className="min-h-20" />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="space-y-6">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="space-y-4">
             <SectionHeading title={currentCategory.name} />
 
             {posts.length === 0 ? (

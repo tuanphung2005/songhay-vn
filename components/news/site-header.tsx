@@ -5,12 +5,23 @@ import { getNavCategories } from "@/lib/queries"
 import { MobileNav } from "./mobile-nav"
 import { NewsSearchForm } from "./search"
 
+function getCurrentDate() {
+  const days = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+  const now = new Date()
+  const dayName = days[now.getDay()]
+  const day = now.getDate()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
+  return `${dayName}, ngày ${day} tháng ${month} năm ${year}`
+}
+
 type SiteHeaderProps = {
   defaultSearchQuery?: string
 }
 
 export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
   const [user, navCategories] = await Promise.all([getCurrentUser(), getNavCategories()])
+  const currentDate = getCurrentDate()
 
   async function logoutAction() {
     "use server"
@@ -18,21 +29,24 @@ export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
   }
 
   return (
-    <header className="border-b border-red-800 bg-red-700 md:border-zinc-200 md:bg-zinc-50">
-      <div className="mx-auto flex w-full max-w-7xl items-start justify-between px-4 py-5 md:px-6 md:py-6">
+    <header className="sticky top-0 z-50 border-b border-red-800 bg-red-700 shadow-md md:border-zinc-200 md:bg-white">
+      <div className="mx-auto flex w-full max-w-[1200px] items-start justify-between px-4 py-4 md:px-6 md:py-5">
         <Link href="/" className="group block">
           <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-flex h-14 w-14 items-center justify-center bg-white text-4xl font-black text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-16 md:w-16">
+            <span className="inline-flex h-12 w-12 items-center justify-center bg-white text-3xl font-black text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-14 md:w-14">
               S
             </span>
             <div>
-              <p className="text-3xl font-black uppercase leading-none tracking-tight text-white md:text-red-700 md:text-5xl">Sống Hay</p>
-              <p className="mt-1 text-sm font-extrabold uppercase tracking-wide text-white/90 md:text-zinc-900 md:text-xl">Kho Tàng Điều Hay</p>
+              <p className="text-2xl font-black uppercase leading-none tracking-tight text-white md:text-red-700 md:text-4xl">Sống Hay</p>
+              <p className="mt-0.5 text-xs font-extrabold uppercase tracking-wide text-white/90 md:text-zinc-900 md:text-base">Kho Tàng Điều Hay</p>
             </div>
           </div>
         </Link>
 
-        <div className="mt-1 flex items-center gap-2">
+        <div className="mt-1 flex items-center gap-3">
+          <div className="hidden text-sm text-zinc-600 md:block">
+            {currentDate}
+          </div>
           {user ? (
             <>
               <Link
@@ -66,8 +80,8 @@ export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
         </div>
       </div>
 
-      <nav className="hidden bg-red-700 md:block">
-        <ul className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-8 gap-y-4 px-4 py-3 text-xl font-bold text-white md:px-6">
+      <nav className="hidden border-t border-red-800 bg-red-700 md:block">
+        <ul className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-2.5 text-base font-bold text-white md:px-6">
           {navCategories.map((item) => (
             <li key={item.slug} className="group relative">
               <Link
