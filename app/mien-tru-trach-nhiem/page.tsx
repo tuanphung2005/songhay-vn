@@ -5,6 +5,10 @@ import { DEFAULT_OG_IMAGE_PATH, toAbsoluteUrl } from "@/lib/seo"
 export const metadata: Metadata = {
   title: "Miễn trừ trách nhiệm",
   description: "Thông tin miễn trừ trách nhiệm khi sử dụng nội dung trên Songhay.vn.",
+  robots: {
+    index: false,
+    follow: false,
+  },
   alternates: {
     canonical: "/mien-tru-trach-nhiem",
   },

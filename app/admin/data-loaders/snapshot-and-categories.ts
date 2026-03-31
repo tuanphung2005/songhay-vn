@@ -1,5 +1,7 @@
 import { memoizeWithTtl } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
+import { isPrismaSchemaMismatchError } from "@/lib/prisma-errors"
+import { ensureSeoKeywordStoreSeeded } from "@/lib/seo-keyword-store"
 import { sortCategoriesByTree } from "@/app/admin/data-helpers"
 import type { AdminTab } from "@/app/admin/data-types"
 
@@ -7,10 +9,20 @@ const ADMIN_CACHE_TTL_SECONDS = 20
 
 export async function getAdminSnapshot() {
   return memoizeWithTtl("admin:snapshot", ADMIN_CACHE_TTL_SECONDS, async () => {
+    const pendingCommentCountPromise = prisma.comment
+      .count({ where: { isApproved: false, containsBlockedKeyword: true } })
+      .catch((error) => {
+        if (isPrismaSchemaMismatchError(error)) {
+          return prisma.comment.count({ where: { isApproved: false } })
+        }
+
+        throw error
+      })
+
     const [postCount, categoryCount, pendingCommentCount, trashedPostCount, postViewAggregate] = await Promise.all([
       prisma.post.count({ where: { isDeleted: false } }),
       prisma.category.count(),
-      prisma.comment.count({ where: { isApproved: false } }),
+      pendingCommentCountPromise,
       prisma.post.count({ where: { isDeleted: true } }),
       prisma.post.aggregate({
         where: { isDeleted: false },
@@ -58,5 +70,24 @@ export async function getCategoriesForWrite(activeTab: AdminTab) {
       select: { id: true, name: true, parentId: true, parent: { select: { name: true } } },
     })
     return sortCategoriesByTree(raw)
+  })
+}
+
+export async function getSeoKeywordOptions(activeTab: AdminTab) {
+  if (activeTab !== "write") {
+    return []
+  }
+
+  return memoizeWithTtl("admin:seo-keywords:write", ADMIN_CACHE_TTL_SECONDS, async () => {
+    await ensureSeoKeywordStoreSeeded()
+
+    return prisma.seoKeyword.findMany({
+      orderBy: { keyword: "asc" },
+      take: 200,
+      select: {
+        id: true,
+        keyword: true,
+      },
+    })
   })
 }

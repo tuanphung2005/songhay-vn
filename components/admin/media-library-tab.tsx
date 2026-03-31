@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
@@ -69,6 +70,7 @@ function getInitialUploaderOptions(rows: MediaAssetRow[]) {
 export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
+  const [previewAsset, setPreviewAsset] = useState<MediaAssetRow | null>(null)
   const [filterType, setFilterType] = useState<"image" | "video">("image")
   const [uploaderFilter, setUploaderFilter] = useState("all")
   const [searchValue, setSearchValue] = useState("")
@@ -176,6 +178,8 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   return (
     <Card>
       <CardHeader>
+        <CardTitle>Kho dữ liệu media</CardTitle>
+        <CardDescription>Bấm vào media để xem phóng to trước khi dùng lại.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="library" className="space-y-4">
@@ -189,7 +193,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
           </TabsList>
 
           <TabsContent value="upload" className="rounded-2xl border bg-zinc-50/50 overflow-hidden m-0 shadow-sm">
-            <UploadTab 
+            <UploadTab
               hideSaveToLibrary
               submitText="Đẩy lên Kho Media"
               onSelect={() => window.location.assign("/admin?tab=media-library&toast=media_uploaded")}
@@ -197,143 +201,177 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
           </TabsContent>
 
           <TabsContent value="library" className="space-y-4 m-0">
-          <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] lg:grid-cols-[180px_260px_1fr_auto] md:items-end">
-            <div className="space-y-1.5">
-              <Label htmlFor="mediaFilterType">Lọc loại media</Label>
-              <Select
-                id="mediaFilterType"
-                value={filterType}
-                onChange={(event) => {
-                  const nextType = event.target.value === "video" ? "video" : "image"
-                  void handleFilterChange(nextType)
-                }}
-              >
-                <option value="image">Ảnh</option>
-                <option value="video">Video</option>
-              </Select>
-            </div>
-            {isAdmin ? (
+            <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] lg:grid-cols-[180px_260px_1fr_auto] md:items-end">
               <div className="space-y-1.5">
-                <Label htmlFor="mediaFilterUploader">Lọc theo người upload</Label>
+                <Label htmlFor="mediaFilterType">Lọc loại media</Label>
                 <Select
-                  id="mediaFilterUploader"
-                  value={uploaderFilter}
-                  onChange={async (event) => {
-                    const nextValue = event.target.value
-                    setUploaderFilter(nextValue)
-                    setPage(1)
-                    await loadMedia({ filterType, searchValue, page: 1, uploaderFilter: nextValue })
+                  id="mediaFilterType"
+                  value={filterType}
+                  onChange={(event) => {
+                    const nextType = event.target.value === "video" ? "video" : "image"
+                    void handleFilterChange(nextType)
                   }}
                 >
-                  <option value="all">Tất cả người upload</option>
-                  {uploaderOptions.map((uploader) => (
-                    <option key={uploader.id} value={uploader.id}>
-                      {uploader.name} ({uploader.email})
-                    </option>
-                  ))}
+                  <option value="image">Ảnh</option>
+                  <option value="video">Video</option>
                 </Select>
               </div>
-            ) : null}
-            <div className="space-y-1.5">
-              <Label htmlFor="mediaSearch">Tìm media</Label>
-              <Input
-                id="mediaSearch"
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Tìm theo tên đặt hoặc tên file..."
-              />
-            </div>
-            <Button type="submit" variant="secondary">Tìm</Button>
-          </form>
-
-          {isLoading ? <p className="text-muted-foreground text-sm">Đang tải dữ liệu...</p> : null}
-          {!isLoading && items.length === 0 ? <p className="text-muted-foreground text-sm">Không có media phù hợp.</p> : null}
-
-          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {items.map((asset) => (
-              <div key={asset.id} className="rounded-lg border p-2">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="line-clamp-1 font-semibold">{asset.displayName || asset.filename}</p>
-                    <Badge variant="outline">{asset.assetType === "IMAGE" ? "Ảnh" : "Video"}</Badge>
-                    <Badge variant="outline">Shared</Badge>
-                  </div>
-                  <p className="text-muted-foreground line-clamp-1 text-xs">File: {asset.filename}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi {asset.uploader.name} · {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
-                  </p>
-                </div>
-
-                <div className="bg-muted/40 mt-2 flex min-h-24 items-center justify-center rounded border p-1">
-                  {asset.assetType === "IMAGE" ? (
-                    <img
-                      src={asset.url}
-                      alt={asset.displayName || asset.filename}
-                      className="max-h-24 w-auto max-w-full rounded object-contain"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <video
-                      src={asset.url}
-                      controls
-                      preload="metadata"
-                      className="max-h-24 w-auto max-w-full rounded bg-black/80 object-contain"
-                    />
-                  )}
-                </div>
-
-                <div className="mt-2 flex justify-end">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setDeleteDialogId(asset.id)}
-                    disabled={deletingId === asset.id}
+              {isAdmin ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="mediaFilterUploader">Lọc theo người upload</Label>
+                  <Select
+                    id="mediaFilterUploader"
+                    value={uploaderFilter}
+                    onChange={async (event) => {
+                      const nextValue = event.target.value
+                      setUploaderFilter(nextValue)
+                      setPage(1)
+                      await loadMedia({ filterType, searchValue, page: 1, uploaderFilter: nextValue })
+                    }}
                   >
-                    {deletingId === asset.id ? "Đang xóa..." : "Xóa"}
-                  </Button>
+                    <option value="all">Tất cả người upload</option>
+                    {uploaderOptions.map((uploader) => (
+                      <option key={uploader.id} value={uploader.id}>
+                        {uploader.name} ({uploader.email})
+                      </option>
+                    ))}
+                  </Select>
                 </div>
+              ) : null}
+              <div className="space-y-1.5">
+                <Label htmlFor="mediaSearch">Tìm media</Label>
+                <Input
+                  id="mediaSearch"
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  placeholder="Tìm theo tên đặt hoặc tên file..."
+                />
               </div>
-            ))}
-          </div>
+              <Button type="submit" variant="secondary">Tìm</Button>
+            </form>
 
-          <AlertDialog open={deleteDialogId !== null} onOpenChange={(open) => !open && setDeleteDialogId(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xóa media khỏi kho dữ liệu?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  disabled={deleteDialogId === null || deletingId !== null}
-                  onClick={() => {
-                    if (deleteDialogId !== null) {
-                      void handleDelete(deleteDialogId)
-                    }
-                  }}
-                >
-                  {deletingId !== null ? "Đang xóa..." : "Xóa"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            {isLoading ? <p className="text-muted-foreground text-sm">Đang tải dữ liệu...</p> : null}
+            {!isLoading && items.length === 0 ? <p className="text-muted-foreground text-sm">Không có media phù hợp.</p> : null}
 
-          <div className="flex items-center justify-between border-t pt-3">
-            <p className="text-muted-foreground text-sm">Trang {page}/{totalPages}</p>
-            <div className="flex items-center gap-2">
-              <Button type="button" size="sm" variant="outline" disabled={page <= 1 || isLoading} onClick={() => void goToPage(page - 1)}>
-                Trước
-              </Button>
-              <Button type="button" size="sm" disabled={page >= totalPages || isLoading} onClick={() => void goToPage(page + 1)}>
-                Sau
-              </Button>
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+              {items.map((asset) => (
+                <div key={asset.id} className="rounded-lg border p-2">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="line-clamp-1 font-semibold">{asset.displayName || asset.filename}</p>
+                      <Badge variant="outline">{asset.assetType === "IMAGE" ? "Ảnh" : "Video"}</Badge>
+                      <Badge variant="outline">Shared</Badge>
+                    </div>
+                    <p className="text-muted-foreground line-clamp-1 text-xs">File: {asset.filename}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi {asset.uploader.name} · {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="bg-muted/40 mt-2 flex min-h-24 w-full items-center justify-center rounded border p-1 transition hover:border-zinc-400"
+                    onClick={() => setPreviewAsset(asset)}
+                  >
+                    {asset.assetType === "IMAGE" ? (
+                      <img
+                        src={asset.url}
+                        alt={asset.displayName || asset.filename}
+                        className="max-h-24 w-auto max-w-full rounded object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <video
+                        src={asset.url}
+                        controls
+                        preload="metadata"
+                        className="max-h-24 w-auto max-w-full rounded bg-black/80 object-contain"
+                      />
+                    )}
+                  </button>
+
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => setDeleteDialogId(asset.id)}
+                      disabled={deletingId === asset.id}
+                    >
+                      {deletingId === asset.id ? "Đang xóa..." : "Xóa"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+
+            <AlertDialog open={deleteDialogId !== null} onOpenChange={(open) => !open && setDeleteDialogId(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xóa media khỏi kho dữ liệu?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    disabled={deleteDialogId === null || deletingId !== null}
+                    onClick={() => {
+                      if (deleteDialogId !== null) {
+                        void handleDelete(deleteDialogId)
+                      }
+                    }}
+                  >
+                    {deletingId !== null ? "Đang xóa..." : "Xóa"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={previewAsset !== null} onOpenChange={(open) => !open && setPreviewAsset(null)}>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>{previewAsset?.displayName || previewAsset?.filename || "Xem trước media"}</DialogTitle>
+                  <DialogDescription>
+                    {previewAsset ? `${previewAsset.mimeType} · ${toMb(previewAsset.sizeBytes)} · tải bởi ${previewAsset.uploader.name}` : ""}
+                  </DialogDescription>
+                </DialogHeader>
+
+                {previewAsset ? (
+                  <div className="max-h-[70vh] overflow-auto rounded border bg-zinc-50 p-2">
+                    {previewAsset.assetType === "IMAGE" ? (
+                      <img
+                        src={previewAsset.url}
+                        alt={previewAsset.displayName || previewAsset.filename}
+                        className="h-auto max-h-[65vh] w-full rounded object-contain"
+                      />
+                    ) : (
+                      <video
+                        src={previewAsset.url}
+                        controls
+                        preload="metadata"
+                        className="h-auto max-h-[65vh] w-full rounded bg-black"
+                      />
+                    )}
+                  </div>
+                ) : null}
+              </DialogContent>
+            </Dialog>
+
+            <div className="flex items-center justify-between border-t pt-3">
+              <p className="text-muted-foreground text-sm">Trang {page}/{totalPages}</p>
+              <div className="flex items-center gap-2">
+                <Button type="button" size="sm" variant="outline" disabled={page <= 1 || isLoading} onClick={() => void goToPage(page - 1)}>
+                  Trước
+                </Button>
+                <Button type="button" size="sm" disabled={page >= totalPages || isLoading} onClick={() => void goToPage(page + 1)}>
+                  Sau
+                </Button>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

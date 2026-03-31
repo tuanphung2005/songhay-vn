@@ -78,3 +78,25 @@ export function normalizeArticleHtml(rawHtml: string) {
     .replace(/<p>(?:\s|&nbsp;|<br\s*\/?\s*>)*<\/p>/gi, "")
     .trim()
 }
+
+export function injectInlineAdAfterSecondParagraph(html: string, label: string) {
+  const adSlot = `<div class="my-6"><div class="flex min-h-24 items-center justify-center border border-dashed border-rose-300 bg-rose-50 px-4 text-center text-sm text-rose-700">Quảng cáo: ${label}</div></div>`
+
+  let paragraphCount = 0
+  let inserted = false
+  const withInlineAd = html.replace(/<\/p>/gi, (match) => {
+    paragraphCount += 1
+    if (!inserted && paragraphCount === 2) {
+      inserted = true
+      return `${match}${adSlot}`
+    }
+
+    return match
+  })
+
+  if (inserted) {
+    return withInlineAd
+  }
+
+  return `${withInlineAd}${adSlot}`
+}

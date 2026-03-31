@@ -21,6 +21,17 @@ type OverviewAnalytics = {
   todayComments: number
   todayApprovedComments: number
   todayTopPosts: Array<{ id: string; title: string; slug: string; views: number; category: { slug: string } }>
+  range: "7d" | "30d"
+  hotSeoKeywords: Array<{ id: string; keyword: string; postCount: number; totalViews: number; score: number }>
+  avgDwellSecondsPerPost: number
+  dwellTopPosts: Array<{
+    postId: string
+    title: string
+    slug: string
+    category: { slug: string }
+    avgDwellSeconds: number
+    eventCount: number
+  }>
 }
 
 type OverviewTabProps = {
@@ -29,8 +40,47 @@ type OverviewTabProps = {
 }
 
 export function OverviewTab({ overviewStats, overviewAnalytics }: OverviewTabProps) {
+  const rangeLabel = overviewAnalytics.range === "30d" ? "30 ngày" : "7 ngày"
+
+  function formatDwell(seconds: number) {
+    if (seconds <= 0) {
+      return "0s"
+    }
+
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    if (minutes === 0) {
+      return `${remainingSeconds}s`
+    }
+
+    return `${minutes}m ${String(remainingSeconds).padStart(2, "0")}s`
+  }
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-4">
+          <div>
+            <p className="text-sm font-semibold">Phạm vi tổng quan</p>
+            <p className="text-muted-foreground text-xs">Đang xem dữ liệu {rangeLabel} gần nhất.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin?tab=overview&overviewRange=7d"
+              className={`rounded-md border px-3 py-1.5 text-sm ${overviewAnalytics.range === "7d" ? "bg-zinc-900 text-white" : "hover:bg-zinc-50"}`}
+            >
+              7 ngày
+            </Link>
+            <Link
+              href="/admin?tab=overview&overviewRange=30d"
+              className={`rounded-md border px-3 py-1.5 text-sm ${overviewAnalytics.range === "30d" ? "bg-zinc-900 text-white" : "hover:bg-zinc-50"}`}
+            >
+              30 ngày
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {overviewStats.map((item) => {
           const ItemIcon = item.icon
@@ -58,7 +108,7 @@ export function OverviewTab({ overviewStats, overviewAnalytics }: OverviewTabPro
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Biểu đồ 7 ngày gần nhất</CardTitle>
+            <CardTitle>Biểu đồ {rangeLabel} gần nhất</CardTitle>
             <CardDescription>So sánh tổng view bài xuất bản theo ngày và số comment phát sinh.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -105,6 +155,58 @@ export function OverviewTab({ overviewStats, overviewAnalytics }: OverviewTabPro
                 ))
               )}
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Từ khóa SEO hot ({rangeLabel})</CardTitle>
+            <CardDescription>Xếp hạng theo score kết hợp giữa tổng view và số bài dùng từ khóa.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {overviewAnalytics.hotSeoKeywords.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Chưa có dữ liệu từ khóa trong khoảng thời gian đã chọn.</p>
+            ) : (
+              overviewAnalytics.hotSeoKeywords.map((item, index) => (
+                <div key={item.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">#{index + 1} {item.keyword}</p>
+                    <p className="text-muted-foreground text-xs">{item.postCount} bài · {item.totalViews.toLocaleString("vi-VN")} view</p>
+                  </div>
+                  <Badge variant="outline">Score {item.score.toLocaleString("vi-VN")}</Badge>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Thời gian ở lại bài trung bình</CardTitle>
+            <CardDescription>Dựa trên hành vi thực tế của người đọc trong {rangeLabel} gần nhất.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border px-3 py-2">
+              <p className="text-muted-foreground text-xs">Trung bình mỗi bài</p>
+              <p className="text-2xl font-black text-emerald-600">{formatDwell(overviewAnalytics.avgDwellSecondsPerPost)}</p>
+            </div>
+
+            {overviewAnalytics.dwellTopPosts.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Chưa có dữ liệu dwell-time hợp lệ trong khoảng thời gian đã chọn.</p>
+            ) : (
+              <div className="space-y-2">
+                {overviewAnalytics.dwellTopPosts.map((post) => (
+                  <div key={post.postId} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                    <Link href={`/${post.category.slug}/${post.slug}`} className="line-clamp-1 pr-3 font-medium hover:text-rose-600">
+                      {post.title}
+                    </Link>
+                    <Badge variant="outline">{formatDwell(post.avgDwellSeconds)}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -11,7 +11,7 @@ describe("admin write tab UI", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
 
     expect(source).toContain("<legend className=\"px-1 text-sm font-semibold\">SEO</legend>")
-    expect(source).toContain("name=\"seoKeywords\"")
+    expect(source).toContain("SeoKeywordPicker")
     expect(source).toContain("name=\"isSensitive\"")
   })
 
@@ -49,5 +49,13 @@ describe("admin write tab UI", () => {
     expect(source).toContain("const [page, setPage] = useState(1)")
     expect(source).toContain("Trang {safePage} / {totalPages}")
     expect(source).toContain("setPage((v) => Math.max(1, v - 1))")
+  })
+
+  test("seo keyword picker keeps server action field names", () => {
+    const source = readWorkspaceFile("components/admin/seo-keyword-picker.tsx")
+
+    expect(source).toContain('name="seoKeywordIds"')
+    expect(source).toContain('name="seoKeywords"')
+    expect(source).toContain("Thêm mới")
   })
 })

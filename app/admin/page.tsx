@@ -2,35 +2,53 @@ import type { Metadata } from "next"
 import {
   Activity,
   FolderKanban,
+  KeyRound,
+  LayoutDashboard,
+  LibraryBig,
   MessageSquareMore,
   Newspaper,
+  PenSquare,
   ShieldCheck,
+  Trash2,
+  UserSquare2,
+  Users,
 } from "lucide-react"
 
 import {
+  addForbiddenKeyword,
+  addSeoKeyword,
   approvePendingPost,
   createSubordinateAccount,
   createCategory,
   createPost,
   deleteCategory,
+  deleteForbiddenKeyword,
   deletePostPermanently,
+  deleteSeoKeyword,
   moderateComment,
   movePostToTrash,
   promotePostToPendingPublish,
   rejectPendingPost,
+  reorderCategory,
+  restorePostFromTrash,
   returnPostToDraft,
   returnPostToPendingPublish,
   returnPostToPendingReview,
-  reorderCategory,
-  restorePostFromTrash,
   submitPostToPendingReview,
-  updatePasswordMock,
   updateCategory,
+  updatePasswordMock,
   updateRolePermissions,
   updateUserRole,
   deleteUser,
 } from "@/app/admin/actions"
 import { type AdminTab, getAdminPageData } from "@/app/admin/data"
+import {
+  getVisibleTabs,
+  OVERVIEW_TAB,
+  parseAdminSearchParams,
+  type NavCountKey,
+  type NavIconName,
+} from "@/app/admin/page-helpers"
 import { AdminActionToast } from "@/components/admin/action-toast"
 import { AdminNavButton } from "@/components/admin/admin-nav-button"
 import { CategoriesTab } from "@/components/admin/categories-tab"
@@ -39,17 +57,12 @@ import { MediaLibraryTab } from "@/components/admin/media-library-tab"
 import { OverviewTab } from "@/components/admin/overview-tab"
 import { PersonalArchiveTab } from "@/components/admin/personal-archive-tab"
 import { PostsTab } from "@/components/admin/posts-tab"
+import { SettingsModerationTab } from "@/components/admin/settings-moderation-tab"
 import { SettingsPasswordTab } from "@/components/admin/settings-password-tab"
 import { SettingsPermissionsTab } from "@/components/admin/settings-permissions-tab"
 import { SettingsUsersTab } from "@/components/admin/settings-users-tab"
 import { TrashTab } from "@/components/admin/trash-tab"
 import { WriteTab } from "@/components/admin/write-tab"
-import {
-  getVisibleTabs,
-  OVERVIEW_TAB,
-  parseAdminSearchParams,
-  type NavCountKey,
-} from "@/app/admin/page-helpers"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -61,8 +74,8 @@ import {
   canCreateSubordinateAccount,
   canEditByStatus,
   canPublishNow,
-  canViewAllPosts,
   canSubmitPendingPublish,
+  canViewAllPosts,
   ROLE_LABELS_VI,
 } from "@/lib/permissions"
 
@@ -75,9 +88,24 @@ export const metadata: Metadata = {
   },
 }
 
+const navIcons: Record<NavIconName, typeof LayoutDashboard> = {
+  layoutDashboard: LayoutDashboard,
+  penSquare: PenSquare,
+  libraryBig: LibraryBig,
+  userSquare2: UserSquare2,
+  newspaper: Newspaper,
+  trash2: Trash2,
+  keyRound: KeyRound,
+  messageSquareMore: MessageSquareMore,
+  folderKanban: FolderKanban,
+  shieldCheck: ShieldCheck,
+  users: Users,
+}
+
 type AdminPageProps = {
   searchParams?: Promise<{
     tab?: string
+    overviewRange?: string
     moved?: string
     direction?: string
     postsQ?: string
@@ -110,7 +138,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   })
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const { tabFromQuery, movedCategoryId, movedDirection, postsFilters, personalArchiveFilters, trashFilters } = parseAdminSearchParams(resolvedSearchParams)
+  const { tabFromQuery, overviewRange, movedCategoryId, movedDirection, postsFilters, personalArchiveFilters, trashFilters } = parseAdminSearchParams(resolvedSearchParams)
 
   const activeTab: AdminTab = visibleTabs.some((item) => item.key === tabFromQuery)
     ? (tabFromQuery as AdminTab)
@@ -124,6 +152,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     totalPostViews,
     categoriesForManage,
     categoriesForWrite,
+    seoKeywordOptions,
     postsData,
     postsPaginationItems,
     personalPostsData,
@@ -131,10 +160,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     trashedPosts,
     pendingComments,
     overviewAnalytics,
+    moderationSettings,
     usersData,
     permissionsMatrix,
   } = await getAdminPageData({
     activeTab,
+    overviewRange: overviewRange === "30d" ? "30d" : "7d",
     postsFilters,
     personalArchiveFilters,
     trashFilters,
@@ -145,7 +176,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   })
 
   const activeTabMeta = visibleTabs.find((item) => item.key === activeTab) || visibleTabs[0]
-  const ActiveTabIcon = activeTabMeta.icon
+  const ActiveTabIcon = navIcons[activeTabMeta.iconName]
   const navCountByKey: Record<NavCountKey, number> = {
     postCount,
     categoryCount,
@@ -260,10 +291,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeTab === "overview" ? <OverviewTab overviewStats={overviewStats} overviewAnalytics={overviewAnalytics} /> : null}
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}
-          {activeTab === "write" ? <WriteTab canPublishNow={canPublishNow(currentUser.role)} canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)} categoriesForWrite={categoriesForWrite} mediaAssets={mediaLibraryData} currentUserId={currentUser.id} createPost={createPost} /> : null}
+          {activeTab === "write" ? <WriteTab canPublishNow={canPublishNow(currentUser.role)} canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)} categoriesForWrite={categoriesForWrite} seoKeywordOptions={seoKeywordOptions} mediaAssets={mediaLibraryData} currentUserId={currentUser.id} createPost={createPost} /> : null}
           {activeTab === "media-library" ? <MediaLibraryTab isAdmin={canSeeAllPosts} rows={mediaLibraryData} /> : null}
           {activeTab === "personal-archive" ? <PersonalArchiveTab isAdmin={canSeeAllPosts} data={personalPostsData} filters={personalArchiveFilters} movePostToTrash={movePostToTrash} /> : null}
           {activeTab === "comments" ? <CommentsTab pendingComments={pendingComments} moderateComment={moderateComment} /> : null}
+          {activeTab === "settings-moderation" ? <SettingsModerationTab forbiddenKeywords={moderationSettings.forbiddenKeywords} seoKeywords={moderationSettings.seoKeywords} addForbiddenKeyword={addForbiddenKeyword} deleteForbiddenKeyword={deleteForbiddenKeyword} addSeoKeyword={addSeoKeyword} deleteSeoKeyword={deleteSeoKeyword} /> : null}
           {activeTab === "posts" ? (
             <PostsTab
               isAdmin={canSeeAllPosts}

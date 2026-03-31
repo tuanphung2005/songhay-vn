@@ -11,11 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CategorySelector } from "@/components/admin/category-selector"
+import { SeoKeywordPicker } from "@/components/admin/seo-keyword-picker"
 import { uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { requireCmsUser } from "@/lib/auth"
 import { canEditByStatus, canPublishNow, canSubmitPendingPublish, canViewAllPosts } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
+import { resolveSeoKeywordSelection, syncPostSeoKeywords } from "@/lib/seo-keyword-store"
+import { normalizeKeyword, splitLegacySeoKeywords } from "@/lib/seo-keywords"
 import {
   getPlainTextFromHtml,
   resolveEditorialFromSubmitAction,
@@ -43,6 +46,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
   const post = await prisma.post.findUnique({
     where: { id },
+    include: {
+      seoKeywordLinks: {
+        select: {
+          seoKeywordId: true,
+        },
+      },
+    },
   })
 
   if (!post) {
@@ -85,6 +95,24 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     take: 200,
   })
 
+  const seoKeywordOptions = await prisma.seoKeyword.findMany({
+    orderBy: { keyword: "asc" },
+    take: 200,
+    select: {
+      id: true,
+      keyword: true,
+    },
+  })
+  const selectedSeoKeywordIds = new Set(post.seoKeywordLinks.map((item) => item.seoKeywordId))
+  const selectedSeoKeywordNormalized = new Set(
+    seoKeywordOptions
+      .filter((item) => selectedSeoKeywordIds.has(item.id))
+      .map((item) => normalizeKeyword(item.keyword))
+  )
+  const initialCustomSeoKeywords = splitLegacySeoKeywords(post.seoKeywords).filter(
+    (item) => !selectedSeoKeywordNormalized.has(normalizeKeyword(item))
+  )
+
   async function updatePost(formData: FormData) {
     "use server"
 
@@ -100,7 +128,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const categoryId = subcategoryId || mainCategoryId
     const seoTitle = String(formData.get("seoTitle") || "").trim() || null
     const seoDescription = String(formData.get("seoDescription") || "").trim() || null
-    const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
     const manualOgImage = String(formData.get("ogImage") || "").trim() || null
     const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
     const isSensitive = formData.get("isSensitive") === "on"
@@ -132,6 +159,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       submitAction,
       role: currentUser.role,
     })
+    const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelection(formData)
 
     const currentPost = await prisma.post.findUnique({
       where: { id: postId },
@@ -153,7 +181,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         authorId: currentPost.authorId || currentUser.id,
         seoTitle,
         seoDescription,
-        seoKeywords,
+        seoKeywords: seoKeywordsText,
         ogImage,
         videoEmbedUrl,
         isSensitive,
@@ -170,6 +198,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       },
       include: { category: true },
     })
+
+    await syncPostSeoKeywords(postId, keywordIds)
 
     revalidatePath("/")
     revalidatePath("/admin")
@@ -301,7 +331,11 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="seoKeywords">Từ khóa SEO</Label>
-                <Input id="seoKeywords" name="seoKeywords" defaultValue={post.seoKeywords || ""} />
+                <SeoKeywordPicker
+                  options={seoKeywordOptions}
+                  initialSelectedIds={[...selectedSeoKeywordIds]}
+                  initialCustomKeywords={initialCustomSeoKeywords}
+                />
               </div>
             </fieldset>
 

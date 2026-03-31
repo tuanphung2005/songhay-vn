@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
 
-// import { AdPlaceholder } from "@/components/news/ad-placeholder"
+import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { DontMissWidget } from "@/components/news/dont-miss-widget"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [
-    { latest, mostRead, recommended, mostWatched, trendingPosts, heroSlots = [] },
+    { latest, mostRead, recommended, mostWatched, heroSlots = [] },
     navCategories,
   ] = await Promise.all([
     getHomepageData(),
@@ -156,7 +156,7 @@ export default async function HomePage() {
               </div>
             </section>
 
-            {/* <AdPlaceholder label="Between sections ad (Google AdSense)" className="min-h-24" /> */}
+            <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-24" />
 
             {/* Engagement Sections */}
             <RecommendedForYou posts={recommended} />
@@ -189,6 +189,7 @@ export default async function HomePage() {
           </div>
 
           <aside className="space-y-4">
+            <AdPlaceholder label="Sidebar trang chủ (Google AdSense)" className="min-h-44" />
             <MostRead
               posts={mostRead.map((post) => ({
                 id: post.id,

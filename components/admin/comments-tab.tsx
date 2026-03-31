@@ -26,7 +26,7 @@ export function CommentsTab({ pendingComments, moderateComment }: CommentsTabPro
     <Card>
       <CardHeader>
         <CardTitle>Bình luận chờ duyệt</CardTitle>
-        <CardDescription>Người dùng có thể gửi bình luận tự do, tại đây admin duyệt hoặc xóa.</CardDescription>
+        <CardDescription>Chỉ bình luận chứa từ cấm mới xuất hiện ở đây để admin duyệt hoặc xóa.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {pendingComments.length === 0 ? (

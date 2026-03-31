@@ -21,6 +21,7 @@ import {
 } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/password"
+import { resolveSeoKeywordSelection, resolveSeoKeywordSelectionForPreview, syncPostSeoKeywords } from "@/lib/seo-keyword-store"
 import {
   ensurePermission,
   getPlainTextFromHtml,
@@ -40,7 +41,6 @@ export async function createPost(formData: FormData) {
   const categoryId = String(formData.get("categoryId") || "").trim()
   const seoTitle = String(formData.get("seoTitle") || "").trim() || null
   const seoDescription = String(formData.get("seoDescription") || "").trim() || null
-  const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
   const manualOgImage = String(formData.get("ogImage") || "").trim() || null
   const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
   const isSensitive = formData.get("isSensitive") === "on"
@@ -66,7 +66,9 @@ export async function createPost(formData: FormData) {
     role: currentUser.role,
   })
 
-  await prisma.post.create({
+  const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelectionForPreview(formData)
+
+  const post = await prisma.post.create({
     data: {
       title,
       slug,
@@ -76,7 +78,7 @@ export async function createPost(formData: FormData) {
       authorId: currentUser.id,
       seoTitle,
       seoDescription,
-      seoKeywords,
+      seoKeywords: seoKeywordsText,
       ogImage,
       videoEmbedUrl,
       isSensitive,
@@ -91,6 +93,8 @@ export async function createPost(formData: FormData) {
       thumbnailUrl,
     },
   })
+
+  await syncPostSeoKeywords(post.id, keywordIds)
 
   revalidatePath("/")
   revalidatePath("/admin")
@@ -123,7 +127,6 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
   const categoryId = subcategoryId || mainCategoryId
   const seoTitle = String(formData.get("seoTitle") || "").trim() || null
   const seoDescription = String(formData.get("seoDescription") || "").trim() || null
-  const seoKeywords = String(formData.get("seoKeywords") || "").trim() || null
   const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
   const isSensitive = formData.get("isSensitive") === "on"
   const thumbnailUpload = formData.get("thumbnailUpload")
@@ -139,6 +142,8 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
       ? await uploadThumbnail(thumbnailUpload)
       : thumbnailUrlInput || null
 
+  const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelection(formData)
+
   const post = await prisma.post.create({
     data: {
       title,
@@ -149,7 +154,7 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
       authorId: currentUser.id,
       seoTitle,
       seoDescription,
-      seoKeywords,
+      seoKeywords: seoKeywordsText,
       ogImage: thumbnailUrl,
       videoEmbedUrl,
       isSensitive,
@@ -159,6 +164,8 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
       thumbnailUrl,
     },
   })
+
+  await syncPostSeoKeywords(post.id, keywordIds)
 
   revalidatePath("/admin")
   return { postId: post.id }

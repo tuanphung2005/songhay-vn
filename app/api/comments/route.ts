@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
+import { containsForbiddenKeyword } from "@/lib/moderation"
 import { prisma } from "@/lib/prisma"
+import { isPrismaSchemaMismatchError } from "@/lib/prisma-errors"
 
 const schema = z.object({
   postId: z.string().min(1),
@@ -25,16 +27,48 @@ export async function POST(request: unknown) {
   }
 
   const authorName = parsed.data.authorName?.trim() || "Bạn đọc"
+  const forbiddenKeywords = await prisma.forbiddenKeyword
+    .findMany({
+      select: { normalizedTerm: true },
+    })
+    .catch((error) => {
+      if (isPrismaSchemaMismatchError(error)) {
+        return []
+      }
 
-  await prisma.comment.create({
-    data: {
-      postId: parsed.data.postId,
-      authorId: null,
-      authorName,
-      content: parsed.data.content,
-      isApproved: false,
-    },
-  })
+      throw error
+    })
+  const hasForbiddenKeyword = containsForbiddenKeyword(
+    parsed.data.content,
+    forbiddenKeywords.map((item) => item.normalizedTerm)
+  )
 
-  return NextResponse.json({ success: true })
+  try {
+    await prisma.comment.create({
+      data: {
+        postId: parsed.data.postId,
+        authorId: null,
+        authorName,
+        content: parsed.data.content,
+        isApproved: !hasForbiddenKeyword,
+        containsBlockedKeyword: hasForbiddenKeyword,
+      },
+    })
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error)) {
+      throw error
+    }
+
+    await prisma.comment.create({
+      data: {
+        postId: parsed.data.postId,
+        authorId: null,
+        authorName,
+        content: parsed.data.content,
+        isApproved: !hasForbiddenKeyword,
+      },
+    })
+  }
+
+  return NextResponse.json({ success: true, requiresModeration: hasForbiddenKeyword })
 }

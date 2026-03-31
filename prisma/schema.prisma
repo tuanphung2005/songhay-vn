@@ -106,6 +106,8 @@ model Post {
   author         User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   approver       User?    @relation("PostApprover", fields: [approverId], references: [id], onDelete: SetNull)
   comments       Comment[]
+  seoKeywordLinks PostSeoKeyword[]
+  engagementEvents PostEngagementEvent[]
 
   @@index([categoryId])
   @@index([authorId])
@@ -140,6 +142,7 @@ model Comment {
   authorName String
   content    String
   isApproved Boolean  @default(false)
+  containsBlockedKeyword Boolean @default(false)
   createdAt  DateTime @default(now())
   postId     String
   post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -148,4 +151,48 @@ model Comment {
 
   @@index([postId])
   @@index([authorId])
+  @@index([isApproved, containsBlockedKeyword])
+}
+
+model SeoKeyword {
+  id                String           @id @default(cuid())
+  keyword           String
+  normalizedKeyword String           @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  postLinks         PostSeoKeyword[]
+
+  @@index([keyword])
+}
+
+model PostSeoKeyword {
+  postId      String
+  seoKeywordId String
+  createdAt   DateTime   @default(now())
+  post        Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  seoKeyword  SeoKeyword @relation(fields: [seoKeywordId], references: [id], onDelete: Cascade)
+
+  @@id([postId, seoKeywordId])
+  @@index([seoKeywordId])
+}
+
+model ForbiddenKeyword {
+  id             String   @id @default(cuid())
+  term           String
+  normalizedTerm String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([term])
+}
+
+model PostEngagementEvent {
+  id           String   @id @default(cuid())
+  postId       String
+  dwellSeconds Int
+  createdAt    DateTime @default(now())
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([postId, createdAt])
 }

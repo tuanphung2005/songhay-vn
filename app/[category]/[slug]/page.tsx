@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { cache } from "react"
 
-// import { AdPlaceholder } from "@/components/news/ad-placeholder"
+import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { CommentForm } from "@/components/news/comment-form"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
@@ -19,7 +19,7 @@ import { RecommendedForYou } from "@/components/news/recommended-for-you"
 import { VideoMostWatched } from "@/components/news/video-most-watched"
 import { SectionHeading } from "@/components/news/section-heading"
 import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts, getMostWatchedVideos, getRecommendedPosts } from "@/lib/queries"
-import { normalizeArticleHtml } from "@/lib/html"
+import { injectInlineAdAfterSecondParagraph, normalizeArticleHtml } from "@/lib/html"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
@@ -93,7 +93,10 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const siteUrl = getSiteUrl()
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
-  const articleHtml = normalizeArticleHtml(article.content)
+  const articleHtml = injectInlineAdAfterSecondParagraph(
+    normalizeArticleHtml(article.content),
+    "Giữa bài viết (Google AdSense)"
+  )
   const articleImage = toAbsoluteUrl(article.ogImage || article.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
 
   const articleJsonLd = {
@@ -163,6 +166,7 @@ export default async function PostPage({ params }: PostPageProps) {
               {article.category.name}
             </Link>
             <h1 className="text-4xl font-black leading-tight text-zinc-900">{article.title}</h1>
+            <AdPlaceholder label="Dưới tiêu đề (Google AdSense)" className="mx-auto min-h-20 max-w-2xl" />
             <p className="text-lg text-zinc-600">{article.excerpt}</p>
             <p className="text-sm text-zinc-500">{new Date(article.publishedAt).toLocaleString("vi-VN")}</p>
           </header>
@@ -181,8 +185,6 @@ export default async function PostPage({ params }: PostPageProps) {
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
-          {/* <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" /> */}
-
           {article.videoEmbedUrl ? (
             <div className="overflow-hidden border border-zinc-200">
               <iframe
@@ -196,6 +198,8 @@ export default async function PostPage({ params }: PostPageProps) {
           ) : null}
 
           <SocialShare title={article.title} url={fullUrl} />
+
+          <AdPlaceholder label="Sau bài viết (Google AdSense)" className="min-h-24" />
 
           <section className="space-y-3 border border-zinc-200 bg-zinc-50 p-4">
             <h2 className="text-xl font-bold">Bình luận gần đây</h2>
@@ -237,7 +241,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <section className="space-y-4">
             <SectionHeading title="Đọc thêm" />
-            <div className="grid gap-4 sm:grid-cols-2"> 
+            <div className="grid gap-4 sm:grid-cols-2">
               {relatedPosts.map((related) => (
                 <PostCard
                   key={related.id}
@@ -254,6 +258,7 @@ export default async function PostPage({ params }: PostPageProps) {
         </article>
 
         <aside className="space-y-4">
+          <AdPlaceholder label="Sidebar (Google AdSense)" className="min-h-44" />
           <MostRead
             posts={trendingPosts.map((post) => ({
               id: post.id,

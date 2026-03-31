@@ -68,10 +68,14 @@ export function CommentForm({ postId, currentUser }: CommentFormProps) {
         throw new Error("Không thể gửi bình luận")
       }
 
+      const payload = (await response.json()) as { requiresModeration?: boolean }
+
       setContent("")
       setStatus("success")
       toast.success("Đã gửi bình luận", {
-        description: "Cảm ơn bạn đã chia sẻ ý kiến. Bình luận của bạn sẽ được hiển thị trong chốc lát",
+        description: payload.requiresModeration
+          ? "Bình luận có chứa từ cần kiểm duyệt và đang chờ admin duyệt."
+          : "Bình luận sạch đã được hiển thị ngay. Cảm ơn bạn đã chia sẻ ý kiến.",
       })
     } catch {
       setStatus("error")

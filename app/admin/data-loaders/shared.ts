@@ -1,9 +1,11 @@
 import { memoizeWithTtl } from "@/lib/data-cache"
 import { prisma } from "@/lib/prisma"
+import { isPrismaSchemaMismatchError } from "@/lib/prisma-errors"
 import { startOfDay, toDayKey, toDayLabel } from "@/app/admin/data-helpers"
 import type { AdminTab } from "@/app/admin/data-types"
 
 const ADMIN_CACHE_TTL_SECONDS = 20
+type OverviewRange = "7d" | "30d"
 
 export async function getMediaLibraryData(activeTab: AdminTab) {
   if (activeTab !== "media-library" && activeTab !== "write") {
@@ -39,31 +41,58 @@ export async function getPendingComments(activeTab: AdminTab) {
     return []
   }
 
-  return memoizeWithTtl("admin:comments:pending", ADMIN_CACHE_TTL_SECONDS, async () =>
-    prisma.comment.findMany({
-      where: { isApproved: false },
-      select: {
-        id: true,
-        authorName: true,
-        content: true,
-        post: {
-          select: {
-            slug: true,
-            category: {
-              select: {
-                slug: true,
+  return memoizeWithTtl("admin:comments:pending", ADMIN_CACHE_TTL_SECONDS, async () => {
+    try {
+      return await prisma.comment.findMany({
+        where: { isApproved: false, containsBlockedKeyword: true },
+        select: {
+          id: true,
+          authorName: true,
+          content: true,
+          post: {
+            select: {
+              slug: true,
+              category: {
+                select: {
+                  slug: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    })
-  )
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      })
+    } catch (error) {
+      if (!isPrismaSchemaMismatchError(error)) {
+        throw error
+      }
+
+      return prisma.comment.findMany({
+        where: { isApproved: false },
+        select: {
+          id: true,
+          authorName: true,
+          content: true,
+          post: {
+            select: {
+              slug: true,
+              category: {
+                select: {
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      })
+    }
+  })
 }
 
-export async function getOverviewAnalytics(activeTab: AdminTab) {
+export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: OverviewRange) {
   if (activeTab !== "overview") {
     return {
       daily: [] as Array<{ label: string; views: number; comments: number; posts: number }>,
@@ -71,18 +100,30 @@ export async function getOverviewAnalytics(activeTab: AdminTab) {
       todayComments: 0,
       todayApprovedComments: 0,
       todayTopPosts: [] as Array<{ id: string; title: string; slug: string; views: number; category: { slug: string } }>,
+      range: "7d" as OverviewRange,
+      hotSeoKeywords: [] as Array<{ id: string; keyword: string; postCount: number; totalViews: number; score: number }>,
+      avgDwellSecondsPerPost: 0,
+      dwellTopPosts: [] as Array<{
+        postId: string
+        title: string
+        slug: string
+        category: { slug: string }
+        avgDwellSeconds: number
+        eventCount: number
+      }>,
     }
   }
 
-  return memoizeWithTtl("admin:overview:analytics", ADMIN_CACHE_TTL_SECONDS, async () => {
+  return memoizeWithTtl(`admin:overview:analytics:${overviewRange}`, ADMIN_CACHE_TTL_SECONDS, async () => {
     const todayStart = startOfDay(new Date())
     const tomorrowStart = new Date(todayStart)
     tomorrowStart.setDate(tomorrowStart.getDate() + 1)
+    const totalDays = overviewRange === "30d" ? 30 : 7
 
     const chartStart = new Date(todayStart)
-    chartStart.setDate(chartStart.getDate() - 6)
+    chartStart.setDate(chartStart.getDate() - (totalDays - 1))
 
-    const [recentPosts, recentComments] = await Promise.all([
+    const [recentPosts, recentComments, hotKeywordRows, dwellEventGroups] = await Promise.all([
       prisma.post.findMany({
         where: {
           isDeleted: false,
@@ -108,11 +149,50 @@ export async function getOverviewAnalytics(activeTab: AdminTab) {
           isApproved: true,
         },
       }),
+      prisma.postSeoKeyword.findMany({
+        where: {
+          post: {
+            isDeleted: false,
+            isPublished: true,
+            publishedAt: { gte: chartStart },
+          },
+        },
+        select: {
+          seoKeywordId: true,
+          seoKeyword: {
+            select: {
+              id: true,
+              keyword: true,
+            },
+          },
+          post: {
+            select: {
+              id: true,
+              views: true,
+            },
+          },
+        },
+      }),
+      prisma.postEngagementEvent.groupBy({
+        by: ["postId"],
+        where: {
+          createdAt: { gte: chartStart },
+          dwellSeconds: {
+            gt: 0,
+          },
+        },
+        _avg: {
+          dwellSeconds: true,
+        },
+        _count: {
+          _all: true,
+        },
+      }),
     ])
 
     const dailyMap = new Map<string, { date: Date; views: number; comments: number; posts: number }>()
 
-    for (let index = 0; index < 7; index += 1) {
+    for (let index = 0; index < totalDays; index += 1) {
       const currentDate = new Date(chartStart)
       currentDate.setDate(chartStart.getDate() + index)
       dailyMap.set(toDayKey(currentDate), {
@@ -156,12 +236,106 @@ export async function getOverviewAnalytics(activeTab: AdminTab) {
       label: toDayLabel(item.date),
     }))
 
+    const hotKeywordMap = new Map<string, { id: string; keyword: string; postIds: Set<string>; totalViews: number }>()
+    for (const row of hotKeywordRows) {
+      const existing = hotKeywordMap.get(row.seoKeywordId)
+      if (!existing) {
+        hotKeywordMap.set(row.seoKeywordId, {
+          id: row.seoKeyword.id,
+          keyword: row.seoKeyword.keyword,
+          postIds: new Set([row.post.id]),
+          totalViews: row.post.views,
+        })
+        continue
+      }
+
+      if (!existing.postIds.has(row.post.id)) {
+        existing.postIds.add(row.post.id)
+        existing.totalViews += row.post.views
+      }
+    }
+
+    const hotSeoKeywords = [...hotKeywordMap.values()]
+      .map((item) => {
+        const postCount = item.postIds.size
+        const score = item.totalViews + postCount * 100
+        return {
+          id: item.id,
+          keyword: item.keyword,
+          postCount,
+          totalViews: item.totalViews,
+          score,
+        }
+      })
+      .sort((a, b) => b.score - a.score || b.totalViews - a.totalViews)
+      .slice(0, 8)
+
+    const avgDwellSecondsPerPost = dwellEventGroups.length
+      ? Math.round(
+        dwellEventGroups.reduce((sum, item) => sum + (item._avg.dwellSeconds || 0), 0) / dwellEventGroups.length
+      )
+      : 0
+
+    const dwellPostIds = [...new Set(dwellEventGroups.map((item) => item.postId))]
+    const dwellPosts = dwellPostIds.length
+      ? await prisma.post.findMany({
+        where: {
+          id: { in: dwellPostIds },
+          isDeleted: false,
+          isPublished: true,
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: {
+            select: {
+              slug: true,
+            },
+          },
+        },
+      })
+      : []
+
+    const dwellPostMap = new Map<string, { title: string; slug: string; category: { slug: string } }>()
+    for (const post of dwellPosts) {
+      dwellPostMap.set(post.id, {
+        title: post.title,
+        slug: post.slug,
+        category: post.category,
+      })
+    }
+
+    const dwellTopPosts = dwellEventGroups
+      .map((row) => {
+        const postMeta = dwellPostMap.get(row.postId)
+        if (!postMeta) {
+          return null
+        }
+
+        return {
+          postId: row.postId,
+          title: postMeta.title,
+          slug: postMeta.slug,
+          category: postMeta.category,
+          avgDwellSeconds: Math.round(row._avg.dwellSeconds || 0),
+          eventCount: row._count._all,
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .sort((a, b) => b.avgDwellSeconds - a.avgDwellSeconds)
+      .slice(0, 5)
+
     return {
       daily,
       todayViews,
       todayComments,
       todayApprovedComments,
       todayTopPosts,
+      range: overviewRange,
+      hotSeoKeywords,
+      avgDwellSecondsPerPost,
+      dwellTopPosts,
     }
   })
 }

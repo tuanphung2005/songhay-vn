@@ -21,6 +21,8 @@ import {
 } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/password"
+import { normalizeModerationText } from "@/lib/moderation"
+import { normalizeKeyword, toKeywordLabel } from "@/lib/seo-keywords"
 import {
   ensurePermission,
   getPlainTextFromHtml,
@@ -147,4 +149,93 @@ export async function deleteUser(formData: FormData) {
 
   clearDataCache()
   redirect("/admin?tab=settings-users&toast=user_deleted")
+}
+
+export async function addForbiddenKeyword(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "moderate-comment"), "/admin?tab=settings-moderation&toast=forbidden_keyword_failed")
+
+  const term = String(formData.get("term") || "").trim()
+  if (!term) {
+    redirect("/admin?tab=settings-moderation&toast=forbidden_keyword_failed")
+  }
+
+  const normalizedTerm = normalizeModerationText(term)
+  if (!normalizedTerm) {
+    redirect("/admin?tab=settings-moderation&toast=forbidden_keyword_failed")
+  }
+
+  await prisma.forbiddenKeyword.upsert({
+    where: { normalizedTerm },
+    create: {
+      term,
+      normalizedTerm,
+    },
+    update: {
+      term,
+    },
+  })
+
+  clearDataCache()
+  revalidatePath("/admin")
+  redirect("/admin?tab=settings-moderation&toast=forbidden_keyword_saved")
+}
+
+export async function deleteForbiddenKeyword(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "moderate-comment"), "/admin?tab=settings-moderation&toast=forbidden_keyword_failed")
+
+  const forbiddenKeywordId = String(formData.get("forbiddenKeywordId") || "").trim()
+  if (!forbiddenKeywordId) {
+    redirect("/admin?tab=settings-moderation&toast=forbidden_keyword_failed")
+  }
+
+  await prisma.forbiddenKeyword.delete({ where: { id: forbiddenKeywordId } })
+
+  clearDataCache()
+  revalidatePath("/admin")
+  redirect("/admin?tab=settings-moderation&toast=forbidden_keyword_deleted")
+}
+
+export async function addSeoKeyword(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=settings-moderation&toast=seo_keyword_failed")
+
+  const keywordInput = String(formData.get("keyword") || "")
+  const keyword = toKeywordLabel(keywordInput)
+  if (!keyword) {
+    redirect("/admin?tab=settings-moderation&toast=seo_keyword_failed")
+  }
+
+  const normalizedKeyword = normalizeKeyword(keyword)
+  await prisma.seoKeyword.upsert({
+    where: { normalizedKeyword },
+    create: {
+      keyword,
+      normalizedKeyword,
+    },
+    update: {
+      keyword,
+    },
+  })
+
+  clearDataCache()
+  revalidatePath("/admin")
+  redirect("/admin?tab=settings-moderation&toast=seo_keyword_saved")
+}
+
+export async function deleteSeoKeyword(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=settings-moderation&toast=seo_keyword_failed")
+
+  const seoKeywordId = String(formData.get("seoKeywordId") || "").trim()
+  if (!seoKeywordId) {
+    redirect("/admin?tab=settings-moderation&toast=seo_keyword_failed")
+  }
+
+  await prisma.seoKeyword.delete({ where: { id: seoKeywordId } })
+
+  clearDataCache()
+  revalidatePath("/admin")
+  redirect("/admin?tab=settings-moderation&toast=seo_keyword_deleted")
 }

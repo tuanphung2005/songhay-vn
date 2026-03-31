@@ -34,7 +34,7 @@ export function RichTextField({
   function insertMedia(asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }) {
     const currentImgCount = (html.match(/<img /gi) || []).length
     const currentVideoCount = (html.match(/<video /gi) || []).length
-    
+
     const caption = asset.assetType === "IMAGE" ? `Ảnh ${currentImgCount + 1}.` : `Video ${currentVideoCount + 1}.`
 
     const snippet =
@@ -54,11 +54,11 @@ export function RichTextField({
         <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-2 border-b bg-zinc-50/50">
           <Tabs value={mode} onValueChange={(v) => setMode(v as EditorMode)} className="w-auto">
             <TabsList variant="line" className="h-9 bg-transparent p-0 border-0">
-              <TabsTrigger value="classic" className="px-4 py-2 font-bold data-active:text-primary data-[variant=line]:data-active:after:bottom-[-9px]">
+              <TabsTrigger value="classic" className="px-4 py-2 font-bold data-active:text-primary data-[variant=line]:data-active:after:-bottom-2.25">
                 <FileText className="mr-2 h-4 w-4" />
                 Trình soạn thảo
               </TabsTrigger>
-              <TabsTrigger value="code" className="px-4 py-2 font-bold data-active:text-primary data-[variant=line]:data-active:after:bottom-[-9px]">
+              <TabsTrigger value="code" className="px-4 py-2 font-bold data-active:text-primary data-[variant=line]:data-active:after:-bottom-2.25">
                 <CodeIcon className="mr-2 h-4 w-4" />
                 Mã HTML
               </TabsTrigger>
@@ -79,15 +79,15 @@ export function RichTextField({
 
         <div className="bg-white">
           {mode === "classic" ? (
-            <CKEditorWrapper 
-              data={html} 
-              onChange={setHtml} 
-              placeholder={placeholder} 
+            <CKEditorWrapper
+              data={html}
+              onChange={setHtml}
+              placeholder={placeholder}
             />
           ) : (
-            <MonacoEditorWrapper 
-              value={html} 
-              onChange={setHtml} 
+            <MonacoEditorWrapper
+              value={html}
+              onChange={setHtml}
             />
           )}
         </div>

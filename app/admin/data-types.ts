@@ -10,6 +10,7 @@ export type AdminTab =
   | "posts"
   | "trash"
   | "settings-password"
+  | "settings-moderation"
   | "settings-permissions"
   | "settings-users"
 
@@ -54,6 +55,7 @@ export type UserRow = {
 
 export type GetAdminPageDataInput = {
   activeTab: AdminTab
+  overviewRange: "7d" | "30d"
   postsFilters: PostsFilters
   personalArchiveFilters: PersonalArchiveFilters
   trashFilters: TrashFilters

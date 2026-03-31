@@ -35,10 +35,10 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
     return mediaAssets.filter((asset) => {
       if (mediaType !== "ALL" && asset.assetType !== mediaType) return false
       if (uploaderFilter !== "all" && asset.uploader?.id !== uploaderFilter) return false
-      
+
       const search = searchTerm.trim().toLowerCase()
       if (!search) return true
-      
+
       const text = `${asset.displayName || ""} ${asset.filename} ${asset.url}`.toLowerCase()
       return text.includes(search)
     })
@@ -51,7 +51,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
   return (
     <div className="flex flex-col flex-1 bg-white min-h-0">
       <div className="flex flex-wrap items-center gap-3 border-b border-zinc-100 px-4 py-3 bg-muted/20">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-50">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
           <Input
             value={searchTerm}
@@ -68,7 +68,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
           <div className="relative">
             <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
             <Select
-              className="h-10 rounded-lg pl-10 pr-8 w-[140px] bg-white"
+              className="h-10 w-35 rounded-lg bg-white pl-10 pr-8"
               value={mediaType}
               onChange={(e) => {
                 setPage(1)
@@ -84,7 +84,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
             <Select
-              className="h-10 rounded-lg pl-10 pr-8 w-[160px] bg-white"
+              className="h-10 w-40 rounded-lg bg-white pl-10 pr-8"
               value={uploaderFilter}
               onChange={(e) => {
                 setPage(1)

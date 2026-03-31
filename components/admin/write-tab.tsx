@@ -1,6 +1,6 @@
 'use client'
 import dynamic from "next/dynamic"
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 
 const RichTextField = dynamic(() => import("@/components/admin/rich-text-field").then(m => m.RichTextField), { ssr: false })
 
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CategorySelector } from "@/components/admin/category-selector"
+import { SeoKeywordPicker } from "@/components/admin/seo-keyword-picker"
 
 type CategoryWriteRow = {
   id: string
@@ -24,6 +25,10 @@ type WriteTabProps = {
   canPublishNow: boolean
   canSubmitPendingPublish: boolean
   categoriesForWrite: CategoryWriteRow[]
+  seoKeywordOptions: Array<{
+    id: string
+    keyword: string
+  }>
   mediaAssets: Array<{
     id: string
     assetType: "IMAGE" | "VIDEO"
@@ -41,11 +46,32 @@ type WriteTabProps = {
   createPost: (formData: FormData) => Promise<void>
 }
 
-export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesForWrite, mediaAssets, currentUserId, createPost }: WriteTabProps) {
+const WRITE_DIRTY_STORAGE_KEY = "admin-write-dirty"
+
+function setWriteDirtyState(isDirty: boolean) {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  window.sessionStorage.setItem(WRITE_DIRTY_STORAGE_KEY, isDirty ? "1" : "0")
+}
+
+export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesForWrite, seoKeywordOptions, mediaAssets, currentUserId, createPost }: WriteTabProps) {
   const [hasVideo, setHasVideo] = useState(false)
   const [isSensitive, setIsSensitive] = useState(false)
   const [isPreviewing, startPreviewTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    setWriteDirtyState(false)
+  }, [])
+
+  function updateDirtyStateFromForm(form: HTMLFormElement) {
+    const title = String((form.elements.namedItem("title") as HTMLInputElement | null)?.value || "").trim()
+    const excerpt = String((form.elements.namedItem("excerpt") as HTMLTextAreaElement | null)?.value || "").trim()
+    const content = String((form.elements.namedItem("content") as HTMLInputElement | null)?.value || "").replace(/<[^>]+>/g, " ").trim()
+    setWriteDirtyState(Boolean(title || excerpt || content))
+  }
 
   function handlePreview() {
     if (!formRef.current) return
@@ -65,7 +91,18 @@ export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesFor
         <CardDescription></CardDescription>
       </CardHeader>
       <CardContent>
-        <form ref={formRef} action={createPost} className="space-y-4">
+        <form
+          ref={formRef}
+          action={createPost}
+          className="space-y-4"
+          onChange={(event) => {
+            const target = event.currentTarget
+            updateDirtyStateFromForm(target)
+          }}
+          onSubmit={() => {
+            setWriteDirtyState(false)
+          }}
+        >
           <div className="space-y-1.5">
             <Label htmlFor="postTitle">Tên bài viết</Label>
             <Input id="postTitle" name="title" placeholder="Nhập tiêu đề" required />
@@ -135,7 +172,7 @@ export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesFor
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="seoKeywords">Từ khóa SEO</Label>
-              <Input id="seoKeywords" name="seoKeywords" placeholder="ví dụ: tử vi, phong thủy, lịch âm" />
+              <SeoKeywordPicker options={seoKeywordOptions} />
             </div>
           </fieldset>
 
