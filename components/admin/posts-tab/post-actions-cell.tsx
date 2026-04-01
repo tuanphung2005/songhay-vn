@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Archive, ArrowUpRight, Ban, Eye, EyeOff, Globe, Pencil, RotateCcw, Send, Trash2 } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -51,6 +52,7 @@ export function PostActionsCell({
             confirmMessage="Chuyển bài này lên chờ duyệt?"
           >
             <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang chuyển...">
+              <Send className="mr-1.5 size-3" />
               Lên duyệt
             </PendingSubmitButton>
           </ConfirmActionForm>
@@ -63,6 +65,7 @@ export function PostActionsCell({
           confirmMessage="Chuyển bài này lên chờ xuất bản?"
         >
           <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-sky-600 hover:bg-sky-700`} pendingText="Đang chuyển...">
+            <ArrowUpRight className="mr-1.5 size-3" />
             Lên đăng
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -75,6 +78,7 @@ export function PostActionsCell({
           confirmMessage="Xuất bản ngay bài viết này?"
         >
           <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-emerald-600 hover:bg-emerald-700`} pendingText="Đang đăng...">
+            <Globe className="mr-1.5 size-3" />
             Xuất bản ngay
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -87,6 +91,7 @@ export function PostActionsCell({
           confirmMessage="Xuất bản bài viết này?"
         >
           <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-emerald-600 hover:bg-emerald-700`} pendingText="Đang đăng...">
+            <Globe className="mr-1.5 size-3" />
             Xuất bản
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -100,6 +105,7 @@ export function PostActionsCell({
             confirmMessage="Từ chối bài viết này?"
           >
             <PendingSubmitButton type="submit" size="sm" variant="destructive" className={btn} pendingText="Đang từ chối...">
+              <Ban className="mr-1.5 size-3" />
               Từ chối
             </PendingSubmitButton>
           </ConfirmActionForm>
@@ -112,6 +118,7 @@ export function PostActionsCell({
           confirmMessage="Chuyển bài này về chờ duyệt?"
         >
           <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang chuyển...">
+            <RotateCcw className="mr-1.5 size-3" />
             Về duyệt
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -124,6 +131,7 @@ export function PostActionsCell({
           confirmMessage="Trả bài này về kho nháp?"
         >
           <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang trả về...">
+            <Archive className="mr-1.5 size-3" />
             Về kho
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -136,6 +144,7 @@ export function PostActionsCell({
           confirmMessage="Trả bài này về chờ xuất bản?"
         >
           <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang trả về...">
+            <EyeOff className="mr-1.5 size-3" />
             Bỏ đăng
           </PendingSubmitButton>
         </ConfirmActionForm>
@@ -148,12 +157,14 @@ export function PostActionsCell({
       {editable ? (
         <Link href={`/admin/edit/${post.id}`}>
           <Button size="sm" variant="secondary" className={btn}>
+            <Pencil className="mr-1.5 size-3" />
             Sửa bài
           </Button>
         </Link>
       ) : (
         <Link href={`/admin/preview/${post.id}`} target="_blank" rel="noreferrer">
           <Button size="sm" variant="outline" className={btn}>
+            <Eye className="mr-1.5 size-3" />
             Xem trước
           </Button>
         </Link>
@@ -162,6 +173,7 @@ export function PostActionsCell({
       {/* ── View live ── */}
       <a href={`/${post.category.slug}/${post.slug}`} target="_blank" rel="noopener noreferrer">
         <Button size="sm" variant="outline" className={btn}>
+          <Eye className="mr-1.5 size-3" />
           Xem bài
         </Button>
       </a>
@@ -182,6 +194,7 @@ export function PostActionsCell({
           className={btn}
           pendingText="Đang xóa..."
         >
+          <Trash2 className="mr-1.5 size-3" />
           Xóa
         </PendingSubmitButton>
       </ConfirmActionForm>
