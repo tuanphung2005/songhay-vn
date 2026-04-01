@@ -300,6 +300,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <PostsTab
               isAdmin={canSeeAllPosts}
               canSubmitPendingReview={can(currentUser.role, "submit-pending-review")}
+              canSubmitPendingPublish={canSubmitPendingPublish(currentUser.role)}
               canReviewPending={canApprovePendingReview(currentUser.role)}
               canPublishNow={canPublishNow(currentUser.role)}
               canEditDraft={canEditByStatus(currentUser.role, "DRAFT")}

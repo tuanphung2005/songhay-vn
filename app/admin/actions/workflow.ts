@@ -12,6 +12,7 @@ import {
   canApprovePendingReview,
   canCreateSubordinateAccount,
   canPublishNow,
+  canSubmitPendingPublish,
   canViewAllPosts,
   roleCanCreate,
   ALL_EDITABLE_ROLES,
@@ -127,7 +128,10 @@ export async function submitPostToPendingReview(formData: FormData) {
 
 export async function promotePostToPendingPublish(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
+  ensurePermission(
+    canApprovePendingReview(currentUser.role) || canSubmitPendingPublish(currentUser.role),
+    "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden"
+  )
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {

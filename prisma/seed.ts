@@ -405,6 +405,9 @@ async function main() {
         isPublished: true,
         isDraft: false,
         editorialStatus: "PUBLISHED",
+        authorId: index % 2 === 0 ? teamLead.id : editor1.id,
+        approverId: editorInChief.id,
+        lastEditorId: index % 3 === 0 ? managingEditor.id : index % 2 === 0 ? teamLead.id : undefined,
         views: post.views,
         publishedAt,
       },
@@ -424,6 +427,9 @@ async function main() {
         isPublished: true,
         isDraft: false,
         editorialStatus: "PUBLISHED",
+        authorId: index % 2 === 0 ? teamLead.id : editor1.id,
+        approverId: editorInChief.id,
+        lastEditorId: index % 3 === 0 ? managingEditor.id : index % 2 === 0 ? teamLead.id : undefined,
         views: post.views,
         publishedAt,
       },
@@ -491,6 +497,7 @@ async function main() {
         categoryId,
         authorId: post.author.id,
         approverId: editorInChief.id,
+        lastEditorId: managingEditor.id,
         approvedAt: publishedAt,
         isPublished: true,
         isDraft: false,
@@ -507,6 +514,7 @@ async function main() {
         categoryId,
         authorId: post.author.id,
         approverId: editorInChief.id,
+        lastEditorId: managingEditor.id,
         approvedAt: publishedAt,
         isPublished: true,
         isDraft: false,
@@ -536,6 +544,19 @@ async function main() {
       content:
         "Dang cho admin duyet. Bai viet de cap den cac ky nang EQ thuc te giup ban xu ly phe binh trong hop ma khong mat binh tinh: det lao, tra loi cau hoi, khong tu bien ho, va follow up rieng voi sep sau do.",
       thumbnailUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80",
+      status: "PENDING_PUBLISH" as const,
+      lastEditorId: teamLead.id,
+    },
+    {
+      author: editor2,
+      categorySlug: "meo-tiet-kiem",
+      title: "CTV Khoa [REJECTED]: 5 sai lam khi mua sam online dịp sale cuoi nam",
+      excerpt: "Biet cach tranh bay se giup ban tiet kiem duoc khoan lon.",
+      content:
+        "Bai bi tu choi do chua du y. Ghi nhan loi khuyen cua admin de hoan thien them.",
+      thumbnailUrl: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=1400&q=80",
+      status: "REJECTED" as const,
+      lastEditorId: managingEditor.id,
     },
   ]
 
@@ -554,9 +575,10 @@ async function main() {
         thumbnailUrl: post.thumbnailUrl,
         categoryId,
         authorId: post.author.id,
+        lastEditorId: (post as any).lastEditorId || post.author.id,
         isPublished: false,
         isDraft: false,
-        editorialStatus: "PENDING_REVIEW",
+        editorialStatus: (post as any).status || "PENDING_REVIEW",
       },
       create: {
         slug,
@@ -566,9 +588,10 @@ async function main() {
         thumbnailUrl: post.thumbnailUrl,
         categoryId,
         authorId: post.author.id,
+        lastEditorId: (post as any).lastEditorId || post.author.id,
         isPublished: false,
         isDraft: false,
-        editorialStatus: "PENDING_REVIEW",
+        editorialStatus: (post as any).status || "PENDING_REVIEW",
       },
     })
 
@@ -602,9 +625,10 @@ async function main() {
       thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
       categoryId: categoryBySlug.get("meo-cong-nghe") || "",
       authorId: editor1.id,
+      lastEditorId: editor1.id,
       isPublished: false,
       isDraft: true,
-      editorialStatus: "PENDING_REVIEW",
+      editorialStatus: "DRAFT",
     },
     create: {
       slug: editor1DraftSlug,
@@ -614,9 +638,10 @@ async function main() {
       thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
       categoryId: categoryBySlug.get("meo-cong-nghe") || "",
       authorId: editor1.id,
+      lastEditorId: editor1.id,
       isPublished: false,
       isDraft: true,
-      editorialStatus: "PENDING_REVIEW",
+      editorialStatus: "DRAFT",
     },
   })
   // ── Role permissions (seed from DEFAULT_PERMISSIONS) ─────────────────────

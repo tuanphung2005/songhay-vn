@@ -15,6 +15,7 @@ type PostActionsCellProps = {
 export function PostActionsCell({
   post,
   canSubmitPendingReview,
+  canSubmitPendingPublish,
   canReviewPending,
   canPublishNow,
   canEditDraft,
@@ -55,7 +56,7 @@ export function PostActionsCell({
           </ConfirmActionForm>
         )}
 
-      {canReviewPending && post.editorialStatus === "PENDING_REVIEW" && (
+      {(canReviewPending || canSubmitPendingPublish) && post.editorialStatus === "PENDING_REVIEW" && (
         <ConfirmActionForm
           action={promotePostToPendingPublish}
           fields={[{ name: "postId", value: post.id }]}
