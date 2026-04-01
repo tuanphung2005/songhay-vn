@@ -98,6 +98,13 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
           email: true,
         },
       },
+      lastEditor: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       category: {
         select: {
           name: true,

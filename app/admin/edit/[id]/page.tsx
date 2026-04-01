@@ -190,6 +190,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         isPublished,
         isDraft,
         editorialStatus,
+        lastEditorId: currentUser.id,
         approverId: isPublished ? currentUser.id : null,
         approvedAt: isPublished ? new Date() : null,
         publishedAt: isPublished ? new Date() : currentPost.publishedAt,
