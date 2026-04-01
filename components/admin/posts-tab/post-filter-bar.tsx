@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Search, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,10 +23,27 @@ export function PostsFilterBar({
   isAdmin,
   hasActiveFilters,
 }: PostsFilterBarProps) {
+  const router = useRouter()
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const params = new URLSearchParams()
+    
+    formData.forEach((value, key) => {
+      if (typeof value === "string" && value) {
+        params.append(key, value)
+      }
+    })
+    
+    router.replace(`/admin?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <form
       method="get"
-      className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+      onSubmit={onSubmit}
+      className="sticky top-4 z-30 flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 shadow-sm"
     >
       <input type="hidden" name="tab" value="posts" />
       <input type="hidden" name="postsPage" value="1" />
@@ -93,12 +113,16 @@ export function PostsFilterBar({
       </Button>
 
       {hasActiveFilters && (
-        <Link href="/admin?tab=posts">
-          <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-zinc-500">
-            <X className="size-3" />
-            Xóa lọc
-          </Button>
-        </Link>
+        <Button 
+          type="button"
+          variant="ghost" 
+          size="sm" 
+          className="h-8 gap-1 text-xs text-zinc-500"
+          onClick={() => router.replace("/admin?tab=posts", { scroll: false })}
+        >
+          <X className="size-3" />
+          Xóa lọc
+        </Button>
       )}
     </form>
   )

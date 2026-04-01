@@ -2,7 +2,7 @@ import Image from "next/image"
 import { BookOpen, Clock } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
 import { PostActionsCell } from "./post-actions-cell"
@@ -27,10 +27,10 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-zinc-50 hover:bg-zinc-50">
+    <div className="max-h-[calc(100vh-14rem)] overflow-y-auto overflow-x-auto rounded-xl border border-zinc-200">
+      <table className="w-full caption-bottom text-sm">
+        <TableHeader className="sticky top-0 z-20 bg-zinc-50 shadow-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-zinc-200">
+          <TableRow className="bg-transparent hover:bg-transparent">
             <TableHead className="w-[38%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Bài viết
             </TableHead>
@@ -191,7 +191,7 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
             )
           })}
         </TableBody>
-      </Table>
+      </table>
     </div>
   )
 }
