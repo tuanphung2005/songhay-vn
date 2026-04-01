@@ -24,7 +24,7 @@ type SeedPost = {
 
 const demoPosts: SeedPost[] = [
   {
-    categorySlug: "song-hay",
+    categorySlug: "chuyen-hay",
     title: "5 thoi quen buoi sang giup ngay moi nhe nhang hon",
     excerpt: "Chi can 20 phut buoi sang, ban co the cai thien nang luong va tam trang ro ret.",
     content:
@@ -35,7 +35,7 @@ const demoPosts: SeedPost[] = [
     views: 2430,
   },
   {
-    categorySlug: "song-hay",
+    categorySlug: "hot-tren-mang",
     title: "Nghe thuat noi chuyen de tao thien cam trong 3 phut dau",
     excerpt: "Khong can hoa my, chi can dung cach dat cau hoi va lang nghe chu dong.",
     content:
@@ -45,7 +45,7 @@ const demoPosts: SeedPost[] = [
     views: 1760,
   },
   {
-    categorySlug: "song-hay",
+    categorySlug: "chuyen-hay",
     title: "Lam viec tai nha khong met moi voi quy tac 50 10",
     excerpt: "Sau moi 50 phut tap trung, nghi 10 phut de bo nao duoc nap lai nang luong.",
     content:
@@ -55,7 +55,7 @@ const demoPosts: SeedPost[] = [
     views: 1325,
   },
   {
-    categorySlug: "song-hay",
+    categorySlug: "kham-pha",
     title: "Song toi gian giua thanh pho: it do hon, nhieu niem vui hon",
     excerpt: "Toi gian khong phai la cat bo, ma la giu lai dieu quan trong nhat.",
     content:
@@ -65,7 +65,7 @@ const demoPosts: SeedPost[] = [
     views: 1980,
   },
   {
-    categorySlug: "song-khoe",
+    categorySlug: "khoe-dep",
     title: "Duong sinh 15 phut truoc khi ngu de ngu sau giac",
     excerpt: "Chuoi dong tac tho, keo gian co va tha long giup co the vao trang thai nghi ngoi nhanh hon.",
     content:
@@ -75,7 +75,7 @@ const demoPosts: SeedPost[] = [
     views: 2860,
   },
   {
-    categorySlug: "song-khoe",
+    categorySlug: "khoe-dep",
     title: "Thuc duong trong 7 ngay: goi y bua an can bang de de ap dung",
     excerpt: "Thay doi nho trong bua an co the giup tieu hoa em hon va giam cam giac met.",
     content:
@@ -84,7 +84,7 @@ const demoPosts: SeedPost[] = [
     views: 1642,
   },
   {
-    categorySlug: "song-khoe",
+    categorySlug: "cham-con",
     title: "Lich van nien va nhung khung gio de tap luyen hieu qua",
     excerpt: "Co the moi nguoi co nhip sinh hoc rieng, nhung co nhung moc gio de de bat nhip.",
     content:
@@ -93,7 +93,7 @@ const demoPosts: SeedPost[] = [
     views: 1210,
   },
   {
-    categorySlug: "song-khoe",
+    categorySlug: "khoe-dep",
     title: "3 bai tap tai nha khong dung cu cho nguoi ban ron",
     excerpt: "Chi can 12 phut moi ngay de duy tri suc ben va su linh hoat.",
     content:
@@ -102,7 +102,7 @@ const demoPosts: SeedPost[] = [
     views: 1954,
   },
   {
-    categorySlug: "meo-hay",
+    categorySlug: "meo-nau-an",
     title: "Meo sap xep tu lanh 10 phut tiet kiem nua gio nau an",
     excerpt: "Phan tang thuc pham thong minh se giup ban nau nhanh va giam lang phi.",
     content:
@@ -112,7 +112,7 @@ const demoPosts: SeedPost[] = [
     views: 3045,
   },
   {
-    categorySlug: "meo-hay",
+    categorySlug: "meo-gia-dinh",
     title: "Cach giat trang quan ao ma khong can chat tay manh",
     excerpt: "Ket hop nguyen lieu san co trong bep de xu ly vet ban nhe an toan hon.",
     content:
@@ -121,7 +121,7 @@ const demoPosts: SeedPost[] = [
     views: 1390,
   },
   {
-    categorySlug: "meo-hay",
+    categorySlug: "meo-tiet-kiem",
     title: "Tip tiet kiem dien mua he cho nha pho",
     excerpt: "Dieu chinh nhiet do dieu hoa va cach su dung quat hop ly de giam hoa don.",
     content:
@@ -130,7 +130,7 @@ const demoPosts: SeedPost[] = [
     views: 1756,
   },
   {
-    categorySlug: "meo-hay",
+    categorySlug: "meo-gia-dinh",
     title: "Checklist don dep cuoi tuan gon gon trong 45 phut",
     excerpt: "Lam theo thu tu uu tien se giam cam giac qua tai viec nha.",
     content:
@@ -139,7 +139,7 @@ const demoPosts: SeedPost[] = [
     views: 1120,
   },
   {
-    categorySlug: "doi-song",
+    categorySlug: "du-lich",
     title: "Nhip song Ha Noi cuoi tuan: 6 dia diem di bo dep va yen",
     excerpt: "Goi y nhung noi vua co cay xanh vua de di chuyen cho ca gia dinh.",
     content:
@@ -149,7 +149,7 @@ const demoPosts: SeedPost[] = [
     views: 2210,
   },
   {
-    categorySlug: "doi-song",
+    categorySlug: "meo-tiet-kiem",
     title: "Tai chinh ca nhan cho nguoi moi di lam: quy tac 50 30 20",
     excerpt: "Mot khung ngan sach de nho, de lam va de duy tri trong dai han.",
     content:
@@ -158,7 +158,7 @@ const demoPosts: SeedPost[] = [
     views: 1888,
   },
   {
-    categorySlug: "doi-song",
+    categorySlug: "hot-tren-mang",
     title: "Xu huong song cham cua gioi tre do thi nam 2026",
     excerpt: "Song cham khong phai song cham tien do, ma la song co chu dich hon.",
     content:
@@ -167,7 +167,7 @@ const demoPosts: SeedPost[] = [
     views: 1540,
   },
   {
-    categorySlug: "doi-song",
+    categorySlug: "nuoi-day-con",
     title: "Bi quyet giu nha cua gon gang khi co tre nho",
     excerpt: "Uu tien he thong don gian va phu hop nhiep sinh hoat cua ca nha.",
     content:
@@ -176,7 +176,7 @@ const demoPosts: SeedPost[] = [
     views: 1333,
   },
   {
-    categorySlug: "goc-stress",
+    categorySlug: "tam-su",
     title: "4 ky thuat tho nhanh giam stress truoc hop quan trong",
     excerpt: "Tho dung cach trong 90 giay co the ha muc kich hoat cua co the.",
     content:
@@ -186,7 +186,7 @@ const demoPosts: SeedPost[] = [
     views: 2699,
   },
   {
-    categorySlug: "goc-stress",
+    categorySlug: "khoe-dep",
     title: "Playlist am nhac thu gian cho ngay lam viec cang",
     excerpt: "Nhac khong loi tiet tau cham giup de tap trung va on dinh cam xuc.",
     content:
@@ -195,7 +195,7 @@ const demoPosts: SeedPost[] = [
     views: 1402,
   },
   {
-    categorySlug: "goc-stress",
+    categorySlug: "hot-tren-mang",
     title: "Mini game 3 phut giup reset nao bo tai van phong",
     excerpt: "Mot chut vui nho giup doi nhom ket noi va giam cang thang.",
     content:
@@ -204,7 +204,7 @@ const demoPosts: SeedPost[] = [
     views: 1185,
   },
   {
-    categorySlug: "goc-stress",
+    categorySlug: "chuyen-hay",
     title: "Goc vui cuoi ngay: 10 cau noi truyen cam hung ngan",
     excerpt: "Nhung cau noi ngan gon de ban ket thuc ngay voi tam the tich cuc.",
     content:
@@ -223,7 +223,7 @@ const demoPosts: SeedPost[] = [
     views: 3320,
   },
   {
-    categorySlug: "tu-vi",
+    categorySlug: "tuong-so",
     title: "Mau sac may man theo ngay cho 12 cung hoang dao",
     excerpt: "Goi y mau sac de phoi do va tao cam hung tich cuc trong ngay.",
     content:
@@ -232,7 +232,7 @@ const demoPosts: SeedPost[] = [
     views: 2105,
   },
   {
-    categorySlug: "tu-vi",
+    categorySlug: "phong-thuy",
     title: "Ngay dep trong thang de khai truong va di chuyen",
     excerpt: "Lich tham khao cho cac ke hoach moi can su khoi dau thuan loi.",
     content:
@@ -351,14 +351,30 @@ async function main() {
 
   const categoryBySlug = new Map<string, string>()
 
+  // Seed parent categories first
   for (const [index, category] of NAV_CATEGORIES.entries()) {
     const result = await prisma.category.upsert({
       where: { slug: category.slug },
       update: { name: category.name, sortOrder: index + 1 },
       create: { slug: category.slug, name: category.name, sortOrder: index + 1 },
     })
-
     categoryBySlug.set(category.slug, result.id)
+  }
+
+  // Seed child categories with parentId
+  for (const [index, category] of NAV_CATEGORIES.entries()) {
+    if (!category.children || category.children.length === 0) continue
+    const parentId = categoryBySlug.get(category.slug)
+    if (!parentId) continue
+
+    for (const [childIndex, child] of category.children.entries()) {
+      const childResult = await prisma.category.upsert({
+        where: { slug: child.slug },
+        update: { name: child.name, parentId, sortOrder: (index + 1) * 100 + childIndex + 1 },
+        create: { slug: child.slug, name: child.name, parentId, sortOrder: (index + 1) * 100 + childIndex + 1 },
+      })
+      categoryBySlug.set(child.slug, childResult.id)
+    }
   }
 
   // ── Admin demo posts ─────────────────────────────────────────────────────
@@ -438,7 +454,7 @@ async function main() {
   const editorPublishedPosts = [
     {
       author: editor1,
-      categorySlug: "song-khoe",
+      categorySlug: "khoe-dep",
       title: "BTV Lan: Cach giu dang dep sau sinh cho phu nu boi ban",
       excerpt: "Nhung bai tap nhe nhang va che do dinh duong phu hop cho mama sau sinh.",
       content:
@@ -448,7 +464,7 @@ async function main() {
     },
     {
       author: editor2,
-      categorySlug: "meo-hay",
+      categorySlug: "meo-cong-nghe",
       title: "BTV Khoa: 7 ung dung productivity mien phi tot nhat 2026",
       excerpt: "Danh sach cac cong cu giup ban lam viec hieu qua hon ma khong ton mot dong.",
       content:
@@ -505,7 +521,7 @@ async function main() {
   const editorPendingPosts = [
     {
       author: editor1,
-      categorySlug: "doi-song",
+      categorySlug: "nuoi-day-con",
       title: "BTV Lan [PENDING]: Xu huong nuoi thu cung healthy cho dan van phong 2026",
       excerpt: "Nuoi thu cung khong chi giam stress ma con giup chu nhan song lanh manh hon.",
       content:
@@ -514,7 +530,7 @@ async function main() {
     },
     {
       author: editor2,
-      categorySlug: "goc-stress",
+      categorySlug: "tam-su",
       title: "BTV Khoa [PENDING]: Ky nang quan ly cam xuc khi bi sếp chi trich tren hop",
       excerpt: "Phan ung binh tinh va hieu qua truoc phe binh cong khai la ky nang co the hoc.",
       content:
@@ -584,7 +600,7 @@ async function main() {
       excerpt: "Khong can may anh chuyen nghiep, chi can biet cach chup la du.",
       content: "Dang viet... Con thieu phan mo ta ky thuat anh sang tu nhien va goc chup dep.",
       thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
-      categoryId: categoryBySlug.get("meo-hay") || "",
+      categoryId: categoryBySlug.get("meo-cong-nghe") || "",
       authorId: editor1.id,
       isPublished: false,
       isDraft: true,
@@ -596,7 +612,7 @@ async function main() {
       excerpt: "Khong can may anh chuyen nghiep, chi can biet cach chup la du.",
       content: "Dang viet... Con thieu phan mo ta ky thuat anh sang tu nhien va goc chup dep.",
       thumbnailUrl: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80",
-      categoryId: categoryBySlug.get("meo-hay") || "",
+      categoryId: categoryBySlug.get("meo-cong-nghe") || "",
       authorId: editor1.id,
       isPublished: false,
       isDraft: true,

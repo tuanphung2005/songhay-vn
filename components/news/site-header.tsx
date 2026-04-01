@@ -3,7 +3,7 @@ import Link from "next/link"
 import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { getNavCategories } from "@/lib/queries"
 import { MobileNav } from "./mobile-nav"
-import { NewsSearchForm } from "./search"
+import { SearchIconPopup } from "./search-icon-popup"
 
 function getCurrentDate() {
   const days = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
@@ -66,16 +66,7 @@ export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
               </form>
             </>
           ) : null}
-          <NewsSearchForm
-            className="hidden w-72 md:block"
-            defaultValue={defaultSearchQuery}
-            placeholder="Tìm bài viết..."
-            submitAriaLabel="Tìm bài viết"
-            enableSuggestions
-            suggestionsLimit={6}
-            inputClassName="h-10 border-zinc-300 bg-white pl-10 pr-11 text-sm"
-            buttonClassName="border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100"
-          />
+          <SearchIconPopup defaultValue={defaultSearchQuery} />
           <MobileNav navCategories={navCategories} defaultSearchQuery={defaultSearchQuery} />
         </div>
       </div>
