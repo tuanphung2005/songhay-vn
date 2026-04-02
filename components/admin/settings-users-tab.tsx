@@ -1,3 +1,4 @@
+import { Save, Trash2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
@@ -32,7 +33,7 @@ export function SettingsUsersTab({
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="space-y-4 pt-6 p-0">
+        <CardContent className="space-y-4 p-0 pt-6">
           <div className="px-4 pb-2">
             <p className="text-sm font-semibold">Danh sách người dùng</p>
           </div>
@@ -40,32 +41,49 @@ export function SettingsUsersTab({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Họ tên</th>
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Email</th>
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Vai trò hiện tại</th>
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Ngày tạo</th>
-                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Thao tác</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                    Họ tên
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                    Vai trò hiện tại
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                    Ngày tạo
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                    Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {users.map((user) => {
                   const isSelf = user.id === currentUserId
-                  const isProtected = user.role === "EDITOR_IN_CHIEF" || user.role === "ADMIN"
+                  const isProtected =
+                    user.role === "EDITOR_IN_CHIEF" || user.role === "ADMIN"
                   const canDelete = !isSelf && !isProtected
 
                   return (
-                    <tr key={user.id} className="group hover:bg-muted/20 transition-colors">
+                    <tr
+                      key={user.id}
+                      className="group transition-colors hover:bg-muted/20"
+                    >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{user.name}</span>
                           {isSelf && (
-                            <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                            <Badge
+                              variant="secondary"
+                              className="h-4 px-1.5 text-[10px]"
+                            >
                               Bạn
                             </Badge>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                         {user.email}
                       </td>
                       <td className="px-4 py-3">
@@ -76,7 +94,7 @@ export function SettingsUsersTab({
                           {ROLE_LABELS_VI[user.role]}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
                         {new Date(user.createdAt).toLocaleDateString("vi-VN", {
                           year: "numeric",
                           month: "2-digit",
@@ -87,12 +105,19 @@ export function SettingsUsersTab({
                         <div className="flex items-center gap-2">
                           {/* Role change form */}
                           {!isSelf && !isProtected ? (
-                            <form action={updateUserRole} className="flex items-center gap-1.5">
-                              <input type="hidden" name="userId" value={user.id} />
+                            <form
+                              action={updateUserRole}
+                              className="flex items-center gap-1.5"
+                            >
+                              <input
+                                type="hidden"
+                                name="userId"
+                                value={user.id}
+                              />
                               <Select
                                 name="newRole"
                                 defaultValue={user.role}
-                                className="h-7 text-xs py-0 pr-6 pl-2"
+                                className="h-7 py-0 pr-6 pl-2 text-xs"
                               >
                                 {ALL_EDITABLE_ROLES.map((role) => (
                                   <option key={role} value={role}>
@@ -105,25 +130,33 @@ export function SettingsUsersTab({
                                 pendingText="..."
                                 className="h-7 px-2.5 text-xs"
                               >
+                                <Save className="size-3.5" />
                                 Lưu
                               </PendingSubmitButton>
                             </form>
                           ) : (
-                            <span className="text-muted-foreground text-xs italic">
-                              {isSelf ? "Tài khoản của bạn" : "Không thể thay đổi"}
+                            <span className="text-xs text-muted-foreground italic">
+                              {isSelf
+                                ? "Tài khoản của bạn"
+                                : "Không thể thay đổi"}
                             </span>
                           )}
 
                           {/* Delete form */}
                           {canDelete && (
                             <form action={deleteUser}>
-                              <input type="hidden" name="userId" value={user.id} />
+                              <input
+                                type="hidden"
+                                name="userId"
+                                value={user.id}
+                              />
                               <PendingSubmitButton
                                 type="submit"
                                 pendingText="..."
-                                className="h-7 px-2.5 text-xs bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700"
+                                className="h-7 border-red-200 bg-red-50 px-2.5 text-xs text-red-600 hover:bg-red-100 hover:text-red-700"
                                 variant="outline"
                               >
+                                <Trash2 className="size-3.5" />
                                 Xóa
                               </PendingSubmitButton>
                             </form>
@@ -136,7 +169,9 @@ export function SettingsUsersTab({
               </tbody>
             </table>
             {users.length === 0 && (
-              <p className="text-muted-foreground text-center py-8 text-sm">Chưa có người dùng nào.</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Chưa có người dùng nào.
+              </p>
             )}
           </div>
         </CardContent>

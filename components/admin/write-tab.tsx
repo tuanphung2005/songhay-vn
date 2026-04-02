@@ -1,6 +1,7 @@
 "use client"
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState, useTransition } from "react"
+import { Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 
 const RichTextField = dynamic(
   () =>
@@ -239,6 +240,7 @@ export function WriteTab({
               variant="outline"
               pendingText="Đang lưu..."
             >
+              <Save className="size-4" />
               Lưu nháp
             </PendingSubmitButton>
             <PendingSubmitButton
@@ -249,6 +251,7 @@ export function WriteTab({
               variant="destructive"
               pendingText="Đang gửi duyệt..."
             >
+              <Send className="size-4" />
               Gửi chờ duyệt
             </PendingSubmitButton>
             <Button
@@ -258,6 +261,7 @@ export function WriteTab({
               onClick={handlePreview}
               disabled={isPreviewing}
             >
+              <Eye className="size-4" />
               {isPreviewing ? "Đang lưu..." : "Xem trước"}
             </Button>
             {canSubmitPendingPublish ? (
@@ -269,6 +273,7 @@ export function WriteTab({
                 variant="secondary"
                 pendingText="Đang chuyển kho..."
               >
+                <SendToBack className="size-4" />
                 Gửi chờ xuất bản
               </PendingSubmitButton>
             ) : null}
@@ -280,6 +285,7 @@ export function WriteTab({
                 className="w-full"
                 pendingText="Đang xuất bản..."
               >
+                <Globe className="size-4" />
                 Xuất bản
               </PendingSubmitButton>
             ) : null}

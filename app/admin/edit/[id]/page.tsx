@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+import { ArrowLeft, Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 
 import { RichTextField } from "@/components/admin/rich-text-field"
 import { SeoFields } from "@/components/admin/seo-fields"
@@ -268,10 +269,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             target="_blank"
             rel="noreferrer"
           >
-            <Button variant="secondary">Xem trước</Button>
+            <Button variant="secondary">
+              <Eye className="size-4" />
+              Xem trước
+            </Button>
           </Link>
           <Link href="/admin?tab=posts">
-            <Button variant="outline">Quay lại Kho bài</Button>
+            <Button variant="outline">
+              <ArrowLeft className="size-4" />
+              Quay lại Kho bài
+            </Button>
           </Link>
         </div>
       </div>
@@ -401,6 +408,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 value="save-draft"
                 variant="outline"
               >
+                <Save className="size-4" />
                 Lưu nháp
               </Button>
               <Button
@@ -409,6 +417,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 value="submit-review"
                 variant="secondary"
               >
+                <Send className="size-4" />
                 Gửi chờ duyệt
               </Button>
               {canSubmitPendingPublish(currentUser.role) ? (
@@ -418,11 +427,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                   value="submit-publish"
                   variant="secondary"
                 >
+                  <SendToBack className="size-4" />
                   Gửi chờ xuất bản
                 </Button>
               ) : null}
               {canPublish ? (
                 <Button type="submit" name="submitAction" value="publish">
+                  <Globe className="size-4" />
                   Xuất bản
                 </Button>
               ) : null}

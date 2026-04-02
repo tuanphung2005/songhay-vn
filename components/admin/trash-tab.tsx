@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Filter, RotateCcw, Trash2, X } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -54,12 +55,21 @@ type TrashTabProps = {
   deletePostPermanently: (formData: FormData) => Promise<void>
 }
 
-export function TrashTab({ isAdmin, data, filters, restorePostFromTrash, deletePostPermanently }: TrashTabProps) {
+export function TrashTab({
+  isAdmin,
+  data,
+  filters,
+  restorePostFromTrash,
+  deletePostPermanently,
+}: TrashTabProps) {
   return (
     <Card>
       <CardContent className="space-y-4 pt-6">
         <p className="text-sm font-semibold">Thùng rác</p>
-        <form method="get" className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center">
+        <form
+          method="get"
+          className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center"
+        >
           <input type="hidden" name="tab" value="trash" />
           <input type="hidden" name="trashPage" value="1" />
 
@@ -85,44 +95,81 @@ export function TrashTab({ isAdmin, data, filters, restorePostFromTrash, deleteP
           <Input name="trashFrom" type="date" defaultValue={filters.fromDate} />
           <Input name="trashTo" type="date" defaultValue={filters.toDate} />
 
-          <Button type="submit" variant="outline">Lọc</Button>
+          <Button type="submit" variant="outline">
+            <Filter className="size-4" />
+            Lọc
+          </Button>
           <Link href="/admin?tab=trash">
-            <Button type="button" variant="ghost">Xóa lọc</Button>
+            <Button type="button" variant="ghost">
+              <X className="size-4" />
+              Xóa lọc
+            </Button>
           </Link>
         </form>
 
         {data.rows.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Thùng rác đang trống.</p>
+          <p className="text-sm text-muted-foreground">Thùng rác đang trống.</p>
         ) : (
           data.rows.map((post) => (
             <div key={post.id} className="rounded-lg border p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {post.thumbnailUrl ? (
-                    <Image src={post.thumbnailUrl} alt={post.title} width={80} height={56} className="h-14 w-20 rounded border object-cover" />
+                    <Image
+                      src={post.thumbnailUrl}
+                      alt={post.title}
+                      width={80}
+                      height={56}
+                      className="h-14 w-20 rounded border object-cover"
+                    />
                   ) : (
-                    <div className="bg-muted text-muted-foreground flex h-14 w-20 items-center justify-center rounded border text-[11px]">No img</div>
+                    <div className="flex h-14 w-20 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
+                      No img
+                    </div>
                   )}
                   <div>
                     <p className="font-semibold">{post.title}</p>
-                    <p className="text-muted-foreground text-xs">/{post.category.slug}/{post.slug}</p>
-                    <p className="text-muted-foreground text-xs">Người viết: {post.author?.name || "Không rõ"}</p>
-                    <p className="text-muted-foreground text-xs">
-                      Đã xóa lúc: {post.deletedAt ? new Date(post.deletedAt).toLocaleString("vi-VN") : "Không rõ"}
+                    <p className="text-xs text-muted-foreground">
+                      /{post.category.slug}/{post.slug}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Người viết: {post.author?.name || "Không rõ"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Đã xóa lúc:{" "}
+                      {post.deletedAt
+                        ? new Date(post.deletedAt).toLocaleString("vi-VN")
+                        : "Không rõ"}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <form action={restorePostFromTrash}>
                     <input type="hidden" name="postId" value={post.id} />
-                    <PendingSubmitButton type="submit" size="sm" variant="outline" pendingText="Đang khôi phục...">Khôi phục</PendingSubmitButton>
+                    <PendingSubmitButton
+                      type="submit"
+                      size="sm"
+                      variant="outline"
+                      pendingText="Đang khôi phục..."
+                    >
+                      <RotateCcw className="size-4" />
+                      Khôi phục
+                    </PendingSubmitButton>
                   </form>
                   <ConfirmActionForm
                     action={deletePostPermanently}
                     fields={[{ name: "postId", value: post.id }]}
                     confirmMessage="Xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác."
                   >
-                    <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang xóa...">Xóa vĩnh viễn</PendingSubmitButton>
+                    <PendingSubmitButton
+                      type="submit"
+                      size="sm"
+                      variant="destructive"
+                      pendingText="Đang xóa..."
+                    >
+                      <Trash2 className="size-4" />
+                      Xóa vĩnh viễn
+                    </PendingSubmitButton>
                   </ConfirmActionForm>
                 </div>
               </div>

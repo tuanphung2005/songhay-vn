@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { type FormEvent, useState } from "react"
+import { ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -16,7 +17,13 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
@@ -78,14 +85,19 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
   const [pageSize] = useState(12)
   const [isLoading, setIsLoading] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
-  const [uploaderOptions, setUploaderOptions] = useState<Array<{ id: string; name: string; email: string }>>(
-    getInitialUploaderOptions(rows)
-  )
+  const [uploaderOptions, setUploaderOptions] = useState<
+    Array<{ id: string; name: string; email: string }>
+  >(getInitialUploaderOptions(rows))
   const [items, setItems] = useState<MediaAssetRow[]>(
     rows.filter((item) => item.assetType === "IMAGE").slice(0, 12)
   )
 
-  async function loadMedia(next: { filterType: "image" | "video"; searchValue: string; page: number; uploaderFilter: string }) {
+  async function loadMedia(next: {
+    filterType: "image" | "video"
+    searchValue: string
+    page: number
+    uploaderFilter: string
+  }) {
     setIsLoading(true)
 
     try {
@@ -102,7 +114,10 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
         params.set("uploaderId", next.uploaderFilter)
       }
 
-      const endpoint = next.filterType === "video" ? "/api/uploads/video" : "/api/uploads/image"
+      const endpoint =
+        next.filterType === "video"
+          ? "/api/uploads/video"
+          : "/api/uploads/image"
       const response = await fetch(`${endpoint}?${params.toString()}`, {
         method: "GET",
       })
@@ -143,14 +158,22 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       })
 
       if (!response.ok) {
-        window.location.assign("/admin?tab=media-library&toast=media_delete_failed")
+        window.location.assign(
+          "/admin?tab=media-library&toast=media_delete_failed"
+        )
         return
       }
 
       await loadMedia({ filterType, searchValue, page, uploaderFilter })
-      window.history.replaceState({}, "", "/admin?tab=media-library&toast=media_deleted")
+      window.history.replaceState(
+        {},
+        "",
+        "/admin?tab=media-library&toast=media_deleted"
+      )
     } catch {
-      window.location.assign("/admin?tab=media-library&toast=media_delete_failed")
+      window.location.assign(
+        "/admin?tab=media-library&toast=media_delete_failed"
+      )
     } finally {
       setDeletingId(null)
       setDeleteDialogId(null)
@@ -180,32 +203,46 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       <CardContent className="space-y-4 pt-6">
         <p className="text-sm font-semibold">Kho dữ liệu media</p>
         <Tabs defaultValue="library" className="space-y-4">
-          <TabsList className="bg-muted w-full justify-start rounded-lg h-auto p-1 overflow-x-auto">
-            <TabsTrigger value="library" className="px-6 py-2.5 rounded-md">
+          <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-lg bg-muted p-1">
+            <TabsTrigger value="library" className="rounded-md px-6 py-2.5">
               Danh sách quy chuẩn
             </TabsTrigger>
-            <TabsTrigger value="upload" className="px-6 py-2.5 rounded-md font-bold text-primary">
+            <TabsTrigger
+              value="upload"
+              className="rounded-md px-6 py-2.5 font-bold text-primary"
+            >
               + Tải lên mới
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="rounded-2xl border bg-zinc-50/50 overflow-hidden m-0 shadow-sm">
+          <TabsContent
+            value="upload"
+            className="m-0 overflow-hidden rounded-2xl border bg-zinc-50/50 shadow-sm"
+          >
             <UploadTab
               hideSaveToLibrary
               submitText="Đẩy lên Kho Media"
-              onSelect={() => window.location.assign("/admin?tab=media-library&toast=media_uploaded")}
+              onSelect={() =>
+                window.location.assign(
+                  "/admin?tab=media-library&toast=media_uploaded"
+                )
+              }
             />
           </TabsContent>
 
-          <TabsContent value="library" className="space-y-4 m-0">
-            <form onSubmit={handleSearchSubmit} className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] lg:grid-cols-[180px_260px_1fr_auto] md:items-end">
+          <TabsContent value="library" className="m-0 space-y-4">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="grid gap-2 rounded-lg border p-3 md:grid-cols-[180px_1fr_auto] md:items-end lg:grid-cols-[180px_260px_1fr_auto]"
+            >
               <div className="space-y-1.5">
                 <Label htmlFor="mediaFilterType">Lọc loại media</Label>
                 <Select
                   id="mediaFilterType"
                   value={filterType}
                   onChange={(event) => {
-                    const nextType = event.target.value === "video" ? "video" : "image"
+                    const nextType =
+                      event.target.value === "video" ? "video" : "image"
                     void handleFilterChange(nextType)
                   }}
                 >
@@ -215,7 +252,9 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </div>
               {isAdmin ? (
                 <div className="space-y-1.5">
-                  <Label htmlFor="mediaFilterUploader">Lọc theo người upload</Label>
+                  <Label htmlFor="mediaFilterUploader">
+                    Lọc theo người upload
+                  </Label>
                   <Select
                     id="mediaFilterUploader"
                     value={uploaderFilter}
@@ -223,7 +262,12 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                       const nextValue = event.target.value
                       setUploaderFilter(nextValue)
                       setPage(1)
-                      await loadMedia({ filterType, searchValue, page: 1, uploaderFilter: nextValue })
+                      await loadMedia({
+                        filterType,
+                        searchValue,
+                        page: 1,
+                        uploaderFilter: nextValue,
+                      })
                     }}
                   >
                     <option value="all">Tất cả người upload</option>
@@ -244,30 +288,49 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   placeholder="Tìm theo tên đặt hoặc tên file..."
                 />
               </div>
-              <Button type="submit" variant="secondary">Tìm</Button>
+              <Button type="submit" variant="secondary">
+                <Search className="size-4" />
+                Tìm
+              </Button>
             </form>
 
-            {isLoading ? <p className="text-muted-foreground text-sm">Đang tải dữ liệu...</p> : null}
-            {!isLoading && items.length === 0 ? <p className="text-muted-foreground text-sm">Không có media phù hợp.</p> : null}
+            {isLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Đang tải dữ liệu...
+              </p>
+            ) : null}
+            {!isLoading && items.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Không có media phù hợp.
+              </p>
+            ) : null}
 
             <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {items.map((asset) => (
                 <div key={asset.id} className="rounded-lg border p-2">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="line-clamp-1 font-semibold">{asset.displayName || asset.filename}</p>
-                      <Badge variant="outline">{asset.assetType === "IMAGE" ? "Ảnh" : "Video"}</Badge>
+                      <p className="line-clamp-1 font-semibold">
+                        {asset.displayName || asset.filename}
+                      </p>
+                      <Badge variant="outline">
+                        {asset.assetType === "IMAGE" ? "Ảnh" : "Video"}
+                      </Badge>
                       <Badge variant="outline">Shared</Badge>
                     </div>
-                    <p className="text-muted-foreground line-clamp-1 text-xs">File: {asset.filename}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi {asset.uploader.name} · {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
+                    <p className="line-clamp-1 text-xs text-muted-foreground">
+                      File: {asset.filename}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi{" "}
+                      {asset.uploader.name} ·{" "}
+                      {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
                     </p>
                   </div>
 
                   <button
                     type="button"
-                    className="bg-muted/40 mt-2 flex min-h-24 w-full items-center justify-center rounded border p-1 transition hover:border-zinc-400"
+                    className="mt-2 flex min-h-24 w-full items-center justify-center rounded border bg-muted/40 p-1 transition hover:border-zinc-400"
                     onClick={() => setPreviewAsset(asset)}
                   >
                     {asset.assetType === "IMAGE" ? (
@@ -296,6 +359,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                       onClick={() => setDeleteDialogId(asset.id)}
                       disabled={deletingId === asset.id}
                     >
+                      <Trash2 className="size-4" />
                       {deletingId === asset.id ? "Đang xóa..." : "Xóa"}
                     </Button>
                   </div>
@@ -303,16 +367,24 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               ))}
             </div>
 
-            <AlertDialog open={deleteDialogId !== null} onOpenChange={(open) => !open && setDeleteDialogId(null)}>
+            <AlertDialog
+              open={deleteDialogId !== null}
+              onOpenChange={(open) => !open && setDeleteDialogId(null)}
+            >
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Xóa media khỏi kho dữ liệu?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Xóa media khỏi kho dữ liệu?
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác.
+                    Hành động này sẽ xóa tệp media đã chọn và không thể hoàn
+                    tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deletingId !== null}>Hủy</AlertDialogCancel>
+                  <AlertDialogCancel disabled={deletingId !== null}>
+                    Hủy
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     variant="destructive"
                     disabled={deleteDialogId === null || deletingId !== null}
@@ -328,12 +400,21 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </AlertDialogContent>
             </AlertDialog>
 
-            <Dialog open={previewAsset !== null} onOpenChange={(open) => !open && setPreviewAsset(null)}>
+            <Dialog
+              open={previewAsset !== null}
+              onOpenChange={(open) => !open && setPreviewAsset(null)}
+            >
               <DialogContent className="max-w-3xl">
                 <DialogHeader>
-                  <DialogTitle>{previewAsset?.displayName || previewAsset?.filename || "Xem trước media"}</DialogTitle>
+                  <DialogTitle>
+                    {previewAsset?.displayName ||
+                      previewAsset?.filename ||
+                      "Xem trước media"}
+                  </DialogTitle>
                   <DialogDescription>
-                    {previewAsset ? `${previewAsset.mimeType} · ${toMb(previewAsset.sizeBytes)} · tải bởi ${previewAsset.uploader.name}` : ""}
+                    {previewAsset
+                      ? `${previewAsset.mimeType} · ${toMb(previewAsset.sizeBytes)} · tải bởi ${previewAsset.uploader.name}`
+                      : ""}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -359,13 +440,28 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             </Dialog>
 
             <div className="flex items-center justify-between border-t pt-3">
-              <p className="text-muted-foreground text-sm">Trang {page}/{totalPages}</p>
+              <p className="text-sm text-muted-foreground">
+                Trang {page}/{totalPages}
+              </p>
               <div className="flex items-center gap-2">
-                <Button type="button" size="sm" variant="outline" disabled={page <= 1 || isLoading} onClick={() => void goToPage(page - 1)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={page <= 1 || isLoading}
+                  onClick={() => void goToPage(page - 1)}
+                >
+                  <ChevronLeft className="size-4" />
                   Trước
                 </Button>
-                <Button type="button" size="sm" disabled={page >= totalPages || isLoading} onClick={() => void goToPage(page + 1)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={page >= totalPages || isLoading}
+                  onClick={() => void goToPage(page + 1)}
+                >
                   Sau
+                  <ChevronRight className="size-4" />
                 </Button>
               </div>
             </div>

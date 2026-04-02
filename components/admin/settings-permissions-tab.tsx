@@ -1,3 +1,4 @@
+import { Save } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -56,10 +57,12 @@ function RolePermissionsCard({
 }) {
   return (
     <Card>
-      <CardHeader className="pb-3 px-4 pt-6">
+      <CardHeader className="px-4 pt-6 pb-3">
         <div className="flex items-center gap-3">
-          <CardTitle className="text-base">{ROLE_LABELS_VI[row.role]}</CardTitle>
-          <Badge variant="outline" className="text-xs font-mono">
+          <CardTitle className="text-base">
+            {ROLE_LABELS_VI[row.role]}
+          </CardTitle>
+          <Badge variant="outline" className="font-mono text-xs">
             {row.role}
           </Badge>
         </div>
@@ -70,7 +73,7 @@ function RolePermissionsCard({
           <div className="space-y-4">
             {ACTION_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-muted-foreground mb-2 text-[11px] font-semibold uppercase tracking-[0.12em]">
+                <p className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   {group.label}
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -88,7 +91,11 @@ function RolePermissionsCard({
                           value="on"
                           className="h-4 w-4 rounded accent-violet-600"
                         />
-                        <span className={checked ? "font-medium" : "text-muted-foreground"}>
+                        <span
+                          className={
+                            checked ? "font-medium" : "text-muted-foreground"
+                          }
+                        >
                           {ACTION_LABELS_VI[action]}
                         </span>
                       </label>
@@ -100,6 +107,7 @@ function RolePermissionsCard({
           </div>
           <div className="mt-4 flex justify-end">
             <PendingSubmitButton type="submit" pendingText="Đang lưu...">
+              <Save className="size-4" />
               Lưu phân quyền
             </PendingSubmitButton>
           </div>
@@ -121,16 +129,26 @@ export function SettingsPermissionsTab({
     <div className="space-y-4">
       <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
         <CardContent className="pt-4">
-          <p className="text-amber-800 dark:text-amber-200 text-sm">
-            <strong>Lưu ý:</strong> Thay đổi phân quyền được lưu vào database và áp dụng ngay lập tức cho tất cả người dùng của role đó.
-            Role <code className="bg-amber-100 dark:bg-amber-900/50 rounded px-1">ADMIN</code> và{" "}
-            <code className="bg-amber-100 dark:bg-amber-900/50 rounded px-1">USER</code> (legacy) không thể chỉnh sửa.
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            <strong>Lưu ý:</strong> Thay đổi phân quyền được lưu vào database và
+            áp dụng ngay lập tức cho tất cả người dùng của role đó. Role{" "}
+            <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
+              ADMIN
+            </code>{" "}
+            và{" "}
+            <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
+              USER
+            </code>{" "}
+            (legacy) không thể chỉnh sửa.
           </p>
         </CardContent>
       </Card>
 
       {ALL_EDITABLE_ROLES.map((role) => {
-        const row = matrixByRole.get(role) ?? { role, actions: new Set<PermissionAction>() }
+        const row = matrixByRole.get(role) ?? {
+          role,
+          actions: new Set<PermissionAction>(),
+        }
         return (
           <RolePermissionsCard
             key={role}
