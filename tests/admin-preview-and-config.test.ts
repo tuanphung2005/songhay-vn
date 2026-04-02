@@ -15,6 +15,15 @@ describe("admin preview route and config", () => {
     expect(source).toContain("bodySizeLimit: \"250mb\"")
   })
 
+  test("next config marks _next assets as noindex", () => {
+    const source = readWorkspaceFile("next.config.mjs")
+
+    expect(source).toContain("async headers()")
+    expect(source).toContain('source: "/_next/:path*"')
+    expect(source).toContain('key: "X-Robots-Tag"')
+    expect(source).toContain('value: "noindex, nofollow"')
+  })
+
   test("admin preview route renders full website layout with preview banner", () => {
     const source = readWorkspaceFile("app/admin/preview/[id]/page.tsx")
 
