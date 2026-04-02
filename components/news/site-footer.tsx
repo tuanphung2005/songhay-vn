@@ -57,7 +57,7 @@ export function SiteFooter() {
             <p>
               Hotline / Zalo: <a href="tel:0967402295" className="font-semibold text-rose-700">0967 402 295</a>
             </p>
-            <p>Địa chỉ: Tổ 11, Thụy Lâm, Hà Nội</p>
+            <p>Địa chỉ: Tổ 11, Thư Lâm, Hà Nội</p>
           </div>
           <Link
             href="/mien-tru-trach-nhiem"
