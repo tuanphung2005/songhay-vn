@@ -5,6 +5,7 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { RichTextField } from "@/components/admin/rich-text-field"
+import { SeoFields } from "@/components/admin/seo-fields"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,9 +16,18 @@ import { SeoKeywordPicker } from "@/components/admin/seo-keyword-picker"
 import { uploadThumbnail } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import { requireCmsUser } from "@/lib/auth"
-import { canEditByStatus, canPublishNow, canSubmitPendingPublish, canViewAllPosts } from "@/lib/permissions"
+import {
+  canEditByStatus,
+  canPublishNow,
+  canSubmitPendingPublish,
+  canViewAllPosts,
+} from "@/lib/permissions"
+import { resolvePostSeoInput } from "@/lib/post-seo"
 import { prisma } from "@/lib/prisma"
-import { resolveSeoKeywordSelection, syncPostSeoKeywords } from "@/lib/seo-keyword-store"
+import {
+  resolveSeoKeywordSelection,
+  syncPostSeoKeywords,
+} from "@/lib/seo-keyword-store"
 import { normalizeKeyword, splitLegacySeoKeywords } from "@/lib/seo-keywords"
 import {
   getPlainTextFromHtml,
@@ -103,15 +113,17 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       keyword: true,
     },
   })
-  const selectedSeoKeywordIds = new Set(post.seoKeywordLinks.map((item) => item.seoKeywordId))
+  const selectedSeoKeywordIds = new Set(
+    post.seoKeywordLinks.map((item) => item.seoKeywordId)
+  )
   const selectedSeoKeywordNormalized = new Set(
     seoKeywordOptions
       .filter((item) => selectedSeoKeywordIds.has(item.id))
       .map((item) => normalizeKeyword(item.keyword))
   )
-  const initialCustomSeoKeywords = splitLegacySeoKeywords(post.seoKeywords).filter(
-    (item) => !selectedSeoKeywordNormalized.has(normalizeKeyword(item))
-  )
+  const initialCustomSeoKeywords = splitLegacySeoKeywords(
+    post.seoKeywords
+  ).filter((item) => !selectedSeoKeywordNormalized.has(normalizeKeyword(item)))
 
   async function updatePost(formData: FormData) {
     "use server"
@@ -126,10 +138,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const mainCategoryId = String(formData.get("mainCategoryId") || "").trim()
     const subcategoryId = String(formData.get("subcategoryId") || "").trim()
     const categoryId = subcategoryId || mainCategoryId
-    const seoTitle = String(formData.get("seoTitle") || "").trim() || null
-    const seoDescription = String(formData.get("seoDescription") || "").trim() || null
+    const rawSeoTitle = String(formData.get("seoTitle") || "").trim()
+    const rawSeoDescription = String(
+      formData.get("seoDescription") || ""
+    ).trim()
     const manualOgImage = String(formData.get("ogImage") || "").trim() || null
-    const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+    const videoEmbedUrl =
+      String(formData.get("videoEmbedUrl") || "").trim() || null
     const isSensitive = formData.get("isSensitive") === "on"
     const submitAction = String(formData.get("submitAction") || "").trim()
 
@@ -139,6 +154,14 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     if (!title || !excerpt || !plainContent || !categoryId) {
       return
     }
+
+    const { seoTitle, seoDescription } = resolvePostSeoInput({
+      title,
+      excerpt,
+      content: plainContent,
+      seoTitle: rawSeoTitle,
+      seoDescription: rawSeoDescription,
+    })
 
     const slug = await uniquePostSlug(title, postId)
 
@@ -155,11 +178,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const ogImage = thumbnailUrl || manualOgImage
 
-    const { editorialStatus, isPublished, isDraft } = resolveEditorialFromSubmitAction({
-      submitAction,
-      role: currentUser.role,
-    })
-    const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelection(formData)
+    const { editorialStatus, isPublished, isDraft } =
+      resolveEditorialFromSubmitAction({
+        submitAction,
+        role: currentUser.role,
+      })
+    const { keywordIds, seoKeywordsText } =
+      await resolveSeoKeywordSelection(formData)
 
     const currentPost = await prisma.post.findUnique({
       where: { id: postId },
@@ -218,10 +243,14 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     }
 
     if (editorialStatus === "PENDING_PUBLISH") {
-      redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+      redirect(
+        "/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish"
+      )
     }
 
-    redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_updated_review")
+    redirect(
+      "/admin?tab=posts&postsStatus=pending-review&toast=post_updated_review"
+    )
   }
 
   return (
@@ -229,10 +258,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Chỉnh sửa bài viết</h1>
-          <p className="text-muted-foreground mt-1">Cập nhật nội dung bài viết hiện tại.</p>
+          <p className="mt-1 text-muted-foreground">
+            Cập nhật nội dung bài viết hiện tại.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/admin/preview/${post.id}`} target="_blank" rel="noreferrer">
+          <Link
+            href={`/admin/preview/${post.id}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <Button variant="secondary">Xem trước</Button>
           </Link>
           <Link href="/admin?tab=posts">
@@ -280,7 +315,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-              <CategorySelector categories={categories} defaultCategoryId={post.categoryId} />
+              <CategorySelector
+                categories={categories}
+                defaultCategoryId={post.categoryId}
+              />
               <div className="space-y-1.5">
                 <Label htmlFor="videoEmbed">Video embed URL</Label>
                 <Input
@@ -293,7 +331,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             </div>
 
             <fieldset className="space-y-3 rounded-lg border p-3">
-              <legend className="px-1 text-sm font-semibold">Ảnh đại diện</legend>
+              <legend className="px-1 text-sm font-semibold">
+                Ảnh đại diện
+              </legend>
               <div className="space-y-1.5">
                 <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
                 <Input
@@ -304,41 +344,43 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 />
                 {post.thumbnailUrl && (
                   <div className="mt-2">
-                    <img src={post.thumbnailUrl} alt="Thumbnail preview" className="h-20 w-auto rounded border" />
+                    <img
+                      src={post.thumbnailUrl}
+                      alt="Thumbnail preview"
+                      className="h-20 w-auto rounded border"
+                    />
                   </div>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="thumbnailUpload">Upload ảnh mới (thay thế ảnh cũ nếu có)</Label>
-                <Input id="thumbnailUpload" name="thumbnailUpload" type="file" accept="image/*" />
+                <Label htmlFor="thumbnailUpload">
+                  Upload ảnh mới (thay thế ảnh cũ nếu có)
+                </Label>
+                <Input
+                  id="thumbnailUpload"
+                  name="thumbnailUpload"
+                  type="file"
+                  accept="image/*"
+                />
               </div>
-              <p className="text-muted-foreground text-xs">OG image sẽ tự đồng bộ theo ảnh đại diện.</p>
+              <p className="text-xs text-muted-foreground">
+                OG image sẽ tự đồng bộ theo ảnh đại diện.
+              </p>
             </fieldset>
 
-            <fieldset className="space-y-3 rounded-lg border p-3">
-              <legend className="px-1 text-sm font-semibold">SEO</legend>
-              <div className="space-y-1.5">
-                <Label htmlFor="seoTitle">Tiêu đề SEO</Label>
-                <Input id="seoTitle" name="seoTitle" defaultValue={post.seoTitle || ""} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="seoDescription">Mô tả SEO</Label>
-                <Textarea
-                  id="seoDescription"
-                  name="seoDescription"
-                  defaultValue={post.seoDescription || ""}
-                  className="min-h-20"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="seoKeywords">Từ khóa SEO</Label>
-                <SeoKeywordPicker
-                  options={seoKeywordOptions}
-                  initialSelectedIds={[...selectedSeoKeywordIds]}
-                  initialCustomKeywords={initialCustomSeoKeywords}
-                />
-              </div>
-            </fieldset>
+            <SeoFields
+              defaultSeoTitle={post.seoTitle || ""}
+              defaultSeoDescription={post.seoDescription || ""}
+              initialTitle={post.title}
+              initialExcerpt={post.excerpt}
+              initialContent={post.content}
+            >
+              <SeoKeywordPicker
+                options={seoKeywordOptions}
+                initialSelectedIds={[...selectedSeoKeywordIds]}
+                initialCustomKeywords={initialCustomSeoKeywords}
+              />
+            </SeoFields>
 
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
@@ -353,12 +395,37 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             </div>
 
             <div className="grid gap-2 md:grid-cols-3">
-              <Button type="submit" name="submitAction" value="save-draft" variant="outline">Lưu nháp</Button>
-              <Button type="submit" name="submitAction" value="submit-review" variant="secondary">Gửi chờ duyệt</Button>
+              <Button
+                type="submit"
+                name="submitAction"
+                value="save-draft"
+                variant="outline"
+              >
+                Lưu nháp
+              </Button>
+              <Button
+                type="submit"
+                name="submitAction"
+                value="submit-review"
+                variant="secondary"
+              >
+                Gửi chờ duyệt
+              </Button>
               {canSubmitPendingPublish(currentUser.role) ? (
-                <Button type="submit" name="submitAction" value="submit-publish" variant="secondary">Gửi chờ xuất bản</Button>
+                <Button
+                  type="submit"
+                  name="submitAction"
+                  value="submit-publish"
+                  variant="secondary"
+                >
+                  Gửi chờ xuất bản
+                </Button>
               ) : null}
-              {canPublish ? <Button type="submit" name="submitAction" value="publish">Xuất bản</Button> : null}
+              {canPublish ? (
+                <Button type="submit" name="submitAction" value="publish">
+                  Xuất bản
+                </Button>
+              ) : null}
             </div>
           </form>
         </CardContent>

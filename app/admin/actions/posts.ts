@@ -4,8 +4,16 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { MediaAssetType, type UserRole } from "@/generated/prisma/client"
 
-import { requireAdminUser, requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
-import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
+import {
+  requireAdminUser,
+  requireCmsUser,
+  requireEditorInChiefUser,
+} from "@/lib/auth"
+import {
+  uploadImageToCloudinary,
+  uploadVideoToCloudinary,
+  uploadThumbnail,
+} from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
 import {
   can,
@@ -21,7 +29,12 @@ import {
 } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/password"
-import { resolveSeoKeywordSelection, resolveSeoKeywordSelectionForPreview, syncPostSeoKeywords } from "@/lib/seo-keyword-store"
+import { resolvePostSeoInput } from "@/lib/post-seo"
+import {
+  resolveSeoKeywordSelection,
+  resolveSeoKeywordSelectionForPreview,
+  syncPostSeoKeywords,
+} from "@/lib/seo-keyword-store"
 import {
   ensurePermission,
   getPlainTextFromHtml,
@@ -32,17 +45,21 @@ import {
 
 export async function createPost(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=write&toast=post_action_forbidden")
+  ensurePermission(
+    can(currentUser.role, "create-post"),
+    "/admin?tab=write&toast=post_action_forbidden"
+  )
 
   const title = String(formData.get("title") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
   const categoryId = String(formData.get("categoryId") || "").trim()
-  const seoTitle = String(formData.get("seoTitle") || "").trim() || null
-  const seoDescription = String(formData.get("seoDescription") || "").trim() || null
+  const rawSeoTitle = String(formData.get("seoTitle") || "").trim()
+  const rawSeoDescription = String(formData.get("seoDescription") || "").trim()
   const manualOgImage = String(formData.get("ogImage") || "").trim() || null
-  const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+  const videoEmbedUrl =
+    String(formData.get("videoEmbedUrl") || "").trim() || null
   const isSensitive = formData.get("isSensitive") === "on"
   const isFeatured = formData.get("isFeatured") === "on"
   const isTrending = formData.get("isTrending") === "on"
@@ -54,6 +71,14 @@ export async function createPost(formData: FormData) {
     return
   }
 
+  const { seoTitle, seoDescription } = resolvePostSeoInput({
+    title,
+    excerpt,
+    content: plainContent,
+    seoTitle: rawSeoTitle,
+    seoDescription: rawSeoDescription,
+  })
+
   const slug = await uniquePostSlug(title)
   const thumbnailUrl =
     thumbnailUpload instanceof File && thumbnailUpload.size > 0
@@ -61,12 +86,14 @@ export async function createPost(formData: FormData) {
       : thumbnailUrlInput || null
   const ogImage = thumbnailUrl || manualOgImage
 
-  const { editorialStatus, isPublished, isDraft } = resolveEditorialFromSubmitAction({
-    submitAction,
-    role: currentUser.role,
-  })
+  const { editorialStatus, isPublished, isDraft } =
+    resolveEditorialFromSubmitAction({
+      submitAction,
+      role: currentUser.role,
+    })
 
-  const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelectionForPreview(formData)
+  const { keywordIds, seoKeywordsText } =
+    await resolveSeoKeywordSelectionForPreview(formData)
 
   const post = await prisma.post.create({
     data: {
@@ -108,15 +135,24 @@ export async function createPost(formData: FormData) {
   }
 
   if (editorialStatus === "PENDING_PUBLISH") {
-    redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+    redirect(
+      "/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish"
+    )
   }
 
-  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")
+  redirect(
+    "/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review"
+  )
 }
 
-export async function createPostForPreview(formData: FormData): Promise<{ postId: string } | { error: string }> {
+export async function createPostForPreview(
+  formData: FormData
+): Promise<{ postId: string } | { error: string }> {
   const currentUser = await requireCmsUser()
-  ensurePermission(can(currentUser.role, "create-post"), "/admin?tab=write&toast=post_action_forbidden")
+  ensurePermission(
+    can(currentUser.role, "create-post"),
+    "/admin?tab=write&toast=post_action_forbidden"
+  )
 
   const title = String(formData.get("title") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
@@ -125,9 +161,10 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
   const mainCategoryId = String(formData.get("mainCategoryId") || "").trim()
   const subcategoryId = String(formData.get("subcategoryId") || "").trim()
   const categoryId = subcategoryId || mainCategoryId
-  const seoTitle = String(formData.get("seoTitle") || "").trim() || null
-  const seoDescription = String(formData.get("seoDescription") || "").trim() || null
-  const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+  const rawSeoTitle = String(formData.get("seoTitle") || "").trim()
+  const rawSeoDescription = String(formData.get("seoDescription") || "").trim()
+  const videoEmbedUrl =
+    String(formData.get("videoEmbedUrl") || "").trim() || null
   const isSensitive = formData.get("isSensitive") === "on"
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
@@ -136,13 +173,22 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
     return { error: "missing_fields" }
   }
 
+  const { seoTitle, seoDescription } = resolvePostSeoInput({
+    title,
+    excerpt,
+    content: plainContent,
+    seoTitle: rawSeoTitle,
+    seoDescription: rawSeoDescription,
+  })
+
   const slug = await uniquePostSlug(title)
   const thumbnailUrl =
     thumbnailUpload instanceof File && thumbnailUpload.size > 0
       ? await uploadThumbnail(thumbnailUpload)
       : thumbnailUrlInput || null
 
-  const { keywordIds, seoKeywordsText } = await resolveSeoKeywordSelection(formData)
+  const { keywordIds, seoKeywordsText } =
+    await resolveSeoKeywordSelection(formData)
 
   const post = await prisma.post.create({
     data: {
@@ -173,18 +219,42 @@ export async function createPostForPreview(formData: FormData): Promise<{ postId
 
 export async function updatePostFlags(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canPublishNow(currentUser.role), "/admin?tab=posts&toast=post_action_forbidden")
+  ensurePermission(
+    canPublishNow(currentUser.role),
+    "/admin?tab=posts&toast=post_action_forbidden"
+  )
 
   const postId = String(formData.get("postId") || "")
   const isFeatured = formData.get("isFeatured") === "on"
   const isTrending = formData.get("isTrending") === "on"
   const isPublished = formData.get("isPublished") === "on"
-  const seoTitle = String(formData.get("seoTitle") || "").trim() || null
-  const seoDescription = String(formData.get("seoDescription") || "").trim() || null
+  const rawSeoTitle = String(formData.get("seoTitle") || "").trim()
+  const rawSeoDescription = String(formData.get("seoDescription") || "").trim()
 
   if (!postId) {
     return
   }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      title: true,
+      excerpt: true,
+      content: true,
+    },
+  })
+
+  if (!existingPost) {
+    return
+  }
+
+  const { seoTitle, seoDescription } = resolvePostSeoInput({
+    title: existingPost.title,
+    excerpt: existingPost.excerpt,
+    content: getPlainTextFromHtml(existingPost.content),
+    seoTitle: rawSeoTitle,
+    seoDescription: rawSeoDescription,
+  })
 
   const updatedPost = await prisma.post.update({
     where: { id: postId },
@@ -210,7 +280,8 @@ export async function movePostToTrash(formData: FormData) {
 
   const postId = String(formData.get("postId") || "")
   const sourceTabRaw = String(formData.get("sourceTab") || "").trim()
-  const sourceTab = sourceTabRaw === "personal-archive" ? "personal-archive" : "posts"
+  const sourceTab =
+    sourceTabRaw === "personal-archive" ? "personal-archive" : "posts"
   if (!postId) {
     redirect(`/admin?tab=${sourceTab}&toast=post_action_failed`)
   }
@@ -232,7 +303,10 @@ export async function movePostToTrash(formData: FormData) {
     redirect(`/admin?tab=${sourceTab}&toast=post_not_found`)
   }
 
-  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
+  if (
+    !canViewAllPosts(currentUser.role) &&
+    existingPost.authorId !== currentUser.id
+  ) {
     redirect(`/admin?tab=${sourceTab}&toast=post_action_forbidden`)
   }
 
@@ -274,7 +348,10 @@ export async function restorePostFromTrash(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
+  if (
+    !canViewAllPosts(currentUser.role) &&
+    existingPost.authorId !== currentUser.id
+  ) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
@@ -311,7 +388,10 @@ export async function deletePostPermanently(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
+  if (
+    !canViewAllPosts(currentUser.role) &&
+    existingPost.authorId !== currentUser.id
+  ) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 

@@ -7,20 +7,26 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("admin write tab UI", () => {
-  test("write tab groups SEO fields and supports sensitive toggle", () => {
+  test("write tab wires shared SEO fields and supports sensitive toggle", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
+    const seoFieldsSource = readWorkspaceFile("components/admin/seo-fields.tsx")
 
-    expect(source).toContain("<legend className=\"px-1 text-sm font-semibold\">SEO</legend>")
+    expect(source).toContain("SeoFields")
     expect(source).toContain("SeoKeywordPicker")
-    expect(source).toContain("name=\"isSensitive\"")
+    expect(seoFieldsSource).toContain(
+      '<legend className="px-1 text-sm font-semibold">SEO</legend>'
+    )
+    expect(seoFieldsSource).toContain("Để trống, hệ thống sẽ tự tạo")
+    expect(source).toContain('name="isSensitive"')
   })
 
   test("write tab supports draft and review actions", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
 
-    expect(source).toContain("name=\"submitAction\" value=\"save-draft\"")
-    expect(source).toContain("name=\"submitAction\" value=\"submit-review\"")
-    expect(source).toContain("name=\"submitAction\" value=\"publish\"")
+    expect(source).toContain('name="submitAction"')
+    expect(source).toContain('value="save-draft"')
+    expect(source).toContain('value="submit-review"')
+    expect(source).toContain('value="publish"')
   })
 
   test("write tab has preview button and capability-gated publish actions", () => {
@@ -39,12 +45,14 @@ describe("admin write tab UI", () => {
   test("write tab pending review button uses destructive variant", () => {
     const source = readWorkspaceFile("components/admin/write-tab.tsx")
     // The Gửi chờ duyệt button should use destructive (red) variant
-    expect(source).toContain("value=\"submit-review\"")
-    expect(source).toContain("variant=\"destructive\"")
+    expect(source).toContain('value="submit-review"')
+    expect(source).toContain('variant="destructive"')
   })
 
   test("rich text field media picker has pagination controls", () => {
-    const source = readWorkspaceFile("components/admin/media-picker/library-tab.tsx")
+    const source = readWorkspaceFile(
+      "components/admin/media-picker/library-tab.tsx"
+    )
 
     expect(source).toContain("const [page, setPage] = useState(1)")
     expect(source).toContain("Trang {safePage} / {totalPages}")
@@ -57,5 +65,13 @@ describe("admin write tab UI", () => {
     expect(source).toContain('name="seoKeywordIds"')
     expect(source).toContain('name="seoKeywords"')
     expect(source).toContain("Thêm mới")
+  })
+
+  test("edit page reuses shared SEO autofill fields", () => {
+    const source = readWorkspaceFile("app/admin/edit/[id]/page.tsx")
+
+    expect(source).toContain("SeoFields")
+    expect(source).toContain("initialTitle={post.title}")
+    expect(source).toContain("initialExcerpt={post.excerpt}")
   })
 })

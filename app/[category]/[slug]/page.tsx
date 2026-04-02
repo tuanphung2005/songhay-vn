@@ -18,13 +18,25 @@ import { SiteHeader } from "@/components/news/site-header"
 import { RecommendedForYou } from "@/components/news/recommended-for-you"
 import { VideoMostWatched } from "@/components/news/video-most-watched"
 import { SectionHeading } from "@/components/news/section-heading"
-import { getPostByCategoryAndSlug, getRelatedPosts, getTrendingPosts, getMostWatchedVideos, getRecommendedPosts } from "@/lib/queries"
-import { injectInlineAdAfterSecondParagraph, normalizeArticleHtml } from "@/lib/html"
+import {
+  getPostByCategoryAndSlug,
+  getRelatedPosts,
+  getTrendingPosts,
+  getMostWatchedVideos,
+  getRecommendedPosts,
+} from "@/lib/queries"
+import {
+  injectInlineAdAfterSecondParagraph,
+  normalizeArticleHtml,
+} from "@/lib/html"
+import { buildAutoSeoDescription, buildAutoSeoTitle } from "@/lib/post-seo"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
 
-const getPost = cache(async (category: string, slug: string) => getPostByCategoryAndSlug(category, slug))
+const getPost = cache(async (category: string, slug: string) =>
+  getPostByCategoryAndSlug(category, slug)
+)
 
 type PostPageProps = {
   params: Promise<{ category: string; slug: string }>
@@ -32,7 +44,9 @@ type PostPageProps = {
 
 // Shared logic in lib/html.ts
 
-export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PostPageProps): Promise<Metadata> {
   const { category, slug } = await params
   const post = await getPost(category, slug)
   const siteUrl = getSiteUrl()
@@ -43,11 +57,27 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
   }
 
-  const title = post.seoTitle || post.title
-  const description = post.seoDescription || post.excerpt
+  const title =
+    post.seoTitle ||
+    buildAutoSeoTitle({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+    }) ||
+    post.title
+  const description =
+    post.seoDescription ||
+    buildAutoSeoDescription({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+    }) ||
+    post.excerpt
   const canonicalPath = `/${post.category.slug}/${post.slug}`
   const canonicalUrl = `${siteUrl}${canonicalPath}`
-  const imageUrl = toAbsoluteUrl(post.ogImage || post.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
+  const imageUrl = toAbsoluteUrl(
+    post.ogImage || post.thumbnailUrl || DEFAULT_OG_IMAGE_PATH
+  )
 
   return {
     title,
@@ -84,17 +114,22 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const article = post!
 
-  const [relatedPosts, trendingPosts, mostWatchedVideos, recommendedPosts] = await Promise.all([
-    getRelatedPosts(article.id, article.categoryId, 12),
-    getTrendingPosts(),
-    getMostWatchedVideos(8),
-    getRecommendedPosts(article.id, article.categoryId, 12),
-  ])
+  const [relatedPosts, trendingPosts, mostWatchedVideos, recommendedPosts] =
+    await Promise.all([
+      getRelatedPosts(article.id, article.categoryId, 12),
+      getTrendingPosts(),
+      getMostWatchedVideos(8),
+      getRecommendedPosts(article.id, article.categoryId, 12),
+    ])
 
   const siteUrl = getSiteUrl()
   const fullUrl = `${siteUrl}/${article.category.slug}/${article.slug}`
-  const articleHtml = injectInlineAdAfterSecondParagraph(normalizeArticleHtml(article.content))
-  const articleImage = toAbsoluteUrl(article.ogImage || article.thumbnailUrl || DEFAULT_OG_IMAGE_PATH)
+  const articleHtml = injectInlineAdAfterSecondParagraph(
+    normalizeArticleHtml(article.content)
+  )
+  const articleImage = toAbsoluteUrl(
+    article.ogImage || article.thumbnailUrl || DEFAULT_OG_IMAGE_PATH
+  )
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -159,13 +194,23 @@ export default async function PostPage({ params }: PostPageProps) {
         <article className="space-y-6">
           <JsonLd data={[articleJsonLd, breadcrumbJsonLd]} />
           <header className="space-y-3">
-            <Link href={`/${article.category.slug}`} className="text-sm font-bold text-rose-600">
+            <Link
+              href={`/${article.category.slug}`}
+              className="text-sm font-bold text-rose-600"
+            >
               {article.category.name}
             </Link>
-            <h1 className="text-4xl font-black leading-tight text-zinc-900">{article.title}</h1>
-            <AdPlaceholder label="Dưới tiêu đề (Google AdSense)" className="mx-auto min-h-20 max-w-2xl" />
+            <h1 className="text-4xl leading-tight font-black text-zinc-900">
+              {article.title}
+            </h1>
+            <AdPlaceholder
+              label="Dưới tiêu đề (Google AdSense)"
+              className="mx-auto min-h-20 max-w-2xl"
+            />
             <p className="text-lg text-zinc-600">{article.excerpt}</p>
-            <p className="text-sm text-zinc-500">{new Date(article.publishedAt).toLocaleString("vi-VN")}</p>
+            <p className="text-sm text-zinc-500">
+              {new Date(article.publishedAt).toLocaleString("vi-VN")}
+            </p>
           </header>
 
           <Image
@@ -177,7 +222,10 @@ export default async function PostPage({ params }: PostPageProps) {
             priority
           />
 
-          <AdPlaceholder label="Sau ảnh bài viết (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Sau ảnh bài viết (Google AdSense)"
+            className="min-h-24"
+          />
 
           <div
             className="article-content ck-content max-w-none text-zinc-800"
@@ -196,19 +244,30 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           ) : null}
 
-          <AdPlaceholder label="Sau video nội dung (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Sau video nội dung (Google AdSense)"
+            className="min-h-24"
+          />
 
           <SocialShare title={article.title} url={fullUrl} />
 
-          <AdPlaceholder label="Sau bài viết (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Sau bài viết (Google AdSense)"
+            className="min-h-24"
+          />
 
           <section className="space-y-3 border border-zinc-200 bg-zinc-50 p-4">
             <h2 className="text-xl font-bold">Bình luận gần đây</h2>
             {article.comments.length === 0 ? (
-              <p className="text-sm text-zinc-600">Chưa có bình luận hiển thị.</p>
+              <p className="text-sm text-zinc-600">
+                Chưa có bình luận hiển thị.
+              </p>
             ) : (
               article.comments.map((comment) => (
-                <div key={comment.id} className="border border-zinc-200 bg-white p-3">
+                <div
+                  key={comment.id}
+                  className="border border-zinc-200 bg-white p-3"
+                >
                   <p className="text-sm font-semibold">{comment.authorName}</p>
                   <p className="text-sm text-zinc-700">{comment.content}</p>
                 </div>
@@ -216,13 +275,19 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
           </section>
 
-          <AdPlaceholder label="Trước form bình luận (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Trước form bình luận (Google AdSense)"
+            className="min-h-24"
+          />
 
           <CommentForm postId={article.id} currentUser={null} />
 
           <RecommendedForYou posts={recommendedPosts} />
 
-          <AdPlaceholder label="Giữa các cụm liên quan (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Giữa các cụm liên quan (Google AdSense)"
+            className="min-h-24"
+          />
 
           <VideoMostWatched posts={mostWatchedVideos} />
 
@@ -244,7 +309,10 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </section>
 
-          <AdPlaceholder label="Sau cụm đọc nhiều (Google AdSense)" className="min-h-24" />
+          <AdPlaceholder
+            label="Sau cụm đọc nhiều (Google AdSense)"
+            className="min-h-24"
+          />
 
           <section className="space-y-4">
             <SectionHeading title="Đọc thêm" />
@@ -265,8 +333,14 @@ export default async function PostPage({ params }: PostPageProps) {
         </article>
 
         <aside className="space-y-4">
-          <AdPlaceholder label="Sidebar (Google AdSense)" className="min-h-44" />
-          <AdPlaceholder label="Sidebar thứ 2 (Google AdSense)" className="min-h-40" />
+          <AdPlaceholder
+            label="Sidebar (Google AdSense)"
+            className="min-h-44"
+          />
+          <AdPlaceholder
+            label="Sidebar thứ 2 (Google AdSense)"
+            className="min-h-40"
+          />
           <MostRead
             posts={trendingPosts.map((post) => ({
               id: post.id,
@@ -277,10 +351,16 @@ export default async function PostPage({ params }: PostPageProps) {
               categorySlug: post.category.slug,
             }))}
           />
-          <AdPlaceholder label="Sidebar giữa tiện ích (Google AdSense)" className="min-h-40" />
+          <AdPlaceholder
+            label="Sidebar giữa tiện ích (Google AdSense)"
+            className="min-h-40"
+          />
           <LunarCalendarWidget />
           <AiWeatherWidget />
-          <AdPlaceholder label="Sidebar cuối bài (Google AdSense)" className="min-h-40" />
+          <AdPlaceholder
+            label="Sidebar cuối bài (Google AdSense)"
+            className="min-h-40"
+          />
         </aside>
       </main>
 
