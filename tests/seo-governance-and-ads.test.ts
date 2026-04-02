@@ -31,7 +31,7 @@ describe("seo governance and moderation", () => {
     expect(source).toContain("overviewRange=7d")
     expect(source).toContain("overviewRange=30d")
     expect(source).toContain("Từ khóa SEO hot")
-    expect(source).toContain("Thời gian ở lại bài trung bình")
+    expect(source).toContain("Thời gian ở lại trung bình")
   })
 
   test("preview flow does not upsert new seo keywords before submit", () => {
@@ -45,13 +45,15 @@ describe("ads and indexing", () => {
   test("article and homepage render real Google Adsense slots", () => {
     const articleSource = readWorkspaceFile("app/[category]/[slug]/page.tsx")
     const homeSource = readWorkspaceFile("app/page.tsx")
-    const adComponentSource = readWorkspaceFile("components/news/ad-placeholder.tsx")
+    const adComponentSource = readWorkspaceFile(
+      "components/news/ad-placeholder.tsx"
+    )
     const htmlHelperSource = readWorkspaceFile("lib/html.ts")
 
     expect(articleSource).toContain("AdPlaceholder")
     expect(homeSource).toContain("Top banner (Google AdSense)")
     expect(homeSource).toContain("Bottom page ad (Google AdSense)")
-    expect(adComponentSource).toContain("className=\"adsbygoogle")
+    expect(adComponentSource).toContain('className="adsbygoogle')
     expect(adComponentSource).toContain("data-ad-client")
     expect(htmlHelperSource).toContain("adsbygoogle block w-full")
   })

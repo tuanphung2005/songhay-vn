@@ -8,11 +8,19 @@ function readWorkspaceFile(relativePath: string) {
 
 describe("admin pending submit patterns", () => {
   test("admin mutation tabs use shared pending submit button", () => {
-    const pendingPosts = readWorkspaceFile("components/admin/pending-posts-tab.tsx")
-    const posts = readWorkspaceFile("components/admin/posts-tab.tsx")
-    const personalArchive = readWorkspaceFile("components/admin/personal-archive-tab.tsx")
+    const pendingPosts = readWorkspaceFile(
+      "components/admin/pending-posts-tab.tsx"
+    )
+    const posts = readWorkspaceFile(
+      "components/admin/posts-tab/post-actions-cell.tsx"
+    )
+    const personalArchive = readWorkspaceFile(
+      "components/admin/personal-archive-tab.tsx"
+    )
     const trash = readWorkspaceFile("components/admin/trash-tab.tsx")
-    const categories = readWorkspaceFile("components/admin/categories-tab.tsx")
+    const categories = readWorkspaceFile(
+      "components/admin/categories-tab/index.tsx"
+    )
 
     expect(pendingPosts).toContain("PendingSubmitButton")
     expect(posts).toContain("PendingSubmitButton")
@@ -22,8 +30,12 @@ describe("admin pending submit patterns", () => {
   })
 
   test("confirm-action forms no longer rely on window.confirm", () => {
-    const confirmActionForm = readWorkspaceFile("components/admin/confirm-action-form.tsx")
-    const mediaLibrary = readWorkspaceFile("components/admin/media-library-tab.tsx")
+    const confirmActionForm = readWorkspaceFile(
+      "components/admin/confirm-action-form.tsx"
+    )
+    const mediaLibrary = readWorkspaceFile(
+      "components/admin/media-library-tab.tsx"
+    )
 
     expect(confirmActionForm).toContain("AlertDialog")
     expect(confirmActionForm).not.toContain("window.confirm")

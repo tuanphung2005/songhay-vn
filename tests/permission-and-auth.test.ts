@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 
-import { decodeSession, encodeSession } from "../lib/auth"
+import { decodeSession, encodeSession } from "../lib/session"
 
 function readWorkspaceFile(relativePath: string) {
   return readFileSync(join(process.cwd(), relativePath), "utf8")
@@ -21,7 +21,10 @@ describe("session encoding / decoding", () => {
   })
 
   test("decodes EDITOR_IN_CHIEF role correctly", () => {
-    const token = encodeSession({ userId: "chief-xyz", role: "EDITOR_IN_CHIEF" })
+    const token = encodeSession({
+      userId: "chief-xyz",
+      role: "EDITOR_IN_CHIEF",
+    })
     const decoded = decodeSession(token)
 
     expect(decoded?.role).toBe("EDITOR_IN_CHIEF")
@@ -68,45 +71,61 @@ describe("auth guard source checks", () => {
 
     expect(source).toContain("export async function requireAdminUser")
     expect(source).toContain("const hasElevatedAccess")
-    expect(source).toContain("redirect(\"/\")")
+    expect(source).toContain('redirect("/")')
   })
 
   test("requireCmsUser redirects to login when no session", () => {
     const source = readWorkspaceFile("lib/auth.ts")
 
     // Unauthenticated → redirect to login
-    expect(source).toContain("redirect(\"/login?admin=1\")")
+    expect(source).toContain('redirect("/login?admin=1")')
     expect(source).toContain("export async function requireCmsUser")
     expect(source).toContain("export async function requireAdminUser")
   })
 
   test("category and system-sensitive actions still enforce elevated checks", () => {
-    const categoriesSource = readWorkspaceFile("app/admin/actions/categories.ts")
+    const categoriesSource = readWorkspaceFile(
+      "app/admin/actions/categories.ts"
+    )
     const settingsSource = readWorkspaceFile("app/admin/actions/settings.ts")
 
-    expect(categoriesSource).toMatch(/export async function createCategory[\s\S]*?requireAdminUser/)
-    expect(settingsSource).toMatch(/export async function createSubordinateAccount[\s\S]*?requireEditorInChiefUser/)
-    expect(categoriesSource).toContain("ensurePermission(can(currentUser.role, \"edit-category\")")
-    expect(categoriesSource).toContain("ensurePermission(can(currentUser.role, \"delete-category\")")
+    expect(categoriesSource).toMatch(
+      /export async function createCategory[\s\S]*?requireAdminUser/
+    )
+    expect(settingsSource).toMatch(
+      /export async function createSubordinateAccount[\s\S]*?requireEditorInChiefUser/
+    )
+    expect(categoriesSource).toContain(
+      'ensurePermission(can(currentUser.role, "edit-category")'
+    )
+    expect(categoriesSource).toContain(
+      'ensurePermission(can(currentUser.role, "delete-category")'
+    )
   })
 
   test("CMS actions use requireCmsUser plus capability checks", () => {
     const postsSource = readWorkspaceFile("app/admin/actions/posts.ts")
     const workflowSource = readWorkspaceFile("app/admin/actions/workflow.ts")
 
-    expect(postsSource).toMatch(/export async function createPost[\s\S]*?requireCmsUser/)
+    expect(postsSource).toMatch(
+      /export async function createPost[\s\S]*?requireCmsUser/
+    )
     expect(postsSource).toContain("resolveEditorialFromSubmitAction")
     expect(workflowSource).toContain("canApprovePendingReview")
-    expect(postsSource).toMatch(/export async function movePostToTrash[\s\S]*?requireCmsUser/)
-    expect(postsSource).toMatch(/export async function restorePostFromTrash[\s\S]*?requireCmsUser/)
+    expect(postsSource).toMatch(
+      /export async function movePostToTrash[\s\S]*?requireCmsUser/
+    )
+    expect(postsSource).toMatch(
+      /export async function restorePostFromTrash[\s\S]*?requireCmsUser/
+    )
   })
 
   test("session cookie is httpOnly and uses lax sameSite", () => {
     const source = readWorkspaceFile("lib/auth.ts")
 
     expect(source).toContain("httpOnly: true")
-    expect(source).toContain("sameSite: \"lax\"")
+    expect(source).toContain('sameSite: "lax"')
     // Only secure in production
-    expect(source).toContain("secure: process.env.NODE_ENV === \"production\"")
+    expect(source).toContain('secure: process.env.NODE_ENV === "production"')
   })
 })

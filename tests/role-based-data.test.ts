@@ -12,10 +12,12 @@ describe("role-based data scoping", () => {
   test("posts data loader supports unified editorial status filtering", () => {
     const source = readWorkspaceFile("app/admin/data-loaders/posts.ts")
 
-    expect(source).toContain("postsFilters.status === \"pending-review\"")
-    expect(source).toContain("postsFilters.status === \"pending-publish\"")
-    expect(source).toContain("postsFilters.status === \"published\"")
-    expect(source).toContain("canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }")
+    expect(source).toContain('postsFilters.status === "pending-review"')
+    expect(source).toContain('postsFilters.status === "pending-publish"')
+    expect(source).toContain('postsFilters.status === "published"')
+    expect(source).toContain(
+      "canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }"
+    )
   })
 
   test("personal archive is always scoped to current user", () => {
@@ -29,7 +31,9 @@ describe("role-based data scoping", () => {
     const source = readWorkspaceFile("app/admin/data-loaders/trash.ts")
 
     expect(source).toContain("isDeleted: true")
-    expect(source).toContain("canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }")
+    expect(source).toContain(
+      "canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }"
+    )
   })
 
   test("media library now exposes shared assets for all CMS users", () => {
@@ -42,7 +46,9 @@ describe("role-based data scoping", () => {
   test("media upload DELETE endpoint enforces ownership or elevated role", () => {
     const source = readWorkspaceFile("app/api/media/[id]/route.ts")
 
-    expect(source).toContain("!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId")
+    expect(source).toContain(
+      "!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId"
+    )
   })
 
   test("image upload GET endpoint lists shared assets for all CMS users", () => {
@@ -50,7 +56,9 @@ describe("role-based data scoping", () => {
 
     expect(source).toContain("uploaderId")
     expect(source).toContain("uploaderIdFilter")
-    expect(source).toContain("const uploaderIdFilter = uploaderIdParam.length > 0 ? uploaderIdParam : \"\"")
+    expect(source).toContain(
+      'const uploaderIdFilter = uploaderIdParam.length > 0 ? uploaderIdParam : ""'
+    )
     expect(source).not.toContain("canViewAllPosts(session.role)")
   })
 
@@ -58,7 +66,9 @@ describe("role-based data scoping", () => {
     const source = readWorkspaceFile("app/api/uploads/video/route.ts")
 
     expect(source).toContain("uploaderIdFilter")
-    expect(source).not.toContain("...(isAdmin ? {} : { uploaderId: session.userId })")
+    expect(source).not.toContain(
+      "...(isAdmin ? {} : { uploaderId: session.userId })"
+    )
   })
 })
 
@@ -81,16 +91,19 @@ describe("role-based UI gates", () => {
   })
 
   test("posts tab shows review controls based on role capabilities", () => {
-    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
+    const source = readWorkspaceFile(
+      "components/admin/posts-tab/post-actions-cell.tsx"
+    )
 
     expect(source).toContain("canReviewPending")
     expect(source).toContain("canPublishNow")
   })
 
   test("posts tab exposes move-to-trash to all authenticated users", () => {
-    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
+    const source = readWorkspaceFile(
+      "components/admin/posts-tab/post-actions-cell.tsx"
+    )
 
-    // movePostToTrash is passed down to PostsTab
     expect(source).toContain("movePostToTrash")
   })
 
@@ -108,27 +121,35 @@ describe("server-side ownership enforcement in actions", () => {
   test("movePostToTrash checks ownership for roles without view-all capability", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
-    expect(source).toContain("!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id")
+    expect(source).toMatch(
+      /!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
+    )
     expect(source).toContain("post_action_forbidden")
   })
 
   test("restorePostFromTrash checks ownership before restoring for non-admin", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
-    expect(source).toMatch(/export async function restorePostFromTrash[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
+    expect(source).toMatch(
+      /export async function restorePostFromTrash[\s\S]*?!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
+    )
   })
 
   test("deletePostPermanently checks ownership for non-admin", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
-    expect(source).toMatch(/export async function deletePostPermanently[\s\S]*?!canViewAllPosts\(currentUser\.role\) && existingPost\.authorId !== currentUser\.id/)
+    expect(source).toMatch(
+      /export async function deletePostPermanently[\s\S]*?!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
+    )
   })
 
   test("approvePendingPost sets isDraft false and promotes to publish or pending publish", () => {
     const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toMatch(/approvePendingPost[\s\S]*?isDraft: false/)
-    expect(source).toMatch(/approvePendingPost[\s\S]*?editorialStatus: canPublishNow\(currentUser\.role\) \? "PUBLISHED" : "PENDING_PUBLISH"/)
+    expect(source).toMatch(
+      /approvePendingPost[\s\S]*?editorialStatus: canPublishNow\(currentUser\.role\) \? "PUBLISHED" : "PENDING_PUBLISH"/
+    )
   })
 
   test("rejectPendingPost sets isPublished false and clears approver", () => {
@@ -142,6 +163,6 @@ describe("server-side ownership enforcement in actions", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toContain("resolveEditorialFromSubmitAction")
-    expect(source).toContain("editorialStatus === \"DRAFT\"")
+    expect(source).toContain('editorialStatus === "DRAFT"')
   })
 })

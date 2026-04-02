@@ -18,17 +18,21 @@ describe("admin filters and pagination", () => {
   })
 
   test("posts tab exposes advanced filter inputs", () => {
-    const source = readWorkspaceFile("components/admin/posts-tab.tsx")
+    const source = readWorkspaceFile(
+      "components/admin/posts-tab/post-filter-bar.tsx"
+    )
 
-    expect(source).toContain("name=\"postsApproval\"")
-    expect(source).toContain("name=\"postsAuthor\"")
-    expect(source).toContain("name=\"postsFrom\"")
-    expect(source).toContain("name=\"postsTo\"")
+    expect(source).toContain('name="postsApproval"')
+    expect(source).toContain('name="postsAuthor"')
+    expect(source).toContain('name="postsFrom"')
+    expect(source).toContain('name="postsTo"')
     expect(source).toContain("postsPage")
   })
 
   test("personal archive and trash tabs expose pagination links", () => {
-    const personal = readWorkspaceFile("components/admin/personal-archive-tab.tsx")
+    const personal = readWorkspaceFile(
+      "components/admin/personal-archive-tab.tsx"
+    )
     const trash = readWorkspaceFile("components/admin/trash-tab.tsx")
 
     expect(personal).toContain("personalPage")

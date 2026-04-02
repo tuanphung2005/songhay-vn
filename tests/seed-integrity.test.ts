@@ -24,7 +24,7 @@ describe("seed data integrity", () => {
   test("seed explicitly sets editorialStatus: PUBLISHED for published posts", () => {
     const source = readWorkspaceFile("prisma/seed.ts")
 
-    expect(source).toContain("editorialStatus: \"PUBLISHED\"")
+    expect(source).toContain('editorialStatus: "PUBLISHED"')
     // Should appear in both admin demo posts AND editor published posts
     const count = (source.match(/editorialStatus: "PUBLISHED"/g) ?? []).length
     expect(count).toBeGreaterThanOrEqual(4)
@@ -35,19 +35,19 @@ describe("seed data integrity", () => {
 
     expect(source).toContain("editor1@songhay.vn")
     expect(source).toContain("editor2@songhay.vn")
-    expect(source).toContain("role: \"EDITOR_IN_CHIEF\"")
-    expect(source).toContain("role: \"MANAGING_EDITOR\"")
-    expect(source).toContain("role: \"TEAM_LEAD\"")
-    expect(source).toContain("role: \"REPORTER_TRANSLATOR\"")
-    expect(source).toContain("role: \"CONTRIBUTOR\"")
+    expect(source).toContain('role: "EDITOR_IN_CHIEF"')
+    expect(source).toContain('role: "MANAGING_EDITOR"')
+    expect(source).toContain('role: "TEAM_LEAD"')
+    expect(source).toContain('role: "REPORTER_TRANSLATOR"')
+    expect(source).toContain('role: "CONTRIBUTOR"')
   })
 
   test("seed creates posts with PENDING_REVIEW status for editor workflow", () => {
     const source = readWorkspaceFile("prisma/seed.ts")
 
-    expect(source).toContain("editorialStatus: \"PENDING_REVIEW\"")
-    // At least 2 pending review posts
-    const count = (source.match(/editorialStatus: "PENDING_REVIEW"/g) ?? []).length
+    expect(source).toContain('status || "PENDING_REVIEW"')
+    // The fallback appears in both update and create blocks.
+    const count = (source.match(/status \|\| "PENDING_REVIEW"/g) ?? []).length
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
@@ -99,14 +99,16 @@ describe("schema default field awareness", () => {
     const source = readWorkspaceFile("app/admin/data-loaders/posts.ts")
 
     expect(source).toContain("isDeleted: false")
-    expect(source).toContain("postsFilters.status === \"published\"")
-    expect(source).toContain("postsFilters.status === \"pending-review\"")
-    expect(source).toContain("postsFilters.status === \"pending-publish\"")
+    expect(source).toContain('postsFilters.status === "published"')
+    expect(source).toContain('postsFilters.status === "pending-review"')
+    expect(source).toContain('postsFilters.status === "pending-publish"')
   })
 
   test("public-facing API routes also filter isDraft: false to prevent draft leaks", () => {
     const mostRead = readWorkspaceFile("app/api/posts/most-read/route.ts")
-    const latestByCat = readWorkspaceFile("app/api/posts/latest-by-category/route.ts")
+    const latestByCat = readWorkspaceFile(
+      "app/api/posts/latest-by-category/route.ts"
+    )
 
     expect(mostRead).toContain("isDraft: false")
     expect(latestByCat).toContain("isDraft: false")

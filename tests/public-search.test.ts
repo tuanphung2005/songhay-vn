@@ -7,12 +7,19 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("public search flow", () => {
-  test("header uses reusable news search form", () => {
+  test("header uses reusable news search popup", () => {
     const source = readWorkspaceFile("components/news/site-header.tsx")
+    const popupSource = readWorkspaceFile(
+      "components/news/search-icon-popup.tsx"
+    )
 
-    expect(source).toContain('import { NewsSearchForm } from "./search"')
-    expect(source).toContain("<NewsSearchForm")
-    expect(source).toContain("placeholder=\"Tìm bài viết...\"")
+    expect(source).toContain(
+      'import { SearchIconPopup } from "./search-icon-popup"'
+    )
+    expect(source).toContain("<SearchIconPopup")
+    expect(popupSource).toContain('import { NewsSearchForm } from "./search"')
+    expect(popupSource).toContain("<NewsSearchForm")
+    expect(popupSource).toContain('placeholder="Tìm bài viết..."')
   })
 
   test("mobile nav reuses shared search form", () => {
@@ -20,27 +27,37 @@ describe("public search flow", () => {
 
     expect(source).toContain('import { NewsSearchForm } from "./search"')
     expect(source).toContain("<NewsSearchForm")
-    expect(source).not.toContain("<form action=\"/search\"")
+    expect(source).not.toContain('<form action="/search"')
   })
 
   test("public query helper filters published non-draft posts with keyword matching", () => {
     const source = readWorkspaceFile("lib/queries.ts")
 
     expect(source).toContain("export const searchPublishedPosts = cache")
-    expect(source).toContain("content: { contains: normalizedQuery, mode: \"insensitive\" }")
+    expect(source).toContain(
+      'content: { contains: normalizedQuery, mode: "insensitive" }'
+    )
     expect(source).toContain("isPublished: true")
     expect(source).toContain("isDeleted: false")
     expect(source).toContain("isDraft: false")
-    expect(source).toContain("title: { contains: normalizedQuery, mode: \"insensitive\" }")
-    expect(source).toContain("excerpt: { contains: normalizedQuery, mode: \"insensitive\" }")
-    expect(source).toContain("category: { name: { contains: normalizedQuery, mode: \"insensitive\" } }")
+    expect(source).toContain(
+      'title: { contains: normalizedQuery, mode: "insensitive" }'
+    )
+    expect(source).toContain(
+      'excerpt: { contains: normalizedQuery, mode: "insensitive" }'
+    )
+    expect(source).toContain(
+      'category: { name: { contains: normalizedQuery, mode: "insensitive" } }'
+    )
   })
 
   test("search page reads q and uses search helper", () => {
     const source = readWorkspaceFile("app/search/page.tsx")
 
     expect(source).toContain("searchParams?: Promise")
-    expect(source).toContain("const query = normalizeQuery(resolvedSearchParams?.q)")
+    expect(source).toContain(
+      "const query = normalizeQuery(resolvedSearchParams?.q)"
+    )
     expect(source).toContain("getPublishedSearchResults(query, page, 12)")
   })
 
