@@ -2,7 +2,7 @@ import Link from "next/link"
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Pagination,
   PaginationContent,
@@ -79,22 +79,7 @@ export function PostsTab({
 
   return (
     <Card className="border-zinc-200 shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookOpen className="size-4 text-zinc-500" />
-              Kho bài viết
-            </CardTitle>
-            <CardDescription className="mt-0.5 text-xs">
-              {postsData.totalCount.toLocaleString("vi-VN")} bài · Trang{" "}
-              {postsData.currentPage}/{postsData.totalPages}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         {/* Filter bar */}
         <PostsFilterBar
           filters={filters}

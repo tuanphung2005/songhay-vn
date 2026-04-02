@@ -4,7 +4,7 @@ import Image from "next/image"
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Pagination,
@@ -57,15 +57,8 @@ type TrashTabProps = {
 export function TrashTab({ isAdmin, data, filters, restorePostFromTrash, deletePostPermanently }: TrashTabProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Thùng rác</CardTitle>
-        <CardDescription>
-          {isAdmin
-            ? "Bài viết đã xóa mềm sẽ nằm tại đây. Admin có thể khôi phục/xóa toàn bộ."
-            : "Bài viết đã xóa mềm của bạn nằm tại đây. Bạn chỉ có thể khôi phục/xóa bài của chính mình."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 pt-6">
+        <p className="text-sm font-semibold">Thùng rác</p>
         <form method="get" className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center">
           <input type="hidden" name="tab" value="trash" />
           <input type="hidden" name="trashPage" value="1" />

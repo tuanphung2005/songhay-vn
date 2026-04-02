@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -177,11 +177,8 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Kho dữ liệu media</CardTitle>
-        <CardDescription>Bấm vào media để xem phóng to trước khi dùng lại.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
+        <p className="text-sm font-semibold">Kho dữ liệu media</p>
         <Tabs defaultValue="library" className="space-y-4">
           <TabsList className="bg-muted w-full justify-start rounded-lg h-auto p-1 overflow-x-auto">
             <TabsTrigger value="library" className="px-6 py-2.5 rounded-md">

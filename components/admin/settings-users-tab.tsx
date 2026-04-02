@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -32,13 +32,10 @@ export function SettingsUsersTab({
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Danh sách người dùng</CardTitle>
-          <CardDescription>
-            Quản lý vai trò và tài khoản trong hệ thống CMS.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="space-y-4 pt-6 p-0">
+          <div className="px-4 pb-2">
+            <p className="text-sm font-semibold">Danh sách người dùng</p>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

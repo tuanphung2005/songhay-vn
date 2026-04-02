@@ -175,8 +175,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     },
   })
 
-  const activeTabMeta = visibleTabs.find((item) => item.key === activeTab) || visibleTabs[0]
-  const ActiveTabIcon = navIcons[activeTabMeta.iconName]
+
   const navCountByKey: Record<NavCountKey, number> = {
     postCount,
     categoryCount,
@@ -273,21 +272,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </aside>
 
         <section className="space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <ActiveTabIcon className="size-5 text-zinc-700" />
-                  {activeTabMeta.label}
-                </CardTitle>
-                <CardDescription>{activeTabMeta.description}</CardDescription>
-              </div>
-              <Badge variant="outline" className="hidden md:inline-flex">
-                <Activity className="mr-1.5 size-3.5" />
-                Live data
-              </Badge>
-            </CardHeader>
-          </Card>
 
           {activeTab === "overview" ? <OverviewTab overviewStats={overviewStats} overviewAnalytics={overviewAnalytics} /> : null}
           {activeTab === "categories" ? <CategoriesTab categoriesForManage={categoriesForManage} movedCategoryId={movedCategoryId} movedDirection={movedDirection} createCategory={createCategory} updateCategory={updateCategory} reorderCategory={reorderCategory} deleteCategory={deleteCategory} /> : null}

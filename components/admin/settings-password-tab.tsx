@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
@@ -18,11 +18,8 @@ export function SettingsPasswordTab({
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Đổi mật khẩu</CardTitle>
-          <CardDescription>Mock UI. Chưa có logic đổi mật khẩu thật ở backend.</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4 pt-6">
+          <p className="text-sm font-semibold">Đổi mật khẩu</p>
           <form action={updatePasswordMock} className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
@@ -43,10 +40,8 @@ export function SettingsPasswordTab({
 
       {canCreateSubordinateAccount ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Tạo tài khoản cấp dưới</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4 pt-6">
+            <p className="text-sm font-semibold">Tạo tài khoản cấp dưới</p>
             <form action={createSubordinateAccount} className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="subordinateName">Họ tên</Label>

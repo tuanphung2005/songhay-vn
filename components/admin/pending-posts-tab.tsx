@@ -5,7 +5,7 @@ import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 type PendingPostRow = {
@@ -29,8 +29,6 @@ type PendingPostRow = {
 type PendingPostsTabProps = {
   isAdmin: boolean
   canEditRows?: boolean
-  title?: string
-  description?: string
   approveLabel?: string
   rows: PendingPostRow[]
   approvePendingPost: (formData: FormData) => Promise<void>
@@ -40,8 +38,6 @@ type PendingPostsTabProps = {
 export function PendingPostsTab({
   isAdmin,
   canEditRows = true,
-  title,
-  description,
   approveLabel,
   rows,
   approvePendingPost,
@@ -49,16 +45,7 @@ export function PendingPostsTab({
 }: PendingPostsTabProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title || "Kho bài chờ duyệt"}</CardTitle>
-        <CardDescription>
-          {description ||
-            (isAdmin
-              ? "Biên tập viên phụ trách có thể duyệt hoặc từ chối bài trước khi xuất bản."
-              : "Danh sách bài của bạn đang chờ duyệt.")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Table>
           <TableHeader>
             <TableRow>

@@ -7,7 +7,7 @@ const RichTextField = dynamic(() => import("@/components/admin/rich-text-field")
 import { createPostForPreview } from "@/app/admin/actions"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -86,11 +86,8 @@ export function WriteTab({ canPublishNow, canSubmitPendingPublish, categoriesFor
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Viết bài mới</CardTitle>
-        <CardDescription></CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4 pt-6">
+        <p className="text-sm font-semibold">Viết bài mới</p>
         <form
           ref={formRef}
           action={createPost}

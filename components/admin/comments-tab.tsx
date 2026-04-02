@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 
 type PendingComment = {
@@ -24,11 +24,8 @@ type CommentsTabProps = {
 export function CommentsTab({ pendingComments, moderateComment }: CommentsTabProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Bình luận chờ duyệt</CardTitle>
-        <CardDescription>Chỉ bình luận chứa từ cấm mới xuất hiện ở đây để admin duyệt hoặc xóa.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 pt-6">
+        <p className="text-sm font-semibold">Bình luận chờ duyệt</p>
         {pendingComments.length === 0 ? (
           <p className="text-muted-foreground text-sm">Không có bình luận chờ duyệt.</p>
         ) : (

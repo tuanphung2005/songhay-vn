@@ -1,6 +1,6 @@
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -38,13 +38,8 @@ export function SettingsModerationTab({
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Bộ từ cấm cho bình luận ({forbiddenKeywords.length})</CardTitle>
-          <CardDescription>
-            Chỉ comment chứa các cụm từ này mới bị đưa vào chờ duyệt. Comment sạch sẽ hiển thị ngay.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <p className="text-sm font-semibold">Bộ từ cấm cho bình luận ({forbiddenKeywords.length})</p>
           <form action={addForbiddenKeyword} className="flex flex-wrap items-end gap-2">
             <div className="min-w-65 flex-1 space-y-1.5">
               <Label htmlFor="forbiddenTerm">Thêm từ/cụm từ cấm</Label>
@@ -79,13 +74,8 @@ export function SettingsModerationTab({
       </Card>
 
       <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Kho từ khóa SEO ({seoKeywords.length})</CardTitle>
-          <CardDescription>
-            Biên tập chọn lại từ khóa có sẵn ở tab Viết bài. Dữ liệu được chuẩn hóa để tránh trùng lặp.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <p className="text-sm font-semibold">Kho từ khóa SEO ({seoKeywords.length})</p>
           <form action={addSeoKeyword} className="flex flex-wrap items-end gap-2">
             <div className="min-w-65 flex-1 space-y-1.5">
               <Label htmlFor="seoKeyword">Thêm từ khóa SEO</Label>

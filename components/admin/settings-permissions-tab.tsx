@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import {
@@ -56,14 +56,13 @@ function RolePermissionsCard({
 }) {
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 px-4 pt-6">
         <div className="flex items-center gap-3">
           <CardTitle className="text-base">{ROLE_LABELS_VI[row.role]}</CardTitle>
           <Badge variant="outline" className="text-xs font-mono">
             {row.role}
           </Badge>
         </div>
-        <CardDescription>Chọn các quyền hạn cho role này.</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={updateRolePermissions}>

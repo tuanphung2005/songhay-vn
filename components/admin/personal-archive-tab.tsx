@@ -5,7 +5,7 @@ import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Pagination,
@@ -73,13 +73,13 @@ function statusLabel(status: PersonalPostRow["editorialStatus"]) {
 export function PersonalArchiveTab({ data, filters, movePostToTrash }: PersonalArchiveTabProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Lưu trữ cá nhân</CardTitle>
-        <CardDescription>
-          Kho bài viết thuộc tài khoản đang đăng nhập. Tổng kết quả: {data.totalCount.toLocaleString("vi-VN")}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 pt-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold">Lưu trữ cá nhân</p>
+          <Badge variant="outline" className="font-normal text-muted-foreground">
+            {data.totalCount.toLocaleString("vi-VN")} kết quả
+          </Badge>
+        </div>
         <form method="get" className="grid gap-2 md:grid-cols-[minmax(0,1fr)_170px_160px_160px_auto_auto] md:items-center">
           <input type="hidden" name="tab" value="personal-archive" />
           <input type="hidden" name="personalPage" value="1" />
