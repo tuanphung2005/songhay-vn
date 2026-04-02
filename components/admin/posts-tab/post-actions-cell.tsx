@@ -1,5 +1,16 @@
 import Link from "next/link"
-import { Archive, ArrowUpRight, Ban, Eye, EyeOff, Globe, Pencil, RotateCcw, Send, Trash2 } from "lucide-react"
+import {
+  Archive,
+  ArrowUpRight,
+  Ban,
+  Eye,
+  EyeOff,
+  Globe,
+  Pencil,
+  RotateCcw,
+  Send,
+  Trash2,
+} from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -45,31 +56,44 @@ export function PostActionsCell({
     <div className="flex flex-wrap items-center gap-1.5">
       {/* ── Workflow ── */}
       {canSubmitPendingReview &&
-        (post.editorialStatus === "DRAFT" || post.editorialStatus === "REJECTED") && (
+        (post.editorialStatus === "DRAFT" ||
+          post.editorialStatus === "REJECTED") && (
           <ConfirmActionForm
             action={submitPostToPendingReview}
             fields={[{ name: "postId", value: post.id }]}
             confirmMessage="Chuyển bài này lên chờ duyệt?"
           >
-            <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang chuyển...">
+            <PendingSubmitButton
+              type="submit"
+              size="sm"
+              variant="outline"
+              className={btn}
+              pendingText="Đang chuyển..."
+            >
               <Send className="mr-1.5 size-3" />
               Lên duyệt
             </PendingSubmitButton>
           </ConfirmActionForm>
         )}
 
-      {(canReviewPending || canSubmitPendingPublish) && post.editorialStatus === "PENDING_REVIEW" && (
-        <ConfirmActionForm
-          action={promotePostToPendingPublish}
-          fields={[{ name: "postId", value: post.id }]}
-          confirmMessage="Chuyển bài này lên chờ xuất bản?"
-        >
-          <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-sky-600 hover:bg-sky-700`} pendingText="Đang chuyển...">
-            <ArrowUpRight className="mr-1.5 size-3" />
-            Lên đăng
-          </PendingSubmitButton>
-        </ConfirmActionForm>
-      )}
+      {(canReviewPending || canSubmitPendingPublish) &&
+        post.editorialStatus === "PENDING_REVIEW" && (
+          <ConfirmActionForm
+            action={promotePostToPendingPublish}
+            fields={[{ name: "postId", value: post.id }]}
+            confirmMessage="Chuyển bài này lên chờ xuất bản?"
+          >
+            <PendingSubmitButton
+              type="submit"
+              size="sm"
+              className={`${btn} bg-sky-600 hover:bg-sky-700`}
+              pendingText="Đang chuyển..."
+            >
+              <ArrowUpRight className="mr-1.5 size-3" />
+              Lên đăng
+            </PendingSubmitButton>
+          </ConfirmActionForm>
+        )}
 
       {canPublishNow && post.editorialStatus === "PENDING_REVIEW" && (
         <ConfirmActionForm
@@ -77,7 +101,12 @@ export function PostActionsCell({
           fields={[{ name: "postId", value: post.id }]}
           confirmMessage="Xuất bản ngay bài viết này?"
         >
-          <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-emerald-600 hover:bg-emerald-700`} pendingText="Đang đăng...">
+          <PendingSubmitButton
+            type="submit"
+            size="sm"
+            className={`${btn} bg-emerald-600 hover:bg-emerald-700`}
+            pendingText="Đang đăng..."
+          >
             <Globe className="mr-1.5 size-3" />
             Xuất bản ngay
           </PendingSubmitButton>
@@ -90,7 +119,12 @@ export function PostActionsCell({
           fields={[{ name: "postId", value: post.id }]}
           confirmMessage="Xuất bản bài viết này?"
         >
-          <PendingSubmitButton type="submit" size="sm" className={`${btn} bg-emerald-600 hover:bg-emerald-700`} pendingText="Đang đăng...">
+          <PendingSubmitButton
+            type="submit"
+            size="sm"
+            className={`${btn} bg-emerald-600 hover:bg-emerald-700`}
+            pendingText="Đang đăng..."
+          >
             <Globe className="mr-1.5 size-3" />
             Xuất bản
           </PendingSubmitButton>
@@ -98,13 +132,20 @@ export function PostActionsCell({
       )}
 
       {canReviewPending &&
-        (post.editorialStatus === "PENDING_REVIEW" || post.editorialStatus === "PENDING_PUBLISH") && (
+        (post.editorialStatus === "PENDING_REVIEW" ||
+          post.editorialStatus === "PENDING_PUBLISH") && (
           <ConfirmActionForm
             action={rejectPendingPost}
             fields={[{ name: "postId", value: post.id }]}
             confirmMessage="Từ chối bài viết này?"
           >
-            <PendingSubmitButton type="submit" size="sm" variant="destructive" className={btn} pendingText="Đang từ chối...">
+            <PendingSubmitButton
+              type="submit"
+              size="sm"
+              variant="destructive"
+              className={btn}
+              pendingText="Đang từ chối..."
+            >
               <Ban className="mr-1.5 size-3" />
               Từ chối
             </PendingSubmitButton>
@@ -117,25 +158,38 @@ export function PostActionsCell({
           fields={[{ name: "postId", value: post.id }]}
           confirmMessage="Chuyển bài này về chờ duyệt?"
         >
-          <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang chuyển...">
+          <PendingSubmitButton
+            type="submit"
+            size="sm"
+            variant="outline"
+            className={btn}
+            pendingText="Đang chuyển..."
+          >
             <RotateCcw className="mr-1.5 size-3" />
             Về duyệt
           </PendingSubmitButton>
         </ConfirmActionForm>
       )}
 
-      {(canReviewPending || canPublishNow) && post.editorialStatus !== "DRAFT" && (
-        <ConfirmActionForm
-          action={returnPostToDraft}
-          fields={[{ name: "postId", value: post.id }]}
-          confirmMessage="Trả bài này về kho nháp?"
-        >
-          <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang trả về...">
-            <Archive className="mr-1.5 size-3" />
-            Về kho
-          </PendingSubmitButton>
-        </ConfirmActionForm>
-      )}
+      {(canReviewPending || canPublishNow) &&
+        post.editorialStatus !== "DRAFT" && (
+          <ConfirmActionForm
+            action={returnPostToDraft}
+            fields={[{ name: "postId", value: post.id }]}
+            confirmMessage="Trả bài này về kho nháp?"
+          >
+            <PendingSubmitButton
+              type="submit"
+              size="sm"
+              variant="outline"
+              className={btn}
+              pendingText="Đang trả về..."
+            >
+              <Archive className="mr-1.5 size-3" />
+              Về kho
+            </PendingSubmitButton>
+          </ConfirmActionForm>
+        )}
 
       {canPublishNow && post.editorialStatus === "PUBLISHED" && (
         <ConfirmActionForm
@@ -143,7 +197,13 @@ export function PostActionsCell({
           fields={[{ name: "postId", value: post.id }]}
           confirmMessage="Trả bài này về chờ xuất bản?"
         >
-          <PendingSubmitButton type="submit" size="sm" variant="outline" className={btn} pendingText="Đang trả về...">
+          <PendingSubmitButton
+            type="submit"
+            size="sm"
+            variant="outline"
+            className={btn}
+            pendingText="Đang trả về..."
+          >
             <EyeOff className="mr-1.5 size-3" />
             Bỏ đăng
           </PendingSubmitButton>
@@ -161,22 +221,34 @@ export function PostActionsCell({
             Sửa bài
           </Button>
         </Link>
-      ) : (
-        <Link href={`/admin/preview/${post.id}`} target="_blank" rel="noreferrer">
+      ) : null}
+
+      {!post.isPublished ? (
+        <Link
+          href={`/admin/preview/${post.id}`}
+          target="_blank"
+          rel="noreferrer"
+        >
           <Button size="sm" variant="outline" className={btn}>
             <Eye className="mr-1.5 size-3" />
             Xem trước
           </Button>
         </Link>
-      )}
+      ) : null}
 
       {/* ── View live ── */}
-      <a href={`/${post.category.slug}/${post.slug}`} target="_blank" rel="noopener noreferrer">
-        <Button size="sm" variant="outline" className={btn}>
-          <Eye className="mr-1.5 size-3" />
-          Xem bài
-        </Button>
-      </a>
+      {post.isPublished ? (
+        <a
+          href={`/${post.category.slug}/${post.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Button size="sm" variant="outline" className={btn}>
+            <Eye className="mr-1.5 size-3" />
+            Xem bài
+          </Button>
+        </a>
+      ) : null}
 
       {/* ── Trash ── */}
       <ConfirmActionForm

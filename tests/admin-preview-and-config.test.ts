@@ -12,7 +12,7 @@ describe("admin preview route and config", () => {
 
     expect(source).toContain("experimental")
     expect(source).toContain("serverActions")
-    expect(source).toContain("bodySizeLimit: \"250mb\"")
+    expect(source).toContain('bodySizeLimit: "250mb"')
   })
 
   test("next config marks _next assets as noindex", () => {

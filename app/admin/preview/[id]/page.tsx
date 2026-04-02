@@ -13,6 +13,7 @@ import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { normalizeArticleHtml } from "@/lib/html"
 import { requireCmsUser } from "@/lib/auth"
+import { canViewAllPosts } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { getTrendingPosts } from "@/lib/queries"
 
@@ -29,7 +30,7 @@ type PreviewPageProps = {
 // Shared logic in lib/html.ts
 
 export default async function AdminPreviewPage({ params }: PreviewPageProps) {
-  await requireCmsUser()
+  const currentUser = await requireCmsUser()
 
   const { id } = await params
 
@@ -45,12 +46,21 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
     redirect("/admin?tab=personal-archive")
   }
 
+  if (!canViewAllPosts(currentUser.role) && post.authorId !== currentUser.id) {
+    redirect("/admin?tab=personal-archive&toast=post_action_forbidden")
+  }
+
+  if (post.isDeleted) {
+    redirect("/admin?tab=trash")
+  }
+
   const [relatedPosts, trendingPosts] = await Promise.all([
     prisma.post.findMany({
       where: {
         categoryId: post.categoryId,
         id: { not: post.id },
         isDeleted: false,
+        isPublished: true,
       },
       orderBy: { createdAt: "desc" },
       take: 4,
@@ -74,11 +84,12 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
       {/* Preview banner */}
       <div className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-900">
+          <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-bold tracking-wide text-amber-900 uppercase">
             Chế độ xem trước
           </span>
           <span className="text-amber-800">
-            Bài viết này chưa được xuất bản — đây là giao diện mô phỏng trang thật.
+            Bài viết này chưa được xuất bản — đây là giao diện mô phỏng trang
+            thật.
           </span>
         </div>
         <Link
@@ -94,12 +105,19 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
       <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">
         <article className="space-y-6">
           <header className="space-y-3">
-            <Link href={`/${post.category.slug}`} className="text-sm font-bold text-rose-600">
+            <Link
+              href={`/${post.category.slug}`}
+              className="text-sm font-bold text-rose-600"
+            >
               {post.category.name}
             </Link>
-            <h1 className="text-4xl font-black leading-tight text-zinc-900">{post.title}</h1>
+            <h1 className="text-4xl leading-tight font-black text-zinc-900">
+              {post.title}
+            </h1>
             <p className="text-lg text-zinc-600">{post.excerpt}</p>
-            <p className="text-sm text-zinc-500">{new Date(post.updatedAt).toLocaleString("vi-VN")}</p>
+            <p className="text-sm text-zinc-500">
+              {new Date(post.updatedAt).toLocaleString("vi-VN")}
+            </p>
           </header>
 
           <Image
