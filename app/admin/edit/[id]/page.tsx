@@ -8,7 +8,6 @@ import { ArrowLeft, Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 import { RichTextField } from "@/components/admin/rich-text-field"
 import { SeoFields } from "@/components/admin/seo-fields"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -283,164 +282,158 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <form action={updatePost} className="space-y-4">
-            <input type="hidden" name="postId" value={post.id} />
+      <form action={updatePost} className="space-y-4">
+        <input type="hidden" name="postId" value={post.id} />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="postTitle">Tên bài viết</Label>
-              <Input
-                id="postTitle"
-                name="title"
-                defaultValue={post.title}
-                placeholder="Nhập tiêu đề"
-                required
-              />
-            </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="postTitle">Tên bài viết</Label>
+          <Input
+            id="postTitle"
+            name="title"
+            defaultValue={post.title}
+            placeholder="Nhập tiêu đề"
+            required
+          />
+        </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="postExcerpt">Trích dẫn</Label>
-              <Textarea
-                id="postExcerpt"
-                name="excerpt"
-                defaultValue={post.excerpt}
-                className="min-h-20"
-                placeholder="Mô tả ngắn bài viết"
-                required
-              />
-            </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="postExcerpt">Trích dẫn</Label>
+          <Textarea
+            id="postExcerpt"
+            name="excerpt"
+            defaultValue={post.excerpt}
+            className="min-h-20"
+            placeholder="Mô tả ngắn bài viết"
+            required
+          />
+        </div>
 
-            <div className="space-y-1.5">
-              <Label>Nội dung</Label>
-              <RichTextField
-                name="content"
-                defaultValue={post.content}
-                mediaAssets={mediaAssets}
-                currentUserId={currentUser.id}
-              />
-            </div>
+        <div className="space-y-1.5">
+          <Label>Nội dung</Label>
+          <RichTextField
+            name="content"
+            defaultValue={post.content}
+            mediaAssets={mediaAssets}
+            currentUserId={currentUser.id}
+          />
+        </div>
 
-            <div className="grid gap-3 md:grid-cols-3">
-              <CategorySelector
-                categories={categories}
-                defaultCategoryId={post.categoryId}
-              />
-              <div className="space-y-1.5">
-                <Label htmlFor="videoEmbed">Video embed URL</Label>
-                <Input
-                  id="videoEmbed"
-                  name="videoEmbedUrl"
-                  defaultValue={post.videoEmbedUrl || ""}
-                  placeholder="https://www.youtube.com/embed/..."
+        <div className="grid gap-3 md:grid-cols-3">
+          <CategorySelector
+            categories={categories}
+            defaultCategoryId={post.categoryId}
+          />
+          <div className="space-y-1.5">
+            <Label htmlFor="videoEmbed">Video embed URL</Label>
+            <Input
+              id="videoEmbed"
+              name="videoEmbedUrl"
+              defaultValue={post.videoEmbedUrl || ""}
+              placeholder="https://www.youtube.com/embed/..."
+            />
+          </div>
+        </div>
+
+        <fieldset className="space-y-3 rounded-lg border p-3">
+          <legend className="px-1 text-sm font-semibold">Ảnh đại diện</legend>
+          <div className="space-y-1.5">
+            <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
+            <Input
+              id="thumbnailUrl"
+              name="thumbnailUrl"
+              defaultValue={post.thumbnailUrl || ""}
+              placeholder="https://..."
+            />
+            {post.thumbnailUrl && (
+              <div className="mt-2">
+                <img
+                  src={post.thumbnailUrl}
+                  alt="Thumbnail preview"
+                  className="h-20 w-auto rounded border"
                 />
               </div>
-            </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="thumbnailUpload">
+              Upload ảnh mới (thay thế ảnh cũ nếu có)
+            </Label>
+            <Input
+              id="thumbnailUpload"
+              name="thumbnailUpload"
+              type="file"
+              accept="image/*"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            OG image sẽ tự đồng bộ theo ảnh đại diện.
+          </p>
+        </fieldset>
 
-            <fieldset className="space-y-3 rounded-lg border p-3">
-              <legend className="px-1 text-sm font-semibold">
-                Ảnh đại diện
-              </legend>
-              <div className="space-y-1.5">
-                <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
-                <Input
-                  id="thumbnailUrl"
-                  name="thumbnailUrl"
-                  defaultValue={post.thumbnailUrl || ""}
-                  placeholder="https://..."
-                />
-                {post.thumbnailUrl && (
-                  <div className="mt-2">
-                    <img
-                      src={post.thumbnailUrl}
-                      alt="Thumbnail preview"
-                      className="h-20 w-auto rounded border"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="thumbnailUpload">
-                  Upload ảnh mới (thay thế ảnh cũ nếu có)
-                </Label>
-                <Input
-                  id="thumbnailUpload"
-                  name="thumbnailUpload"
-                  type="file"
-                  accept="image/*"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                OG image sẽ tự đồng bộ theo ảnh đại diện.
-              </p>
-            </fieldset>
+        <SeoFields
+          defaultSeoTitle={post.seoTitle || ""}
+          defaultSeoDescription={post.seoDescription || ""}
+          initialTitle={post.title}
+          initialExcerpt={post.excerpt}
+          initialContent={post.content}
+        >
+          <SeoKeywordPicker
+            options={seoKeywordOptions}
+            initialSelectedIds={[...selectedSeoKeywordIds]}
+            initialCustomKeywords={initialCustomSeoKeywords}
+          />
+        </SeoFields>
 
-            <SeoFields
-              defaultSeoTitle={post.seoTitle || ""}
-              defaultSeoDescription={post.seoDescription || ""}
-              initialTitle={post.title}
-              initialExcerpt={post.excerpt}
-              initialContent={post.content}
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
+            <input
+              className="size-4 rounded border-input"
+              name="isSensitive"
+              type="checkbox"
+              defaultChecked={post.isSensitive}
+            />
+            Nội dung nhạy cảm
+          </label>
+        </div>
+
+        <div className="grid gap-2 md:grid-cols-3">
+          <Button
+            type="submit"
+            name="submitAction"
+            value="save-draft"
+            variant="outline"
+          >
+            <Save className="size-4" />
+            Lưu nháp
+          </Button>
+          <Button
+            type="submit"
+            name="submitAction"
+            value="submit-review"
+            variant="secondary"
+          >
+            <Send className="size-4" />
+            Gửi chờ duyệt
+          </Button>
+          {canSubmitPendingPublish(currentUser.role) ? (
+            <Button
+              type="submit"
+              name="submitAction"
+              value="submit-publish"
+              variant="secondary"
             >
-              <SeoKeywordPicker
-                options={seoKeywordOptions}
-                initialSelectedIds={[...selectedSeoKeywordIds]}
-                initialCustomKeywords={initialCustomSeoKeywords}
-              />
-            </SeoFields>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
-                <input
-                  className="size-4 rounded border-input"
-                  name="isSensitive"
-                  type="checkbox"
-                  defaultChecked={post.isSensitive}
-                />
-                Nội dung nhạy cảm
-              </label>
-            </div>
-
-            <div className="grid gap-2 md:grid-cols-3">
-              <Button
-                type="submit"
-                name="submitAction"
-                value="save-draft"
-                variant="outline"
-              >
-                <Save className="size-4" />
-                Lưu nháp
-              </Button>
-              <Button
-                type="submit"
-                name="submitAction"
-                value="submit-review"
-                variant="secondary"
-              >
-                <Send className="size-4" />
-                Gửi chờ duyệt
-              </Button>
-              {canSubmitPendingPublish(currentUser.role) ? (
-                <Button
-                  type="submit"
-                  name="submitAction"
-                  value="submit-publish"
-                  variant="secondary"
-                >
-                  <SendToBack className="size-4" />
-                  Gửi chờ xuất bản
-                </Button>
-              ) : null}
-              {canPublish ? (
-                <Button type="submit" name="submitAction" value="publish">
-                  <Globe className="size-4" />
-                  Xuất bản
-                </Button>
-              ) : null}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <SendToBack className="size-4" />
+              Gửi chờ xuất bản
+            </Button>
+          ) : null}
+          {canPublish ? (
+            <Button type="submit" name="submitAction" value="publish">
+              <Globe className="size-4" />
+              Xuất bản
+            </Button>
+          ) : null}
+        </div>
+      </form>
     </main>
   )
 }

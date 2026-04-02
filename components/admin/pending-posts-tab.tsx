@@ -5,8 +5,14 @@ import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 type PendingPostRow = {
   id: string
@@ -44,8 +50,8 @@ export function PendingPostsTab({
   rejectPendingPost,
 }: PendingPostsTabProps) {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-xl border border-zinc-200">
         <Table>
           <TableHeader>
             <TableRow>
@@ -71,20 +77,26 @@ export function PendingPostsTab({
                         className="mt-0.5 h-12 w-16 rounded border object-cover"
                       />
                     ) : (
-                      <div className="bg-muted text-muted-foreground mt-0.5 flex h-12 w-16 items-center justify-center rounded border text-[11px]">
+                      <div className="mt-0.5 flex h-12 w-16 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
                         No img
                       </div>
                     )}
                     <div>
                       <p className="font-semibold">{post.title}</p>
-                      <p className="text-muted-foreground text-xs">/{post.category.slug}/{post.slug}</p>
+                      <p className="text-xs text-muted-foreground">
+                        /{post.category.slug}/{post.slug}
+                      </p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>{post.category.name}</TableCell>
                 <TableCell>
-                  <p className="text-sm font-medium">{post.author?.name || "Ẩn danh"}</p>
-                  <p className="text-muted-foreground text-xs">{post.author?.email || "-"}</p>
+                  <p className="text-sm font-medium">
+                    {post.author?.name || "Ẩn danh"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {post.author?.email || "-"}
+                  </p>
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   <p>Tạo: {new Date(post.createdAt).toLocaleString("vi-VN")}</p>
@@ -97,24 +109,45 @@ export function PendingPostsTab({
                   <div className="flex flex-wrap gap-2">
                     {canEditRows ? (
                       <Link href={`/admin/edit/${post.id}`}>
-                        <Button type="button" size="sm" variant="secondary">Sửa bài</Button>
+                        <Button type="button" size="sm" variant="secondary">
+                          Sửa bài
+                        </Button>
                       </Link>
                     ) : null}
-                    <a href={`/admin/preview/${post.id}`} target="_blank" rel="noopener noreferrer">
-                      <Button type="button" size="sm" variant="outline">Xem trước</Button>
+                    <a
+                      href={`/admin/preview/${post.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button type="button" size="sm" variant="outline">
+                        Xem trước
+                      </Button>
                     </a>
                     {isAdmin ? (
                       <>
                         <form action={approvePendingPost}>
                           <input type="hidden" name="postId" value={post.id} />
-                          <PendingSubmitButton type="submit" size="sm" pendingText="Đang duyệt...">{approveLabel || "Duyệt & xuất bản"}</PendingSubmitButton>
+                          <PendingSubmitButton
+                            type="submit"
+                            size="sm"
+                            pendingText="Đang duyệt..."
+                          >
+                            {approveLabel || "Duyệt & xuất bản"}
+                          </PendingSubmitButton>
                         </form>
                         <ConfirmActionForm
                           action={rejectPendingPost}
                           fields={[{ name: "postId", value: post.id }]}
                           confirmMessage="Từ chối bài viết này?"
                         >
-                          <PendingSubmitButton type="submit" size="sm" variant="destructive" pendingText="Đang từ chối...">Từ chối</PendingSubmitButton>
+                          <PendingSubmitButton
+                            type="submit"
+                            size="sm"
+                            variant="destructive"
+                            pendingText="Đang từ chối..."
+                          >
+                            Từ chối
+                          </PendingSubmitButton>
                         </ConfirmActionForm>
                       </>
                     ) : null}
@@ -124,11 +157,13 @@ export function PendingPostsTab({
             ))}
           </TableBody>
         </Table>
+      </div>
 
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground mt-4 text-sm">Không có bài nào đang chờ duyệt.</p>
-        ) : null}
-      </CardContent>
-    </Card>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Không có bài nào đang chờ duyệt.
+        </p>
+      ) : null}
+    </div>
   )
 }

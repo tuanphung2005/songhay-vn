@@ -12,7 +12,6 @@ const RichTextField = dynamic(
 import { createPostForPreview } from "@/app/admin/actions"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -109,189 +108,185 @@ export function WriteTab({
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <p className="text-sm font-semibold">Viết bài mới</p>
-        <form
-          ref={formRef}
-          action={createPost}
-          className="space-y-4"
-          onChange={(event) => {
-            const target = event.currentTarget
-            updateDirtyStateFromForm(target)
-          }}
-          onSubmit={() => {
-            setWriteDirtyState(false)
-          }}
-        >
+    <div className="space-y-4">
+      <p className="text-sm font-semibold">Viết bài mới</p>
+      <form
+        ref={formRef}
+        action={createPost}
+        className="space-y-4"
+        onChange={(event) => {
+          const target = event.currentTarget
+          updateDirtyStateFromForm(target)
+        }}
+        onSubmit={() => {
+          setWriteDirtyState(false)
+        }}
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="postTitle">Tên bài viết</Label>
+          <Input
+            id="postTitle"
+            name="title"
+            placeholder="Nhập tiêu đề"
+            required
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="postExcerpt">Trích dẫn</Label>
+          <Textarea
+            id="postExcerpt"
+            name="excerpt"
+            className="min-h-20"
+            placeholder="Mô tả ngắn bài viết"
+            required
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Nội dung</Label>
+          <RichTextField
+            name="content"
+            placeholder="Viết nội dung bài báo tại đây..."
+            mediaAssets={mediaAssets}
+            currentUserId={currentUserId}
+          />
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <CategorySelector categories={categoriesForWrite} />
+
+          <div className="self-end rounded-md border px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="hasVideo"
+                checked={hasVideo}
+                onCheckedChange={(checked) => setHasVideo(checked === true)}
+              />
+              <Label htmlFor="hasVideo">Bài có video</Label>
+            </div>
+          </div>
+        </div>
+
+        {hasVideo ? <input type="hidden" name="hasVideo" value="on" /> : null}
+
+        {hasVideo ? (
           <div className="space-y-1.5">
-            <Label htmlFor="postTitle">Tên bài viết</Label>
+            <Label htmlFor="videoEmbed">Video embed URL</Label>
             <Input
-              id="postTitle"
-              name="title"
-              placeholder="Nhập tiêu đề"
-              required
+              id="videoEmbed"
+              name="videoEmbedUrl"
+              placeholder="https://www.youtube.com/embed/..."
             />
           </div>
+        ) : null}
 
+        <fieldset className="space-y-3 rounded-lg border p-3">
+          <legend className="px-1 text-sm font-semibold">Ảnh đại diện</legend>
           <div className="space-y-1.5">
-            <Label htmlFor="postExcerpt">Trích dẫn</Label>
-            <Textarea
-              id="postExcerpt"
-              name="excerpt"
-              className="min-h-20"
-              placeholder="Mô tả ngắn bài viết"
-              required
+            <Label htmlFor="thumbnailUrl">Ảnh đại diện URL</Label>
+            <Input
+              id="thumbnailUrl"
+              name="thumbnailUrl"
+              placeholder="https://..."
             />
           </div>
-
           <div className="space-y-1.5">
-            <Label>Nội dung</Label>
-            <RichTextField
-              name="content"
-              placeholder="Viết nội dung bài báo tại đây..."
-              mediaAssets={mediaAssets}
-              currentUserId={currentUserId}
+            <Label htmlFor="thumbnailUpload">Upload ảnh</Label>
+            <Input
+              id="thumbnailUpload"
+              name="thumbnailUpload"
+              type="file"
+              accept="image/*"
             />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Khi upload ảnh tại đây, hệ thống sẽ tự dùng ảnh này làm OG image.
+          </p>
+        </fieldset>
 
-          <div className="grid gap-3 md:grid-cols-3">
-            <CategorySelector categories={categoriesForWrite} />
+        <SeoFields>
+          <SeoKeywordPicker options={seoKeywordOptions} />
+        </SeoFields>
 
-            <div className="self-end rounded-md border px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="hasVideo"
-                  checked={hasVideo}
-                  onCheckedChange={(checked) => setHasVideo(checked === true)}
-                />
-                <Label htmlFor="hasVideo">Bài có video</Label>
-              </div>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <div className="rounded-md border px-3 py-2">
+            <div className="inline-flex items-center gap-2">
+              <Checkbox
+                id="isSensitive"
+                checked={isSensitive}
+                onCheckedChange={(checked) => setIsSensitive(checked === true)}
+              />
+              <Label htmlFor="isSensitive">Nội dung nhạy cảm</Label>
             </div>
           </div>
+        </div>
 
-          {hasVideo ? <input type="hidden" name="hasVideo" value="on" /> : null}
+        {isSensitive ? (
+          <input type="hidden" name="isSensitive" value="on" />
+        ) : null}
 
-          {hasVideo ? (
-            <div className="space-y-1.5">
-              <Label htmlFor="videoEmbed">Video embed URL</Label>
-              <Input
-                id="videoEmbed"
-                name="videoEmbedUrl"
-                placeholder="https://www.youtube.com/embed/..."
-              />
-            </div>
-          ) : null}
-
-          <fieldset className="space-y-3 rounded-lg border p-3">
-            <legend className="px-1 text-sm font-semibold">Ảnh đại diện</legend>
-            <div className="space-y-1.5">
-              <Label htmlFor="thumbnailUrl">Ảnh đại diện URL</Label>
-              <Input
-                id="thumbnailUrl"
-                name="thumbnailUrl"
-                placeholder="https://..."
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="thumbnailUpload">Upload ảnh</Label>
-              <Input
-                id="thumbnailUpload"
-                name="thumbnailUpload"
-                type="file"
-                accept="image/*"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Khi upload ảnh tại đây, hệ thống sẽ tự dùng ảnh này làm OG image.
-            </p>
-          </fieldset>
-
-          <SeoFields>
-            <SeoKeywordPicker options={seoKeywordOptions} />
-          </SeoFields>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="rounded-md border px-3 py-2">
-              <div className="inline-flex items-center gap-2">
-                <Checkbox
-                  id="isSensitive"
-                  checked={isSensitive}
-                  onCheckedChange={(checked) =>
-                    setIsSensitive(checked === true)
-                  }
-                />
-                <Label htmlFor="isSensitive">Nội dung nhạy cảm</Label>
-              </div>
-            </div>
-          </div>
-
-          {isSensitive ? (
-            <input type="hidden" name="isSensitive" value="on" />
-          ) : null}
-
-          <div
-            className={`grid gap-2 ${canPublishNow || canSubmitPendingPublish ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        <div
+          className={`grid gap-2 ${canPublishNow || canSubmitPendingPublish ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        >
+          <PendingSubmitButton
+            type="submit"
+            name="submitAction"
+            value="save-draft"
+            variant="outline"
+            pendingText="Đang lưu..."
           >
+            <Save className="size-4" />
+            Lưu nháp
+          </PendingSubmitButton>
+          <PendingSubmitButton
+            type="submit"
+            name="submitAction"
+            value="submit-review"
+            className="w-full"
+            variant="destructive"
+            pendingText="Đang gửi duyệt..."
+          >
+            <Send className="size-4" />
+            Gửi chờ duyệt
+          </PendingSubmitButton>
+          <Button
+            type="button"
+            className="w-full"
+            variant="secondary"
+            onClick={handlePreview}
+            disabled={isPreviewing}
+          >
+            <Eye className="size-4" />
+            {isPreviewing ? "Đang lưu..." : "Xem trước"}
+          </Button>
+          {canSubmitPendingPublish ? (
             <PendingSubmitButton
               type="submit"
               name="submitAction"
-              value="save-draft"
-              variant="outline"
-              pendingText="Đang lưu..."
-            >
-              <Save className="size-4" />
-              Lưu nháp
-            </PendingSubmitButton>
-            <PendingSubmitButton
-              type="submit"
-              name="submitAction"
-              value="submit-review"
-              className="w-full"
-              variant="destructive"
-              pendingText="Đang gửi duyệt..."
-            >
-              <Send className="size-4" />
-              Gửi chờ duyệt
-            </PendingSubmitButton>
-            <Button
-              type="button"
+              value="submit-publish"
               className="w-full"
               variant="secondary"
-              onClick={handlePreview}
-              disabled={isPreviewing}
+              pendingText="Đang chuyển kho..."
             >
-              <Eye className="size-4" />
-              {isPreviewing ? "Đang lưu..." : "Xem trước"}
-            </Button>
-            {canSubmitPendingPublish ? (
-              <PendingSubmitButton
-                type="submit"
-                name="submitAction"
-                value="submit-publish"
-                className="w-full"
-                variant="secondary"
-                pendingText="Đang chuyển kho..."
-              >
-                <SendToBack className="size-4" />
-                Gửi chờ xuất bản
-              </PendingSubmitButton>
-            ) : null}
-            {canPublishNow ? (
-              <PendingSubmitButton
-                type="submit"
-                name="submitAction"
-                value="publish"
-                className="w-full"
-                pendingText="Đang xuất bản..."
-              >
-                <Globe className="size-4" />
-                Xuất bản
-              </PendingSubmitButton>
-            ) : null}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              <SendToBack className="size-4" />
+              Gửi chờ xuất bản
+            </PendingSubmitButton>
+          ) : null}
+          {canPublishNow ? (
+            <PendingSubmitButton
+              type="submit"
+              name="submitAction"
+              value="publish"
+              className="w-full"
+              pendingText="Đang xuất bản..."
+            >
+              <Globe className="size-4" />
+              Xuất bản
+            </PendingSubmitButton>
+          ) : null}
+        </div>
+      </form>
+    </div>
   )
 }

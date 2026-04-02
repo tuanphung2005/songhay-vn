@@ -2,7 +2,13 @@ import Image from "next/image"
 import { BookOpen, Clock } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
 import { PostActionsCell } from "./post-actions-cell"
@@ -21,35 +27,37 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
         <div className="rounded-full bg-zinc-100 p-4">
           <BookOpen className="size-8 text-zinc-300" />
         </div>
-        <p className="text-sm font-medium text-zinc-500">Không tìm thấy bài viết phù hợp</p>
+        <p className="text-sm font-medium text-zinc-500">
+          Không tìm thấy bài viết phù hợp
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="max-h-[calc(100vh-14rem)] overflow-y-auto overflow-x-auto rounded-xl border border-zinc-200">
+    <div className="max-h-[calc(100vh-14rem)] overflow-x-auto overflow-y-auto rounded-xl border border-zinc-200">
       <table className="w-full caption-bottom text-sm">
         <TableHeader className="sticky top-0 z-20 bg-zinc-50 shadow-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-zinc-200">
           <TableRow className="bg-transparent hover:bg-transparent">
-            <TableHead className="w-[38%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[38%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Bài viết
             </TableHead>
-            <TableHead className="w-[12%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[12%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Tác giả
             </TableHead>
-            <TableHead className="w-[12%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[12%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Người sửa
             </TableHead>
-            <TableHead className="w-[12%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[12%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Người duyệt
             </TableHead>
-            <TableHead className="w-[12%] py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[12%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Thời gian
             </TableHead>
-            <TableHead className="w-[6%] py-2.5 text-right text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="w-[6%] py-2.5 text-right text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Views
             </TableHead>
-            <TableHead className="py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <TableHead className="py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
               Thao tác
             </TableHead>
           </TableRow>
@@ -70,12 +78,12 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                       <Image
                         src={post.thumbnailUrl}
                         alt={post.title}
-                        width={60}
-                        height={45}
-                        className="mt-0.5 h-[45px] w-[60px] shrink-0 rounded-md border border-zinc-200 object-cover"
+                        width={84}
+                        height={60}
+                        className="mt-0.5 h-[60px] w-[84px] shrink-0 rounded-md border border-zinc-200 object-cover"
                       />
                     ) : (
-                      <div className="mt-0.5 flex h-[45px] w-[60px] shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
+                      <div className="mt-0.5 flex h-[60px] w-[84px] shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
                         No img
                       </div>
                     )}
@@ -83,7 +91,7 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                     <div className="min-w-0 flex-1 space-y-1">
                       {/* Title + status badge */}
                       <div className="flex flex-wrap items-start gap-1.5">
-                        <p className="text-sm font-semibold leading-snug text-zinc-900">
+                        <p className="text-sm leading-snug font-semibold text-zinc-900">
                           {post.title}
                         </p>
                         <span
@@ -92,7 +100,9 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                             cfg.badgeClass
                           )}
                         >
-                          <span className={cn("size-1.5 rounded-full", cfg.dot)} />
+                          <span
+                            className={cn("size-1.5 rounded-full", cfg.dot)}
+                          />
                           {cfg.label}
                         </span>
                       </div>
@@ -106,12 +116,18 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                           {post.category.name}
                         </span>
                         {post.isFeatured && (
-                          <Badge variant="outline" className="h-4 px-1 py-0 text-[10px] border-amber-300 text-amber-600">
+                          <Badge
+                            variant="outline"
+                            className="h-4 border-amber-300 px-1 py-0 text-[10px] text-amber-600"
+                          >
                             Nổi bật
                           </Badge>
                         )}
                         {post.isTrending && (
-                          <Badge variant="outline" className="h-4 px-1 py-0 text-[10px] border-rose-300 text-rose-600">
+                          <Badge
+                            variant="outline"
+                            className="h-4 border-rose-300 px-1 py-0 text-[10px] text-rose-600"
+                          >
                             Xu hướng
                           </Badge>
                         )}
@@ -147,7 +163,9 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-[11px] italic text-zinc-300">Chưa có</span>
+                    <span className="text-[11px] text-zinc-300 italic">
+                      Chưa có
+                    </span>
                   )}
                 </TableCell>
 
@@ -166,7 +184,9 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-[11px] italic text-zinc-300">Chưa có</span>
+                    <span className="text-[11px] text-zinc-300 italic">
+                      Chưa có
+                    </span>
                   )}
                 </TableCell>
 
@@ -179,7 +199,7 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                 </TableCell>
 
                 {/* ── Views ── */}
-                <TableCell className="py-3 text-right text-xs font-medium tabular-nums text-zinc-700">
+                <TableCell className="py-3 text-right text-xs font-medium text-zinc-700 tabular-nums">
                   {post.views.toLocaleString("vi-VN")}
                 </TableCell>
 

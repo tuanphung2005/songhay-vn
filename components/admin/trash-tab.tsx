@@ -5,7 +5,6 @@ import { Filter, RotateCcw, Trash2, X } from "lucide-react"
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Pagination,
@@ -63,141 +62,139 @@ export function TrashTab({
   deletePostPermanently,
 }: TrashTabProps) {
   return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <p className="text-sm font-semibold">Thùng rác</p>
-        <form
-          method="get"
-          className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center"
-        >
-          <input type="hidden" name="tab" value="trash" />
-          <input type="hidden" name="trashPage" value="1" />
+    <div className="space-y-4">
+      <p className="text-sm font-semibold">Thùng rác</p>
+      <form
+        method="get"
+        className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center"
+      >
+        <input type="hidden" name="tab" value="trash" />
+        <input type="hidden" name="trashPage" value="1" />
 
-          <Input
-            name="trashQ"
-            defaultValue={filters.query}
-            placeholder="Tìm theo tiêu đề, slug, danh mục hoặc tác giả..."
-          />
+        <Input
+          name="trashQ"
+          defaultValue={filters.query}
+          placeholder="Tìm theo tiêu đề, slug, danh mục hoặc tác giả..."
+        />
 
-          {isAdmin ? (
-            <Select name="trashAuthor" defaultValue={filters.authorId || "all"}>
-              <option value="all">Tất cả người viết</option>
-              {data.authorOptions.map((author) => (
-                <option key={author.id} value={author.id}>
-                  {author.name} ({author.email})
-                </option>
-              ))}
-            </Select>
-          ) : (
-            <input type="hidden" name="trashAuthor" value="" />
-          )}
-
-          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} />
-          <Input name="trashTo" type="date" defaultValue={filters.toDate} />
-
-          <Button type="submit" variant="outline">
-            <Filter className="size-4" />
-            Lọc
-          </Button>
-          <Link href="/admin?tab=trash">
-            <Button type="button" variant="ghost">
-              <X className="size-4" />
-              Xóa lọc
-            </Button>
-          </Link>
-        </form>
-
-        {data.rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Thùng rác đang trống.</p>
+        {isAdmin ? (
+          <Select name="trashAuthor" defaultValue={filters.authorId || "all"}>
+            <option value="all">Tất cả người viết</option>
+            {data.authorOptions.map((author) => (
+              <option key={author.id} value={author.id}>
+                {author.name} ({author.email})
+              </option>
+            ))}
+          </Select>
         ) : (
-          data.rows.map((post) => (
-            <div key={post.id} className="rounded-lg border p-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  {post.thumbnailUrl ? (
-                    <Image
-                      src={post.thumbnailUrl}
-                      alt={post.title}
-                      width={80}
-                      height={56}
-                      className="h-14 w-20 rounded border object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-20 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
-                      No img
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-semibold">{post.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      /{post.category.slug}/{post.slug}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Người viết: {post.author?.name || "Không rõ"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Đã xóa lúc:{" "}
-                      {post.deletedAt
-                        ? new Date(post.deletedAt).toLocaleString("vi-VN")
-                        : "Không rõ"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <form action={restorePostFromTrash}>
-                    <input type="hidden" name="postId" value={post.id} />
-                    <PendingSubmitButton
-                      type="submit"
-                      size="sm"
-                      variant="outline"
-                      pendingText="Đang khôi phục..."
-                    >
-                      <RotateCcw className="size-4" />
-                      Khôi phục
-                    </PendingSubmitButton>
-                  </form>
-                  <ConfirmActionForm
-                    action={deletePostPermanently}
-                    fields={[{ name: "postId", value: post.id }]}
-                    confirmMessage="Xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác."
-                  >
-                    <PendingSubmitButton
-                      type="submit"
-                      size="sm"
-                      variant="destructive"
-                      pendingText="Đang xóa..."
-                    >
-                      <Trash2 className="size-4" />
-                      Xóa vĩnh viễn
-                    </PendingSubmitButton>
-                  </ConfirmActionForm>
-                </div>
-              </div>
-            </div>
-          ))
+          <input type="hidden" name="trashAuthor" value="" />
         )}
 
-        {data.totalPages > 1 ? (
-          <Pagination className="justify-start">
-            <PaginationContent>
-              {data.paginationItems.map((item, index) => (
-                <PaginationItem key={`trash-page-${index}-${String(item)}`}>
-                  {item === "ellipsis" ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${item}`}
-                      isActive={item === data.currentPage}
-                    >
-                      {item}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-            </PaginationContent>
-          </Pagination>
-        ) : null}
-      </CardContent>
-    </Card>
+        <Input name="trashFrom" type="date" defaultValue={filters.fromDate} />
+        <Input name="trashTo" type="date" defaultValue={filters.toDate} />
+
+        <Button type="submit" variant="outline">
+          <Filter className="size-4" />
+          Lọc
+        </Button>
+        <Link href="/admin?tab=trash">
+          <Button type="button" variant="ghost">
+            <X className="size-4" />
+            Xóa lọc
+          </Button>
+        </Link>
+      </form>
+
+      {data.rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Thùng rác đang trống.</p>
+      ) : (
+        data.rows.map((post) => (
+          <div key={post.id} className="rounded-lg border p-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                {post.thumbnailUrl ? (
+                  <Image
+                    src={post.thumbnailUrl}
+                    alt={post.title}
+                    width={80}
+                    height={56}
+                    className="h-14 w-20 rounded border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-14 w-20 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
+                    No img
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold">{post.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    /{post.category.slug}/{post.slug}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Người viết: {post.author?.name || "Không rõ"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Đã xóa lúc:{" "}
+                    {post.deletedAt
+                      ? new Date(post.deletedAt).toLocaleString("vi-VN")
+                      : "Không rõ"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <form action={restorePostFromTrash}>
+                  <input type="hidden" name="postId" value={post.id} />
+                  <PendingSubmitButton
+                    type="submit"
+                    size="sm"
+                    variant="outline"
+                    pendingText="Đang khôi phục..."
+                  >
+                    <RotateCcw className="size-4" />
+                    Khôi phục
+                  </PendingSubmitButton>
+                </form>
+                <ConfirmActionForm
+                  action={deletePostPermanently}
+                  fields={[{ name: "postId", value: post.id }]}
+                  confirmMessage="Xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác."
+                >
+                  <PendingSubmitButton
+                    type="submit"
+                    size="sm"
+                    variant="destructive"
+                    pendingText="Đang xóa..."
+                  >
+                    <Trash2 className="size-4" />
+                    Xóa vĩnh viễn
+                  </PendingSubmitButton>
+                </ConfirmActionForm>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+
+      {data.totalPages > 1 ? (
+        <Pagination className="justify-start">
+          <PaginationContent>
+            {data.paginationItems.map((item, index) => (
+              <PaginationItem key={`trash-page-${index}-${String(item)}`}>
+                {item === "ellipsis" ? (
+                  <PaginationEllipsis />
+                ) : (
+                  <PaginationLink
+                    href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${item}`}
+                    isActive={item === data.currentPage}
+                  >
+                    {item}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
+          </PaginationContent>
+        </Pagination>
+      ) : null}
+    </div>
   )
 }
