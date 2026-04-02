@@ -9,6 +9,7 @@ type OverviewDailyPoint = {
   views: number
   comments: number
   posts: number
+  avgDwellSeconds: number
 }
 
 type OverviewActivityChartProps = {

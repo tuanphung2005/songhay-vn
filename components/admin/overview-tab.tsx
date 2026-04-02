@@ -2,8 +2,10 @@ import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
 
 import { OverviewActivityChart } from "@/components/admin/overview-activity-chart"
+import { OverviewDwellChart } from "@/components/admin/overview-dwell-chart"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 type OverviewStat = {
@@ -16,7 +18,7 @@ type OverviewStat = {
 }
 
 type OverviewAnalytics = {
-  daily: Array<{ label: string; views: number; comments: number; posts: number }>
+  daily: Array<{ label: string; views: number; comments: number; posts: number; avgDwellSeconds: number }>
   todayViews: number
   todayComments: number
   todayApprovedComments: number
@@ -182,31 +184,41 @@ export function OverviewTab({ overviewStats, overviewAnalytics }: OverviewTabPro
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
-            <CardTitle>Thời gian ở lại bài trung bình</CardTitle>
-            <CardDescription>Dựa trên hành vi thực tế của người đọc trong {rangeLabel} gần nhất.</CardDescription>
+            <CardTitle>Thời gian ở lại trung bình</CardTitle>
+            <CardDescription>Biểu đồ xu hướng dwell-time {rangeLabel} gần nhất.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-md border px-3 py-2">
-              <p className="text-muted-foreground text-xs">Trung bình mỗi bài</p>
-              <p className="text-2xl font-black text-emerald-600">{formatDwell(overviewAnalytics.avgDwellSecondsPerPost)}</p>
+          <CardContent className="p-0">
+            <div className="px-6 py-2">
+              <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Trung bình tất cả</p>
+              <p className="text-3xl font-black text-emerald-600">{formatDwell(overviewAnalytics.avgDwellSecondsPerPost)}</p>
+            </div>
+            
+            <div className="mt-2 h-[200px] w-full">
+              <OverviewDwellChart data={overviewAnalytics.daily} />
             </div>
 
-            {overviewAnalytics.dwellTopPosts.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Chưa có dữ liệu dwell-time hợp lệ trong khoảng thời gian đã chọn.</p>
-            ) : (
-              <div className="space-y-2">
-                {overviewAnalytics.dwellTopPosts.map((post) => (
-                  <div key={post.postId} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-                    <Link href={`/${post.category.slug}/${post.slug}`} className="line-clamp-1 pr-3 font-medium hover:text-rose-600">
-                      {post.title}
-                    </Link>
-                    <Badge variant="outline">{formatDwell(post.avgDwellSeconds)}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="space-y-3 p-6 pt-2">
+              <Separator className="mb-4" />
+              <p className="text-sm font-bold text-zinc-800">Top bài có dwell-time cao nhất</p>
+              {overviewAnalytics.dwellTopPosts.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Chưa có dữ liệu dwell-time hợp lệ.</p>
+              ) : (
+                <div className="space-y-2">
+                  {overviewAnalytics.dwellTopPosts.map((post) => (
+                    <div key={post.postId} className="group flex items-center justify-between rounded-lg border bg-zinc-50/50 px-3 py-2.5 transition-colors hover:bg-white hover:shadow-sm">
+                      <Link href={`/${post.category.slug}/${post.slug}`} className="line-clamp-1 pr-3 text-sm font-medium transition-colors group-hover:text-rose-600">
+                        {post.title}
+                      </Link>
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                        {formatDwell(post.avgDwellSeconds)}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

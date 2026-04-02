@@ -95,7 +95,7 @@ export async function getPendingComments(activeTab: AdminTab) {
 export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: OverviewRange) {
   if (activeTab !== "overview") {
     return {
-      daily: [] as Array<{ label: string; views: number; comments: number; posts: number }>,
+      daily: [] as Array<{ label: string; views: number; comments: number; posts: number; avgDwellSeconds: number }>,
       todayViews: 0,
       todayComments: 0,
       todayApprovedComments: 0,
@@ -123,7 +123,7 @@ export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: O
     const chartStart = new Date(todayStart)
     chartStart.setDate(chartStart.getDate() - (totalDays - 1))
 
-    const [recentPosts, recentComments, hotKeywordRows, dwellEventGroups] = await Promise.all([
+    const [recentPosts, recentComments, hotKeywordRows, dwellEventGroups, allDwellEvents] = await Promise.all([
       prisma.post.findMany({
         where: {
           isDeleted: false,
@@ -188,9 +188,19 @@ export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: O
           _all: true,
         },
       }),
+      prisma.postEngagementEvent.findMany({
+        where: {
+          createdAt: { gte: chartStart },
+          dwellSeconds: { gt: 0 },
+        },
+        select: {
+          createdAt: true,
+          dwellSeconds: true,
+        },
+      }),
     ])
 
-    const dailyMap = new Map<string, { date: Date; views: number; comments: number; posts: number }>()
+    const dailyMap = new Map<string, { date: Date; views: number; comments: number; posts: number; dwellSum: number; dwellCount: number }>()
 
     for (let index = 0; index < totalDays; index += 1) {
       const currentDate = new Date(chartStart)
@@ -200,6 +210,8 @@ export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: O
         views: 0,
         comments: 0,
         posts: 0,
+        dwellSum: 0,
+        dwellCount: 0,
       })
     }
 
@@ -222,6 +234,16 @@ export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: O
       bucket.comments += 1
     }
 
+    for (const event of allDwellEvents) {
+      const key = toDayKey(event.createdAt)
+      const bucket = dailyMap.get(key)
+      if (!bucket) {
+        continue
+      }
+      bucket.dwellSum += event.dwellSeconds
+      bucket.dwellCount += 1
+    }
+
     const todayTopPosts = recentPosts
       .filter((post) => post.publishedAt >= todayStart && post.publishedAt < tomorrowStart)
       .sort((a, b) => b.views - a.views)
@@ -232,8 +254,11 @@ export async function getOverviewAnalytics(activeTab: AdminTab, overviewRange: O
     const todayApprovedComments = recentComments.filter((item) => item.isApproved && item.createdAt >= todayStart && item.createdAt < tomorrowStart).length
 
     const daily = [...dailyMap.values()].map((item) => ({
-      ...item,
       label: toDayLabel(item.date),
+      views: item.views,
+      comments: item.comments,
+      posts: item.posts,
+      avgDwellSeconds: item.dwellCount > 0 ? Math.round(item.dwellSum / item.dwellCount) : 0,
     }))
 
     const hotKeywordMap = new Map<string, { id: string; keyword: string; postIds: Set<string>; totalViews: number }>()
