@@ -227,12 +227,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   ]
 
   return (
-    <main className="min-h-screen bg-muted/30">
+    <main className="min-h-screen bg-zinc-100">
       <AdminActionToast />
-      <header className="border-b bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/80">
+      <header className="border-b border-zinc-200 bg-white">
         <div className="flex w-full items-center justify-between px-4 py-4 md:px-6 xl:px-8">
           <div>
-            <p className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+            <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">
               Songhay CMS
             </p>
             <h1 className="mt-1 text-xl font-black text-zinc-900 md:text-2xl">
@@ -241,7 +241,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
           <Badge
             variant="secondary"
-            className="hidden h-7 items-center gap-1.5 px-3 md:inline-flex"
+            className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"
           >
             <ShieldCheck className="size-3.5" />
             {ROLE_LABELS_VI[currentUser.role]}
@@ -249,25 +249,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
       </header>
 
-      <div className="grid w-full gap-4 p-4 md:grid-cols-[280px_1fr] md:p-6 xl:gap-6 xl:px-8">
-        <aside className="space-y-4 md:sticky md:top-24 md:self-start">
-          <div className="space-y-3">
-            <p className="px-2 text-sm font-semibold text-zinc-900">
-              Điều hướng CMS
-            </p>
-            <ScrollArea className="max-h-[70dvh] pr-2 md:max-h-[calc(100dvh-8rem)]">
+      <div className="grid min-h-[calc(100dvh-5rem)] w-full md:grid-cols-[288px_minmax(0,1fr)]">
+        <aside className="border-b border-zinc-200 bg-white md:border-r md:border-b-0">
+          <div className="flex h-full flex-col px-4 py-5 md:min-h-[calc(100dvh-5rem)]">
+            <ScrollArea className="mt-4 flex-1 pr-2">
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
                     Tổng quan
                   </p>
                   <AdminNavButton tab={OVERVIEW_TAB} activeTab={activeTab} />
                 </div>
 
-                <Separator />
+                <Separator className="bg-zinc-200" />
 
                 <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
                     Quản lý tin
                   </p>
                   {contentTabs.map((tab) => (
@@ -282,10 +279,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   ))}
                 </div>
 
-                <Separator />
+                <Separator className="bg-zinc-200" />
 
                 <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
                     Cài đặt
                   </p>
                   {settingsTabs.map((tab) => (
@@ -304,7 +301,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
         </aside>
 
-        <section className="space-y-4">
+        <section className="space-y-4 p-4 md:p-6 xl:p-8">
           {activeTab === "overview" ? (
             <OverviewTab
               overviewStats={overviewStats}

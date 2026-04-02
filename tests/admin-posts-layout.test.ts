@@ -48,4 +48,37 @@ describe("admin posts layout", () => {
     expect(adminPageSource).not.toContain('from "@/components/ui/card"')
     expect(adminPageSource).not.toContain("<Card")
   })
+
+  test("admin navigation uses a white shell with subtle nav states", () => {
+    const adminPageSource = readWorkspaceFile("app/admin/page.tsx")
+    const navButtonSource = readWorkspaceFile(
+      "components/admin/admin-nav-button.tsx"
+    )
+
+    expect(adminPageSource).toContain(
+      "grid min-h-[calc(100dvh-5rem)] w-full md:grid-cols-[288px_minmax(0,1fr)]"
+    )
+    expect(adminPageSource).toContain(
+      "border-b border-zinc-200 bg-white md:border-r md:border-b-0"
+    )
+    expect(navButtonSource).toContain('variant="ghost"')
+    expect(navButtonSource).toContain(
+      "border-zinc-200 bg-zinc-100 text-zinc-900"
+    )
+    expect(navButtonSource).toContain("text-zinc-600")
+    expect(navButtonSource).toContain("bg-zinc-900 text-white")
+  })
+
+  test("admin header matches the white shell palette", () => {
+    const adminPageSource = readWorkspaceFile("app/admin/page.tsx")
+
+    expect(adminPageSource).toContain(
+      'className="border-b border-zinc-200 bg-white"'
+    )
+    expect(adminPageSource).toContain("text-zinc-500 uppercase")
+    expect(adminPageSource).toContain("text-zinc-900 md:text-2xl")
+    expect(adminPageSource).toContain(
+      'className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"'
+    )
+  })
 })
