@@ -1,6 +1,9 @@
 "use client"
 
 import type { MouseEvent } from "react"
+import { Suspense } from "react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import {
   FolderKanban,
   KeyRound,
@@ -15,7 +18,6 @@ import {
   Users,
 } from "lucide-react"
 
-import type { AdminTab } from "@/app/admin/data"
 import type { NavIconName, NavLeaf } from "@/app/admin/page-helpers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,11 +45,12 @@ const navIcons: Record<NavIconName, typeof LayoutDashboard> = {
 
 type AdminNavButtonProps = {
   tab: NavLeaf
-  activeTab: AdminTab
   count?: number
 }
 
-export function AdminNavButton({ tab, activeTab, count }: AdminNavButtonProps) {
+function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get("tab") || "overview"
   const TabIcon = navIcons[tab.iconName]
   const isActive = activeTab === tab.key
 
@@ -80,15 +83,15 @@ export function AdminNavButton({ tab, activeTab, count }: AdminNavButtonProps) {
         <Button
           asChild
           variant="ghost"
+          onClick={(e) => handleNavigationAttempt(e as any)}
           className={`h-10 w-full justify-start rounded-xl border px-3.5 ${
             isActive
               ? "border-zinc-200 bg-zinc-100 text-zinc-900 hover:bg-zinc-100 hover:text-zinc-900"
               : "border-transparent text-zinc-600 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900"
           }`}
         >
-          <a
+          <Link
             href={`/admin?tab=${tab.key}`}
-            onClick={handleNavigationAttempt}
             className="flex w-full items-center gap-2"
           >
             <span className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -111,12 +114,22 @@ export function AdminNavButton({ tab, activeTab, count }: AdminNavButtonProps) {
                 {count.toLocaleString("vi-VN")}
               </Badge>
             ) : null}
-          </a>
+          </Link>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="right" className="max-w-72">
         {tab.description}
       </TooltipContent>
     </Tooltip>
+  )
+}
+
+export function AdminNavButton({ tab, count }: AdminNavButtonProps) {
+  return (
+    <Suspense fallback={
+      <div className="h-10 w-full rounded-xl bg-zinc-100 animate-pulse" />
+    }>
+      <AdminNavButtonInner tab={tab} count={count} />
+    </Suspense>
   )
 }

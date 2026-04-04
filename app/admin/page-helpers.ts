@@ -40,7 +40,7 @@ export const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
 ]
 
 export const SETTINGS_TABS: NavLeaf[] = [
-  { key: "settings-password", label: "Đổi mật khẩu", description: "Mock UI đổi mật khẩu", iconName: "keyRound" },
+  { key: "settings-password", label: "Đổi mật khẩu", description: "Thay đổi mật khẩu", iconName: "keyRound" },
   { key: "settings-moderation", label: "Kiểm duyệt", description: "Quản lý từ cấm và từ khóa SEO", iconName: "messageSquareMore", adminOnly: true },
   { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", iconName: "folderKanban", adminOnly: true, countKey: "categoryCount" },
   { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", iconName: "messageSquareMore", adminOnly: true, countKey: "pendingCommentCount" },

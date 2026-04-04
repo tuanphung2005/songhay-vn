@@ -1,19 +1,4 @@
-import type { Metadata } from "next"
-import {
-  Activity,
-  FolderKanban,
-  KeyRound,
-  LayoutDashboard,
-  LibraryBig,
-  MessageSquareMore,
-  Newspaper,
-  PenSquare,
-  ShieldCheck,
-  Trash2,
-  UserSquare2,
-  Users,
-} from "lucide-react"
-
+import { Suspense } from "react"
 import {
   addForbiddenKeyword,
   addSeoKeyword,
@@ -44,13 +29,8 @@ import {
 import { type AdminTab, getAdminPageData } from "@/app/admin/data"
 import {
   getVisibleTabs,
-  OVERVIEW_TAB,
   parseAdminSearchParams,
-  type NavCountKey,
-  type NavIconName,
 } from "@/app/admin/page-helpers"
-import { AdminActionToast } from "@/components/admin/action-toast"
-import { AdminNavButton } from "@/components/admin/admin-nav-button"
 import { CategoriesTab } from "@/components/admin/categories-tab"
 import { CommentsTab } from "@/components/admin/comments-tab"
 import { MediaLibraryTab } from "@/components/admin/media-library-tab"
@@ -63,9 +43,6 @@ import { SettingsPermissionsTab } from "@/components/admin/settings-permissions-
 import { SettingsUsersTab } from "@/components/admin/settings-users-tab"
 import { TrashTab } from "@/components/admin/trash-tab"
 import { WriteTab } from "@/components/admin/write-tab"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { requireCmsUser } from "@/lib/auth"
 import {
   can,
@@ -75,68 +52,60 @@ import {
   canPublishNow,
   canSubmitPendingPublish,
   canViewAllPosts,
-  ROLE_LABELS_VI,
 } from "@/lib/permissions"
+import { Activity, FolderKanban, MessageSquareMore, Newspaper } from "lucide-react"
+import AdminLoading from "./loading"
 
 export const revalidate = 0
-export const metadata: Metadata = {
-  title: "CMS Admin",
-  robots: {
-    index: false,
-    follow: false,
-  },
-}
 
-const navIcons: Record<NavIconName, typeof LayoutDashboard> = {
-  layoutDashboard: LayoutDashboard,
-  penSquare: PenSquare,
-  libraryBig: LibraryBig,
-  userSquare2: UserSquare2,
-  newspaper: Newspaper,
-  trash2: Trash2,
-  keyRound: KeyRound,
-  messageSquareMore: MessageSquareMore,
-  folderKanban: FolderKanban,
-  shieldCheck: ShieldCheck,
-  users: Users,
+type ResolvedSearchParams = {
+  tab?: string
+  overviewRange?: string
+  moved?: string
+  direction?: string
+  postsQ?: string
+  postsAuthor?: string
+  postsStatus?: string
+  postsApproval?: string
+  postsFrom?: string
+  postsTo?: string
+  postsPage?: string
+  personalQ?: string
+  personalStatus?: string
+  personalFrom?: string
+  personalTo?: string
+  personalPage?: string
+  trashQ?: string
+  trashAuthor?: string
+  trashFrom?: string
+  trashTo?: string
+  trashPage?: string
 }
 
 type AdminPageProps = {
-  searchParams?: Promise<{
-    tab?: string
-    overviewRange?: string
-    moved?: string
-    direction?: string
-    postsQ?: string
-    postsAuthor?: string
-    postsStatus?: string
-    postsApproval?: string
-    postsFrom?: string
-    postsTo?: string
-    postsPage?: string
-    personalQ?: string
-    personalStatus?: string
-    personalFrom?: string
-    personalTo?: string
-    personalPage?: string
-    trashQ?: string
-    trashAuthor?: string
-    trashFrom?: string
-    trashTo?: string
-    trashPage?: string
-  }>
+  searchParams?: Promise<ResolvedSearchParams>
 }
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
+  const key = JSON.stringify(resolvedSearchParams || {})
+
+  return (
+    <Suspense key={key} fallback={<AdminLoading />}>
+      <AdminPageContent searchParams={resolvedSearchParams} />
+    </Suspense>
+  )
+}
+
+async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearchParams }) {
   const currentUser = await requireCmsUser()
   const canSeeAllPosts = canViewAllPosts(currentUser.role)
   const canManageSettings = can(currentUser.role, "create-category")
 
-  const { contentTabs, settingsTabs, visibleTabs } = getVisibleTabs({
+  const { visibleTabs } = getVisibleTabs({
     canManageSettings,
   })
 
-  const resolvedSearchParams = searchParams ? await searchParams : undefined
   const {
     tabFromQuery,
     overviewRange,
@@ -145,7 +114,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     postsFilters,
     personalArchiveFilters,
     trashFilters,
-  } = parseAdminSearchParams(resolvedSearchParams)
+  } = parseAdminSearchParams(searchParams)
 
   const activeTab: AdminTab = visibleTabs.some(
     (item) => item.key === tabFromQuery
@@ -157,7 +126,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     postCount,
     categoryCount,
     pendingCommentCount,
-    trashedPostCount,
     totalPostViews,
     categoriesForManage,
     categoriesForWrite,
@@ -183,13 +151,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       role: currentUser.role,
     },
   })
-
-  const navCountByKey: Record<NavCountKey, number> = {
-    postCount,
-    categoryCount,
-    pendingCommentCount,
-    trashedPostCount,
-  }
 
   const overviewStats = [
     {
@@ -227,207 +188,131 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   ]
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <AdminActionToast />
-      <header className="border-b border-zinc-200 bg-white">
-        <div className="flex w-full items-center justify-between px-4 py-4 md:px-6 xl:px-8">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">
-              Songhay CMS
-            </p>
-            <h1 className="mt-1 text-xl font-black text-zinc-900 md:text-2xl">
-              Bảng điều khiển quản trị
-            </h1>
-          </div>
-          <Badge
-            variant="secondary"
-            className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"
-          >
-            <ShieldCheck className="size-3.5" />
-            {ROLE_LABELS_VI[currentUser.role]}
-          </Badge>
-        </div>
-      </header>
-
-      <div className="grid min-h-[calc(100dvh-5rem)] w-full md:grid-cols-[288px_minmax(0,1fr)]">
-        <aside className="border-b border-zinc-200 bg-white md:border-r md:border-b-0">
-          <div className="flex h-full flex-col px-4 py-5 md:min-h-[calc(100dvh-5rem)]">
-            <ScrollArea className="mt-4 flex-1 pr-2">
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
-                    Tổng quan
-                  </p>
-                  <AdminNavButton tab={OVERVIEW_TAB} activeTab={activeTab} />
-                </div>
-
-                <Separator className="bg-zinc-200" />
-
-                <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
-                    Quản lý tin
-                  </p>
-                  {contentTabs.map((tab) => (
-                    <AdminNavButton
-                      key={tab.key}
-                      tab={tab}
-                      activeTab={activeTab}
-                      count={
-                        tab.countKey ? navCountByKey[tab.countKey] : undefined
-                      }
-                    />
-                  ))}
-                </div>
-
-                <Separator className="bg-zinc-200" />
-
-                <div className="space-y-1.5">
-                  <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
-                    Cài đặt
-                  </p>
-                  {settingsTabs.map((tab) => (
-                    <AdminNavButton
-                      key={tab.key}
-                      tab={tab}
-                      activeTab={activeTab}
-                      count={
-                        tab.countKey ? navCountByKey[tab.countKey] : undefined
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        </aside>
-
-        <section className="space-y-4 p-4 md:p-6 xl:p-8">
-          {activeTab === "overview" ? (
-            <OverviewTab
-              overviewStats={overviewStats}
-              overviewAnalytics={overviewAnalytics}
-            />
-          ) : null}
-          {activeTab === "categories" ? (
-            <CategoriesTab
-              categoriesForManage={categoriesForManage}
-              movedCategoryId={movedCategoryId}
-              movedDirection={movedDirection}
-              createCategory={createCategory}
-              updateCategory={updateCategory}
-              reorderCategory={reorderCategory}
-              deleteCategory={deleteCategory}
-            />
-          ) : null}
-          {activeTab === "write" ? (
-            <WriteTab
-              canPublishNow={canPublishNow(currentUser.role)}
-              canSubmitPendingPublish={canSubmitPendingPublish(
-                currentUser.role
-              )}
-              categoriesForWrite={categoriesForWrite}
-              seoKeywordOptions={seoKeywordOptions}
-              mediaAssets={mediaLibraryData}
-              currentUserId={currentUser.id}
-              createPost={createPost}
-            />
-          ) : null}
-          {activeTab === "media-library" ? (
-            <MediaLibraryTab isAdmin={canSeeAllPosts} rows={mediaLibraryData} />
-          ) : null}
-          {activeTab === "personal-archive" ? (
-            <PersonalArchiveTab
-              isAdmin={canSeeAllPosts}
-              data={personalPostsData}
-              filters={personalArchiveFilters}
-              movePostToTrash={movePostToTrash}
-            />
-          ) : null}
-          {activeTab === "comments" ? (
-            <CommentsTab
-              pendingComments={pendingComments}
-              moderateComment={moderateComment}
-            />
-          ) : null}
-          {activeTab === "settings-moderation" ? (
-            <SettingsModerationTab
-              forbiddenKeywords={moderationSettings.forbiddenKeywords}
-              seoKeywords={moderationSettings.seoKeywords}
-              addForbiddenKeyword={addForbiddenKeyword}
-              deleteForbiddenKeyword={deleteForbiddenKeyword}
-              addSeoKeyword={addSeoKeyword}
-              deleteSeoKeyword={deleteSeoKeyword}
-            />
-          ) : null}
-          {activeTab === "posts" ? (
-            <PostsTab
-              isAdmin={canSeeAllPosts}
-              canSubmitPendingReview={can(
-                currentUser.role,
-                "submit-pending-review"
-              )}
-              canSubmitPendingPublish={canSubmitPendingPublish(
-                currentUser.role
-              )}
-              canReviewPending={canApprovePendingReview(currentUser.role)}
-              canPublishNow={canPublishNow(currentUser.role)}
-              canEditDraft={canEditByStatus(currentUser.role, "DRAFT")}
-              canEditPendingReview={canEditByStatus(
-                currentUser.role,
-                "PENDING_REVIEW"
-              )}
-              canEditPendingPublish={canEditByStatus(
-                currentUser.role,
-                "PENDING_PUBLISH"
-              )}
-              canEditPublished={canEditByStatus(currentUser.role, "PUBLISHED")}
-              postsData={postsData}
-              filters={postsFilters}
-              postsPaginationItems={postsPaginationItems}
-              movePostToTrash={movePostToTrash}
-              submitPostToPendingReview={submitPostToPendingReview}
-              promotePostToPendingPublish={promotePostToPendingPublish}
-              approvePendingPost={approvePendingPost}
-              rejectPendingPost={rejectPendingPost}
-              returnPostToDraft={returnPostToDraft}
-              returnPostToPendingReview={returnPostToPendingReview}
-              returnPostToPendingPublish={returnPostToPendingPublish}
-            />
-          ) : null}
-          {activeTab === "trash" ? (
-            <TrashTab
-              isAdmin={canSeeAllPosts}
-              data={trashedPosts}
-              filters={trashFilters}
-              restorePostFromTrash={restorePostFromTrash}
-              deletePostPermanently={deletePostPermanently}
-            />
-          ) : null}
-          {activeTab === "settings-password" ? (
-            <SettingsPasswordTab
-              updatePasswordMock={updatePasswordMock}
-              createSubordinateAccount={createSubordinateAccount}
-              canCreateSubordinateAccount={canCreateSubordinateAccount(
-                currentUser.role
-              )}
-            />
-          ) : null}
-          {activeTab === "settings-permissions" ? (
-            <SettingsPermissionsTab
-              permissionsMatrix={permissionsMatrix}
-              updateRolePermissions={updateRolePermissions}
-            />
-          ) : null}
-          {activeTab === "settings-users" ? (
-            <SettingsUsersTab
-              users={usersData}
-              currentUserId={currentUser.id}
-              updateUserRole={updateUserRole}
-              deleteUser={deleteUser}
-            />
-          ) : null}
-        </section>
-      </div>
-    </main>
+    <>
+      {activeTab === "overview" ? (
+        <OverviewTab
+          overviewStats={overviewStats}
+          overviewAnalytics={overviewAnalytics}
+        />
+      ) : null}
+      {activeTab === "categories" ? (
+        <CategoriesTab
+          categoriesForManage={categoriesForManage}
+          movedCategoryId={movedCategoryId}
+          movedDirection={movedDirection}
+          createCategory={createCategory}
+          updateCategory={updateCategory}
+          reorderCategory={reorderCategory}
+          deleteCategory={deleteCategory}
+        />
+      ) : null}
+      {activeTab === "write" ? (
+        <WriteTab
+          canPublishNow={canPublishNow(currentUser.role)}
+          canSubmitPendingPublish={canSubmitPendingPublish(
+            currentUser.role
+          )}
+          categoriesForWrite={categoriesForWrite}
+          seoKeywordOptions={seoKeywordOptions}
+          mediaAssets={mediaLibraryData}
+          currentUserId={currentUser.id}
+          createPost={createPost}
+        />
+      ) : null}
+      {activeTab === "media-library" ? (
+        <MediaLibraryTab isAdmin={canSeeAllPosts} rows={mediaLibraryData} />
+      ) : null}
+      {activeTab === "personal-archive" ? (
+        <PersonalArchiveTab
+          isAdmin={canSeeAllPosts}
+          data={personalPostsData}
+          filters={personalArchiveFilters}
+          movePostToTrash={movePostToTrash}
+        />
+      ) : null}
+      {activeTab === "comments" ? (
+        <CommentsTab
+          pendingComments={pendingComments}
+          moderateComment={moderateComment}
+        />
+      ) : null}
+      {activeTab === "settings-moderation" ? (
+        <SettingsModerationTab
+          forbiddenKeywords={moderationSettings.forbiddenKeywords}
+          seoKeywords={moderationSettings.seoKeywords}
+          addForbiddenKeyword={addForbiddenKeyword}
+          deleteForbiddenKeyword={deleteForbiddenKeyword}
+          addSeoKeyword={addSeoKeyword}
+          deleteSeoKeyword={deleteSeoKeyword}
+        />
+      ) : null}
+      {activeTab === "posts" ? (
+        <PostsTab
+          isAdmin={canSeeAllPosts}
+          canSubmitPendingReview={can(
+            currentUser.role,
+            "submit-pending-review"
+          )}
+          canSubmitPendingPublish={canSubmitPendingPublish(
+            currentUser.role
+          )}
+          canReviewPending={canApprovePendingReview(currentUser.role)}
+          canPublishNow={canPublishNow(currentUser.role)}
+          canEditDraft={canEditByStatus(currentUser.role, "DRAFT")}
+          canEditPendingReview={canEditByStatus(
+            currentUser.role,
+            "PENDING_REVIEW"
+          )}
+          canEditPendingPublish={canEditByStatus(
+            currentUser.role,
+            "PENDING_PUBLISH"
+          )}
+          canEditPublished={canEditByStatus(currentUser.role, "PUBLISHED")}
+          postsData={postsData}
+          filters={postsFilters}
+          postsPaginationItems={postsPaginationItems}
+          movePostToTrash={movePostToTrash}
+          submitPostToPendingReview={submitPostToPendingReview}
+          promotePostToPendingPublish={promotePostToPendingPublish}
+          approvePendingPost={approvePendingPost}
+          rejectPendingPost={rejectPendingPost}
+          returnPostToDraft={returnPostToDraft}
+          returnPostToPendingReview={returnPostToPendingReview}
+          returnPostToPendingPublish={returnPostToPendingPublish}
+        />
+      ) : null}
+      {activeTab === "trash" ? (
+        <TrashTab
+          isAdmin={canSeeAllPosts}
+          data={trashedPosts}
+          filters={trashFilters}
+          restorePostFromTrash={restorePostFromTrash}
+          deletePostPermanently={deletePostPermanently}
+        />
+      ) : null}
+      {activeTab === "settings-password" ? (
+        <SettingsPasswordTab
+          updatePasswordMock={updatePasswordMock}
+          createSubordinateAccount={createSubordinateAccount}
+          canCreateSubordinateAccount={canCreateSubordinateAccount(
+            currentUser.role
+          )}
+        />
+      ) : null}
+      {activeTab === "settings-permissions" ? (
+        <SettingsPermissionsTab
+          permissionsMatrix={permissionsMatrix}
+          updateRolePermissions={updateRolePermissions}
+        />
+      ) : null}
+      {activeTab === "settings-users" ? (
+        <SettingsUsersTab
+          users={usersData}
+          currentUserId={currentUser.id}
+          updateUserRole={updateUserRole}
+          deleteUser={deleteUser}
+        />
+      ) : null}
+    </>
   )
 }
