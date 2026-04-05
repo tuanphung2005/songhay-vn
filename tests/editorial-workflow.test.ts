@@ -21,6 +21,9 @@ describe("editorial workflow", () => {
     expect(source).toMatch(
       /redirect\(\s*"\/admin\?tab=personal-archive&toast=post_saved_draft"\s*\)/
     )
+    expect(source).toContain('redirect("/admin?tab=write&toast=missing_fields")')
+    expect(source).toContain('if (!title)')
+    expect(source).toContain('if (submitAction !== "save-draft" && (!excerpt || !plainContent || !categoryId))')
     expect(source).toContain("authorId: currentUser.id")
   })
 

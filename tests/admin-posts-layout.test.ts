@@ -50,15 +50,15 @@ describe("admin posts layout", () => {
   })
 
   test("admin navigation uses a white shell with subtle nav states", () => {
-    const adminPageSource = readWorkspaceFile("app/admin/page.tsx")
+    const adminLayoutSource = readWorkspaceFile("app/admin/layout.tsx")
     const navButtonSource = readWorkspaceFile(
       "components/admin/admin-nav-button.tsx"
     )
 
-    expect(adminPageSource).toContain(
+    expect(adminLayoutSource).toContain(
       "grid min-h-[calc(100dvh-5rem)] w-full md:grid-cols-[288px_minmax(0,1fr)]"
     )
-    expect(adminPageSource).toContain(
+    expect(adminLayoutSource).toContain(
       "border-b border-zinc-200 bg-white md:border-r md:border-b-0"
     )
     expect(navButtonSource).toContain('variant="ghost"')
@@ -70,14 +70,14 @@ describe("admin posts layout", () => {
   })
 
   test("admin header matches the white shell palette", () => {
-    const adminPageSource = readWorkspaceFile("app/admin/page.tsx")
+    const adminLayoutSource = readWorkspaceFile("app/admin/layout.tsx")
 
-    expect(adminPageSource).toContain(
+    expect(adminLayoutSource).toContain(
       'className="border-b border-zinc-200 bg-white"'
     )
-    expect(adminPageSource).toContain("text-zinc-500 uppercase")
-    expect(adminPageSource).toContain("text-zinc-900 md:text-2xl")
-    expect(adminPageSource).toContain(
+    expect(adminLayoutSource).toContain("text-zinc-500 uppercase")
+    expect(adminLayoutSource).toContain("text-zinc-900 md:text-2xl")
+    expect(adminLayoutSource).toContain(
       'className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"'
     )
   })

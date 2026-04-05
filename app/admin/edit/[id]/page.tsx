@@ -151,8 +151,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const thumbnailUpload = formData.get("thumbnailUpload")
     const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-    if (!title || !excerpt || !plainContent || !categoryId) {
-      return
+    if (!title) {
+      redirect(`/admin/edit/${postId}?toast=missing_fields`)
+    }
+
+    if (submitAction !== "save-draft" && (!excerpt || !plainContent || !categoryId)) {
+      redirect(`/admin/edit/${postId}?toast=missing_fields`)
     }
 
     const { seoTitle, seoDescription } = resolvePostSeoInput({
@@ -304,7 +308,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             defaultValue={post.excerpt}
             className="min-h-20"
             placeholder="Mô tả ngắn bài viết"
-            required
           />
         </div>
 

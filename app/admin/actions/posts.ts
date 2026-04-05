@@ -54,7 +54,9 @@ export async function createPost(formData: FormData) {
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
-  const categoryId = String(formData.get("categoryId") || "").trim()
+  const mainCategoryId = String(formData.get("mainCategoryId") || "").trim()
+  const subcategoryId = String(formData.get("subcategoryId") || "").trim()
+  const categoryId = subcategoryId || mainCategoryId
   const rawSeoTitle = String(formData.get("seoTitle") || "").trim()
   const rawSeoDescription = String(formData.get("seoDescription") || "").trim()
   const manualOgImage = String(formData.get("ogImage") || "").trim() || null
@@ -67,8 +69,12 @@ export async function createPost(formData: FormData) {
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-  if (!title || !excerpt || !plainContent || !categoryId) {
-    return
+  if (!title) {
+    redirect("/admin?tab=write&toast=missing_fields")
+  }
+  
+  if (submitAction !== "save-draft" && (!excerpt || !plainContent || !categoryId)) {
+    redirect("/admin?tab=write&toast=missing_fields")
   }
 
   const { seoTitle, seoDescription } = resolvePostSeoInput({

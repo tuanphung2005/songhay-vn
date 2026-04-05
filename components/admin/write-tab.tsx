@@ -139,7 +139,6 @@ export function WriteTab({
             name="excerpt"
             className="min-h-20"
             placeholder="Mô tả ngắn bài viết"
-            required
           />
         </div>
 

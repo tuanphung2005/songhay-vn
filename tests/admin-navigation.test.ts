@@ -8,7 +8,7 @@ function readWorkspaceFile(relativePath: string) {
 
 describe("admin navigation submenu", () => {
   test("renders grouped submenu labels in admin page", () => {
-    const source = readWorkspaceFile("app/admin/page.tsx")
+    const source = readWorkspaceFile("app/admin/layout.tsx")
     const helperSource = readWorkspaceFile("app/admin/page-helpers.ts")
 
     expect(source).toContain("Quản lý tin")
@@ -38,11 +38,11 @@ describe("admin navigation submenu", () => {
   })
 
   test("removes snapshot card and renders counts in nav buttons", () => {
-    const pageSource = readWorkspaceFile("app/admin/page.tsx")
+    const layoutSource = readWorkspaceFile("app/admin/layout.tsx")
     const navButtonSource = readWorkspaceFile("components/admin/admin-nav-button.tsx")
 
-    expect(pageSource).not.toContain("Snapshot hệ thống")
-    expect(pageSource).toContain("navCountByKey")
+    expect(layoutSource).not.toContain("Snapshot hệ thống")
+    expect(layoutSource).toContain("navCountByKey")
     expect(navButtonSource).toContain("count?: number")
     expect(navButtonSource).toContain("toLocaleString(\"vi-VN\")")
   })

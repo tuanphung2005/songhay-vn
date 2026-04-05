@@ -140,6 +140,11 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Dữ liệu thao tác không hợp lệ. Vui lòng thử lại.",
     type: "error",
   },
+  missing_fields: {
+    title: "Thiếu thông tin bắt buộc",
+    description: "Vui lòng nhập đầy đủ các trường thông tin được yêu cầu.",
+    type: "error",
+  },
   media_uploaded: {
     title: "Đã tải media",
     description: "Media đã được lưu vào kho dữ liệu.",
