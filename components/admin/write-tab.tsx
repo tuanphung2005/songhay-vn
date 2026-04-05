@@ -19,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { CategorySelector } from "@/components/admin/category-selector"
 import { SeoFields } from "@/components/admin/seo-fields"
 import { SeoKeywordPicker } from "@/components/admin/seo-keyword-picker"
-
 import { EditFormDirtyTracker } from "@/components/admin/edit-form-dirty-tracker"
+import { ThumbnailPicker } from "@/components/admin/thumbnail-picker"
 
 type CategoryWriteRow = {
   id: string
@@ -222,28 +222,18 @@ export function WriteTab({
 
               <fieldset className="space-y-3 rounded-lg border bg-white p-4">
                 <legend className="px-1 text-sm font-semibold">Đa phương tiện</legend>
-                <div className="space-y-1.5">
-                  <Label htmlFor="thumbnailUrl">Ảnh đại diện URL</Label>
-                  <Input
-                    id="thumbnailUrl"
-                    name="thumbnailUrl"
-                    placeholder="https://..."
+                <div className="space-y-2">
+                  <Label htmlFor="thumbnailUrl">Ảnh đại diện</Label>
+                  <ThumbnailPicker
+                    mediaAssets={mediaAssets}
+                    currentUserId={currentUserId}
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="thumbnailUpload">Upload ảnh mới</Label>
-                  <Input
-                    id="thumbnailUpload"
-                    name="thumbnailUpload"
-                    type="file"
-                    accept="image/*"
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Hệ thống tự động dùng ảnh này làm OG image khi share.
                 </p>
 
-                <div className="mt-3 border-t pt-3 flex items-center gap-2">
+                <div className="mt-4 border-t pt-4 flex items-center gap-2">
                   <Checkbox
                     id="hasVideo"
                     checked={hasVideo}
@@ -277,3 +267,4 @@ export function WriteTab({
     </div>
   )
 }
+

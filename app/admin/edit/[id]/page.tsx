@@ -24,6 +24,7 @@ import {
 } from "@/lib/permissions"
 import { resolvePostSeoInput } from "@/lib/post-seo"
 import { EditFormDirtyTracker } from "@/components/admin/edit-form-dirty-tracker"
+import { ThumbnailPicker } from "@/components/admin/thumbnail-picker"
 import { prisma } from "@/lib/prisma"
 import {
   resolveSeoKeywordSelection,
@@ -403,31 +404,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
             <fieldset className="space-y-3 rounded-lg border bg-white p-4">
               <legend className="px-1 text-sm font-semibold">Đa phương tiện</legend>
-              <div className="space-y-1.5">
-                <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
-                <Input
-                  id="thumbnailUrl"
-                  name="thumbnailUrl"
+              <div className="space-y-2">
+                <Label htmlFor="thumbnailUrl">Ảnh đại diện</Label>
+                <ThumbnailPicker
                   defaultValue={post.thumbnailUrl || ""}
-                  placeholder="https://..."
-                />
-                {post.thumbnailUrl && (
-                  <div className="mt-2">
-                    <img
-                      src={post.thumbnailUrl}
-                      alt="Thumbnail preview"
-                      className="h-20 w-auto rounded border"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1.5 pt-2">
-                <Label htmlFor="thumbnailUpload">Upload ảnh mới</Label>
-                <Input
-                  id="thumbnailUpload"
-                  name="thumbnailUpload"
-                  type="file"
-                  accept="image/*"
+                  mediaAssets={mediaAssets}
+                  currentUserId={currentUser.id}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
