@@ -23,6 +23,7 @@ import {
   canViewAllPosts,
 } from "@/lib/permissions"
 import { resolvePostSeoInput } from "@/lib/post-seo"
+import { EditFormDirtyTracker } from "@/components/admin/edit-form-dirty-tracker"
 import { prisma } from "@/lib/prisma"
 import {
   resolveSeoKeywordSelection,
@@ -267,176 +268,204 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href={`/admin/preview/${post.id}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Button variant="secondary">
-              <Eye className="size-4" />
-              Xem trước
-            </Button>
-          </Link>
           <Link href="/admin?tab=posts">
             <Button variant="outline">
-              <ArrowLeft className="size-4" />
+              <ArrowLeft className="size-4 mr-1.5" />
               Quay lại Kho bài
             </Button>
           </Link>
         </div>
       </div>
 
-      <form action={updatePost} className="space-y-4">
+      <form action={updatePost} className="space-y-6">
+        <EditFormDirtyTracker />
         <input type="hidden" name="postId" value={post.id} />
 
-        <div className="space-y-1.5">
-          <Label htmlFor="postTitle">Tên bài viết</Label>
-          <Input
-            id="postTitle"
-            name="title"
-            defaultValue={post.title}
-            placeholder="Nhập tiêu đề"
-            required
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="postExcerpt">Trích dẫn</Label>
-          <Textarea
-            id="postExcerpt"
-            name="excerpt"
-            defaultValue={post.excerpt}
-            className="min-h-20"
-            placeholder="Mô tả ngắn bài viết"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Nội dung</Label>
-          <RichTextField
-            name="content"
-            defaultValue={post.content}
-            mediaAssets={mediaAssets}
-            currentUserId={currentUser.id}
-          />
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          <CategorySelector
-            categories={categories}
-            defaultCategoryId={post.categoryId}
-          />
+        <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="videoEmbed">Video embed URL</Label>
+            <Label htmlFor="postTitle">Tên bài viết</Label>
             <Input
-              id="videoEmbed"
-              name="videoEmbedUrl"
-              defaultValue={post.videoEmbedUrl || ""}
-              placeholder="https://www.youtube.com/embed/..."
+              id="postTitle"
+              name="title"
+              defaultValue={post.title}
+              placeholder="Nhập tiêu đề"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="postExcerpt">Trích dẫn</Label>
+            <Textarea
+              id="postExcerpt"
+              name="excerpt"
+              defaultValue={post.excerpt}
+              className="min-h-20"
+              placeholder="Mô tả ngắn bài viết"
             />
           </div>
         </div>
 
-        <fieldset className="space-y-3 rounded-lg border p-3">
-          <legend className="px-1 text-sm font-semibold">Ảnh đại diện</legend>
-          <div className="space-y-1.5">
-            <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
-            <Input
-              id="thumbnailUrl"
-              name="thumbnailUrl"
-              defaultValue={post.thumbnailUrl || ""}
-              placeholder="https://..."
-            />
-            {post.thumbnailUrl && (
-              <div className="mt-2">
-                <img
-                  src={post.thumbnailUrl}
-                  alt="Thumbnail preview"
-                  className="h-20 w-auto rounded border"
+        <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
+          <div className="space-y-6">
+            <div className="space-y-1.5">
+              <Label>Nội dung</Label>
+              <RichTextField
+                name="content"
+                defaultValue={post.content}
+                mediaAssets={mediaAssets}
+                currentUserId={currentUser.id}
+              />
+            </div>
+
+            <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+              <legend className="px-1 text-sm font-semibold">Thao tác xuất bản</legend>
+              <div className="grid gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="submit"
+                    name="submitAction"
+                    value="save-draft"
+                    variant="outline"
+                    size="lg"
+                  >
+                    <Save className="size-4 mr-1.5" />
+                    Lưu nháp
+                  </Button>
+                  <Button asChild variant="secondary" size="lg">
+                    <Link
+                      href={`/admin/preview/${post.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Eye className="size-4 mr-1.5" />
+                      Xem trước
+                    </Link>
+                  </Button>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    type="submit"
+                    name="submitAction"
+                    value="submit-review"
+                    className="w-full"
+                    variant="destructive"
+                    size="lg"
+                  >
+                    <Send className="size-4 mr-1.5" />
+                    Gửi chờ duyệt
+                  </Button>
+
+                  {canSubmitPendingPublish(currentUser.role) ? (
+                    <Button
+                      type="submit"
+                      name="submitAction"
+                      value="submit-publish"
+                      className="w-full"
+                      variant="secondary"
+                      size="lg"
+                    >
+                      <SendToBack className="size-4 mr-1.5" />
+                      Gửi chờ xuất bản
+                    </Button>
+                  ) : null}
+
+                  {canPublish ? (
+                    <Button type="submit" name="submitAction" value="publish" className="w-full" size="lg">
+                      <Globe className="size-4 mr-1.5" />
+                      Xuất bản
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+        <div className="space-y-4">
+          <div className="sticky top-4 space-y-4">
+            <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+              <legend className="px-1 text-sm font-semibold">Phân loại & Cấu hình</legend>
+              <CategorySelector
+                categories={categories}
+                defaultCategoryId={post.categoryId}
+              />
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  className="size-4 rounded border-input"
+                  name="isSensitive"
+                  type="checkbox"
+                  defaultChecked={post.isSensitive}
+                  id="isSensitiveEdit"
+                />
+                <Label htmlFor="isSensitiveEdit">Nội dung nhạy cảm</Label>
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+              <legend className="px-1 text-sm font-semibold">Đa phương tiện</legend>
+              <div className="space-y-1.5">
+                <Label htmlFor="thumbnailUrl">Ảnh đại diện URL hiện tại</Label>
+                <Input
+                  id="thumbnailUrl"
+                  name="thumbnailUrl"
+                  defaultValue={post.thumbnailUrl || ""}
+                  placeholder="https://..."
+                />
+                {post.thumbnailUrl && (
+                  <div className="mt-2">
+                    <img
+                      src={post.thumbnailUrl}
+                      alt="Thumbnail preview"
+                      className="h-20 w-auto rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5 pt-2">
+                <Label htmlFor="thumbnailUpload">Upload ảnh mới</Label>
+                <Input
+                  id="thumbnailUpload"
+                  name="thumbnailUpload"
+                  type="file"
+                  accept="image/*"
                 />
               </div>
-            )}
+              <p className="text-[11px] text-muted-foreground">
+                OG image sẽ tự đồng bộ theo ảnh đại diện.
+              </p>
+
+              <div className="mt-3 border-t pt-3 space-y-1.5">
+                <Label htmlFor="videoEmbed">Video embed URL</Label>
+                <Input
+                  id="videoEmbed"
+                  name="videoEmbedUrl"
+                  defaultValue={post.videoEmbedUrl || ""}
+                  placeholder="https://www.youtube.com/embed/..."
+                />
+              </div>
+            </fieldset>
+
+            <div className="bg-white">
+              <SeoFields
+                defaultSeoTitle={post.seoTitle || ""}
+                defaultSeoDescription={post.seoDescription || ""}
+                initialTitle={post.title}
+                initialExcerpt={post.excerpt}
+                initialContent={post.content}
+              >
+                <SeoKeywordPicker
+                  options={seoKeywordOptions}
+                  initialSelectedIds={[...selectedSeoKeywordIds]}
+                  initialCustomKeywords={initialCustomSeoKeywords}
+                />
+              </SeoFields>
+            </div>
+
+
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="thumbnailUpload">
-              Upload ảnh mới (thay thế ảnh cũ nếu có)
-            </Label>
-            <Input
-              id="thumbnailUpload"
-              name="thumbnailUpload"
-              type="file"
-              accept="image/*"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            OG image sẽ tự đồng bộ theo ảnh đại diện.
-          </p>
-        </fieldset>
-
-        <SeoFields
-          defaultSeoTitle={post.seoTitle || ""}
-          defaultSeoDescription={post.seoDescription || ""}
-          initialTitle={post.title}
-          initialExcerpt={post.excerpt}
-          initialContent={post.content}
-        >
-          <SeoKeywordPicker
-            options={seoKeywordOptions}
-            initialSelectedIds={[...selectedSeoKeywordIds]}
-            initialCustomKeywords={initialCustomSeoKeywords}
-          />
-        </SeoFields>
-
-        <div className="flex flex-wrap items-center gap-4 text-sm">
-          <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2">
-            <input
-              className="size-4 rounded border-input"
-              name="isSensitive"
-              type="checkbox"
-              defaultChecked={post.isSensitive}
-            />
-            Nội dung nhạy cảm
-          </label>
         </div>
-
-        <div className="grid gap-2 md:grid-cols-3">
-          <Button
-            type="submit"
-            name="submitAction"
-            value="save-draft"
-            variant="outline"
-          >
-            <Save className="size-4" />
-            Lưu nháp
-          </Button>
-          <Button
-            type="submit"
-            name="submitAction"
-            value="submit-review"
-            variant="secondary"
-          >
-            <Send className="size-4" />
-            Gửi chờ duyệt
-          </Button>
-          {canSubmitPendingPublish(currentUser.role) ? (
-            <Button
-              type="submit"
-              name="submitAction"
-              value="submit-publish"
-              variant="secondary"
-            >
-              <SendToBack className="size-4" />
-              Gửi chờ xuất bản
-            </Button>
-          ) : null}
-          {canPublish ? (
-            <Button type="submit" name="submitAction" value="publish">
-              <Globe className="size-4" />
-              Xuất bản
-            </Button>
-          ) : null}
-        </div>
-      </form>
+      </div>
+    </form>
     </main>
   )
 }

@@ -48,34 +48,11 @@ type AdminNavButtonProps = {
   count?: number
 }
 
-function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
+export function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
   const searchParams = useSearchParams()
   const activeTab = searchParams.get("tab") || "overview"
   const TabIcon = navIcons[tab.iconName]
   const isActive = activeTab === tab.key
-
-  function handleNavigationAttempt(event: MouseEvent<HTMLAnchorElement>) {
-    if (activeTab !== "write" || tab.key === "write") {
-      return
-    }
-
-    const isDirty =
-      typeof window !== "undefined" &&
-      window.sessionStorage.getItem(WRITE_DIRTY_STORAGE_KEY) === "1"
-    if (!isDirty) {
-      return
-    }
-
-    const confirmed = window.confirm(
-      "Bạn đang có nội dung chưa lưu trong trình soạn thảo. Vẫn chuyển tab?"
-    )
-    if (!confirmed) {
-      event.preventDefault()
-      return
-    }
-
-    window.sessionStorage.setItem(WRITE_DIRTY_STORAGE_KEY, "0")
-  }
 
   return (
     <Tooltip>
@@ -83,7 +60,6 @@ function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
         <Button
           asChild
           variant="ghost"
-          onClick={(e) => handleNavigationAttempt(e as any)}
           className={`h-10 w-full justify-start rounded-xl border px-3.5 ${
             isActive
               ? "border-zinc-200 bg-zinc-100 text-zinc-900 hover:bg-zinc-100 hover:text-zinc-900"
