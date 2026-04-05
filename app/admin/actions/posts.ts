@@ -175,7 +175,7 @@ export async function createPostForPreview(
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-  if (!title || !excerpt || !plainContent || !categoryId) {
+  if (!title) {
     return { error: "missing_fields" }
   }
 

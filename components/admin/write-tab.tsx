@@ -98,6 +98,8 @@ export function WriteTab({
 
   function handlePreview() {
     if (!formRef.current) return
+    if (!formRef.current.reportValidity()) return
+    
     const formData = new FormData(formRef.current)
     startPreviewTransition(async () => {
       const result = await createPostForPreview(formData)
