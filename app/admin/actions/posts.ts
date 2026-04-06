@@ -51,6 +51,7 @@ export async function createPost(formData: FormData) {
   )
 
   const title = String(formData.get("title") || "").trim()
+  const penName = String(formData.get("penName") || "").trim() || null
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
@@ -105,6 +106,7 @@ export async function createPost(formData: FormData) {
     data: {
       title,
       slug,
+      penName,
       excerpt,
       content,
       categoryId,
@@ -161,6 +163,7 @@ export async function createPostForPreview(
   )
 
   const title = String(formData.get("title") || "").trim()
+  const penName = String(formData.get("penName") || "").trim() || null
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
@@ -200,6 +203,7 @@ export async function createPostForPreview(
     data: {
       title,
       slug,
+      penName,
       excerpt,
       content,
       categoryId,

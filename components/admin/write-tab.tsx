@@ -104,6 +104,16 @@ export function WriteTab({
             </div>
 
             <div className="space-y-1.5">
+              <Label htmlFor="postPenName">Bút danh (Tùy chọn)</Label>
+              <Input
+                id="postPenName"
+                name="penName"
+                autoComplete="off"
+                placeholder="Tên tác giả hiển thị công khai"
+              />
+            </div>
+
+            <div className="space-y-1.5">
               <Label htmlFor="postExcerpt">Trích dẫn</Label>
               <Textarea
                 id="postExcerpt"

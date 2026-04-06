@@ -3,6 +3,9 @@ import type { EditorialStatus } from "@/generated/prisma/client"
 export type PostRow = {
   id: string
   title: string
+  penName: string | null
+  excerpt: string
+  seoKeywords: string | null
   slug: string
   views: number
   thumbnailUrl: string | null

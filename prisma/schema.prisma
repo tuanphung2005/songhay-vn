@@ -81,6 +81,7 @@ model Post {
   slug           String   @unique
   excerpt        String
   content        String
+  penName        String?
   thumbnailUrl   String?
   videoEmbedUrl  String?
   seoTitle       String?
