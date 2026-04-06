@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Filter, RotateCcw, Trash2, X } from "lucide-react"
+import { CalendarDays, Filter, RotateCcw, Search, Trash2, UserRound, X } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -71,27 +71,40 @@ export function TrashTab({
         <input type="hidden" name="tab" value="trash" />
         <input type="hidden" name="trashPage" value="1" />
 
-        <Input
-          name="trashQ"
-          defaultValue={filters.query}
-          placeholder="Tìm theo tiêu đề, slug, danh mục hoặc tác giả..."
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            name="trashQ"
+            defaultValue={filters.query}
+            placeholder="Tìm theo tiêu đề, slug, danh mục hoặc tác giả..."
+            className="pl-8"
+          />
+        </div>
 
         {isAdmin ? (
-          <Select name="trashAuthor" defaultValue={filters.authorId || "all"}>
-            <option value="all">Tất cả người viết</option>
-            {data.authorOptions.map((author) => (
-              <option key={author.id} value={author.id}>
-                {author.name} ({author.email})
-              </option>
-            ))}
-          </Select>
+          <div className="relative">
+            <UserRound className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+            <Select name="trashAuthor" defaultValue={filters.authorId || "all"} className="pl-8">
+              <option value="all">Tất cả người viết</option>
+              {data.authorOptions.map((author) => (
+                <option key={author.id} value={author.id}>
+                  {author.name} ({author.email})
+                </option>
+              ))}
+            </Select>
+          </div>
         ) : (
           <input type="hidden" name="trashAuthor" value="" />
         )}
 
-        <Input name="trashFrom" type="date" defaultValue={filters.fromDate} />
-        <Input name="trashTo" type="date" defaultValue={filters.toDate} />
+        <div className="relative">
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} className="pl-8" />
+        </div>
+        <div className="relative">
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input name="trashTo" type="date" defaultValue={filters.toDate} className="pl-8" />
+        </div>
 
         <Button type="submit" variant="outline">
           <Filter className="size-4" />

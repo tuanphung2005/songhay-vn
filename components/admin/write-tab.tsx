@@ -104,12 +104,13 @@ export function WriteTab({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="postPenName">Bút danh (Tùy chọn)</Label>
+              <Label htmlFor="postPenName">Bút danh</Label>
               <Input
                 id="postPenName"
                 name="penName"
                 autoComplete="off"
                 placeholder="Tên tác giả hiển thị công khai"
+                required
               />
             </div>
 

@@ -31,6 +31,11 @@ export async function getAdminPageData({
     categoryCount,
     pendingCommentCount,
     trashedPostCount,
+    draftPostCount,
+    pendingReviewPostCount,
+    pendingPublishPostCount,
+    publishedPostCount,
+    rejectedPostCount,
     totalPostViews,
   } = await getAdminSnapshot()
 
@@ -69,6 +74,11 @@ export async function getAdminPageData({
     categoryCount,
     pendingCommentCount,
     trashedPostCount,
+    draftPostCount,
+    pendingReviewPostCount,
+    pendingPublishPostCount,
+    publishedPostCount,
+    rejectedPostCount,
     totalPostViews,
     categoriesForManage,
     categoriesForWrite,

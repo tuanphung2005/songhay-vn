@@ -76,7 +76,7 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
             type="file"
             className="absolute inset-0 opacity-0 cursor-pointer z-10"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            accept="image/*,video/*"
+            accept="image/gif,image/png,image/jpeg,image/webp,image/avif,video/*"
           />
           <div className="space-y-4">
             {file && previewUrl ? (
@@ -107,7 +107,7 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
               <p className="text-sm font-bold text-zinc-900 line-clamp-1 px-4">
                 {file ? file.name : "Kéo thả hoặc nhấp để chọn tệp"}
               </p>
-              {!file && <p className="text-xs text-zinc-400 font-medium">Hỗ trợ Ảnh và Video (Tối đa 200MB)</p>}
+              {!file && <p className="text-xs text-zinc-400 font-medium">Hỗ trợ GIF, PNG, JPG, WEBP, AVIF và Video (Tối đa 200MB)</p>}
             </div>
           </div>
         </div>

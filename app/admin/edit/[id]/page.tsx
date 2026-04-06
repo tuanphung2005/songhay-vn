@@ -134,7 +134,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     if (!postId) return
 
     const title = String(formData.get("title") || "").trim()
-    const penName = String(formData.get("penName") || "").trim() || null
+    const penName = String(formData.get("penName") || "").trim()
     const excerpt = String(formData.get("excerpt") || "").trim()
     const content = String(formData.get("content") || "").trim()
     const plainContent = getPlainTextFromHtml(content)
@@ -154,7 +154,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const thumbnailUpload = formData.get("thumbnailUpload")
     const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-    if (!title) {
+    if (!title || !penName) {
       redirect(`/admin/edit/${postId}?toast=missing_fields`)
     }
 
@@ -296,13 +296,15 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             />
           </div>
 
-          <div className="space-y-1.5">              <Label htmlFor="postPenName">Bút danh (Tùy chọn)</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="postPenName">Bút danh</Label>
             <Input
               id="postPenName"
               name="penName"
               defaultValue={post.penName || ""}
               autoComplete="off"
               placeholder="Tên tác giả hiển thị công khai"
+              required
             />
           </div>
 

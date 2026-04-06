@@ -19,6 +19,7 @@ export type PostsFilters = {
   authorId: string
   status: "all" | "draft" | "pending-review" | "pending-publish" | "published" | "rejected"
   approval: "all" | "approved" | "unapproved"
+  categoryId: string
   fromDate: string
   toDate: string
   requestedPage: number

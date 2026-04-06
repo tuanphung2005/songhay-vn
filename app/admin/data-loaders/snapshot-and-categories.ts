@@ -19,11 +19,16 @@ export async function getAdminSnapshot() {
         throw error
       })
 
-    const [postCount, categoryCount, pendingCommentCount, trashedPostCount, postViewAggregate] = await Promise.all([
+    const [postCount, categoryCount, pendingCommentCount, trashedPostCount, draftPostCount, pendingReviewPostCount, pendingPublishPostCount, publishedPostCount, rejectedPostCount, postViewAggregate] = await Promise.all([
       prisma.post.count({ where: { isDeleted: false } }),
       prisma.category.count(),
       pendingCommentCountPromise,
       prisma.post.count({ where: { isDeleted: true } }),
+      prisma.post.count({ where: { isDeleted: false, editorialStatus: "DRAFT" } }),
+      prisma.post.count({ where: { isDeleted: false, editorialStatus: "PENDING_REVIEW" } }),
+      prisma.post.count({ where: { isDeleted: false, editorialStatus: "PENDING_PUBLISH" } }),
+      prisma.post.count({ where: { isDeleted: false, editorialStatus: "PUBLISHED" } }),
+      prisma.post.count({ where: { isDeleted: false, editorialStatus: "REJECTED" } }),
       prisma.post.aggregate({
         where: { isDeleted: false },
         _sum: { views: true },
@@ -35,6 +40,11 @@ export async function getAdminSnapshot() {
       categoryCount,
       pendingCommentCount,
       trashedPostCount,
+      draftPostCount,
+      pendingReviewPostCount,
+      pendingPublishPostCount,
+      publishedPostCount,
+      rejectedPostCount,
       totalPostViews: postViewAggregate._sum.views || 0,
     }
   })

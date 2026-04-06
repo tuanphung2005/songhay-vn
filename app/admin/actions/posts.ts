@@ -51,7 +51,7 @@ export async function createPost(formData: FormData) {
   )
 
   const title = String(formData.get("title") || "").trim()
-  const penName = String(formData.get("penName") || "").trim() || null
+  const penName = String(formData.get("penName") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
@@ -70,7 +70,7 @@ export async function createPost(formData: FormData) {
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-  if (!title) {
+  if (!title || !penName) {
     redirect("/admin?tab=write&toast=missing_fields")
   }
 
@@ -163,7 +163,7 @@ export async function createPostForPreview(
   )
 
   const title = String(formData.get("title") || "").trim()
-  const penName = String(formData.get("penName") || "").trim() || null
+  const penName = String(formData.get("penName") || "").trim()
   const excerpt = String(formData.get("excerpt") || "").trim()
   const content = String(formData.get("content") || "").trim()
   const plainContent = getPlainTextFromHtml(content)
@@ -178,7 +178,7 @@ export async function createPostForPreview(
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
 
-  if (!title) {
+  if (!title || !penName) {
     return { error: "missing_fields" }
   }
 

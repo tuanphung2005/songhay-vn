@@ -14,7 +14,10 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
       totalCount: 0,
       totalPages: 1,
       currentPage: 1,
-      filterOptions: [] as Array<{ id: string; name: string; email: string }>,
+      filterOptions: {
+        authors: [] as Array<{ id: string; name: string; email: string }>,
+        categories: [] as Array<{ id: string; name: string; slug: string }>,
+      },
     }
   }
 
@@ -38,9 +41,10 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
     isDeleted: false,
     ...(canViewAllPosts(currentUser.role) ? {} : { authorId: currentUser.id }),
     ...statusWhere,
-    ...(postsFilters.authorId.length > 0 ? { authorId: postsFilters.authorId } : {}),
+    ...(postsFilters.authorId.length > 0 && postsFilters.authorId !== "all" ? { authorId: postsFilters.authorId } : {}),
     ...(postsFilters.approval === "approved" ? { approverId: { not: null } } : {}),
     ...(postsFilters.approval === "unapproved" ? { approverId: null } : {}),
+    ...(postsFilters.categoryId.length > 0 ? { categoryId: postsFilters.categoryId } : {}),
     ...(postsFromDate || postsToDate
       ? {
         updatedAt: {
@@ -120,27 +124,47 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
     take: POSTS_PAGE_SIZE,
   })
 
-  const filterOptions = await prisma.user.findMany({
-    where: {
-      posts: {
-        some: {
-          isDeleted: false,
+  const [authorOptions, categoryOptions] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        posts: {
+          some: {
+            isDeleted: false,
+          },
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-    orderBy: [{ name: "asc" }, { email: "asc" }],
-  })
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: [{ name: "asc" }, { email: "asc" }],
+    }),
+    prisma.category.findMany({
+      where: {
+        posts: {
+          some: {
+            isDeleted: false,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    }),
+  ])
 
   return {
     posts,
     totalCount,
     totalPages,
     currentPage,
-    filterOptions,
+    filterOptions: {
+      authors: authorOptions,
+      categories: categoryOptions,
+    },
   }
 }

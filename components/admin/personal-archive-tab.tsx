@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, Filter, Pencil, Trash2, X } from "lucide-react"
+import { CalendarDays, Eye, Filter, Funnel, Pencil, Search, Trash2, X } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
@@ -101,27 +101,41 @@ export function PersonalArchiveTab({
         <input type="hidden" name="tab" value="personal-archive" />
         <input type="hidden" name="personalPage" value="1" />
 
-        <Input
-          name="personalQ"
-          defaultValue={filters.query}
-          placeholder="Tìm bài theo tiêu đề, slug, mô tả hoặc danh mục..."
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            name="personalQ"
+            defaultValue={filters.query}
+            placeholder="Tìm bài theo tiêu đề, slug, mô tả hoặc danh mục..."
+            className="pl-8"
+          />
+        </div>
 
-        <Select name="personalStatus" defaultValue={filters.status}>
-          <option value="all">Tất cả trạng thái</option>
-          <option value="draft">Bản nháp</option>
-          <option value="pending">Chờ duyệt</option>
-          <option value="pending-publish">Chờ xuất bản</option>
-          <option value="published">Đã xuất bản</option>
-          <option value="rejected">Bị từ chối</option>
-        </Select>
+        <div className="relative">
+          <Funnel className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Select name="personalStatus" defaultValue={filters.status} className="pl-8">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="draft">Bản nháp</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="pending-publish">Chờ xuất bản</option>
+            <option value="published">Đã xuất bản</option>
+            <option value="rejected">Bị từ chối</option>
+          </Select>
+        </div>
 
-        <Input
-          name="personalFrom"
-          type="date"
-          defaultValue={filters.fromDate}
-        />
-        <Input name="personalTo" type="date" defaultValue={filters.toDate} />
+        <div className="relative">
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            name="personalFrom"
+            type="date"
+            defaultValue={filters.fromDate}
+            className="pl-8"
+          />
+        </div>
+        <div className="relative">
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <Input name="personalTo" type="date" defaultValue={filters.toDate} className="pl-8" />
+        </div>
 
         <Button type="submit" variant="outline">
           <Filter className="size-4" />

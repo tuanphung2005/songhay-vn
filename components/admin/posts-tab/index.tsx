@@ -51,9 +51,8 @@ export function PostsTab({
 }: PostsTabProps) {
   const hasActiveFilters = Boolean(
     filters.query ||
-    filters.authorId ||
-    filters.status !== "all" ||
-    filters.approval !== "all" ||
+    (filters.authorId && filters.authorId !== "all") ||
+    filters.categoryId ||
     filters.fromDate ||
     filters.toDate
   )

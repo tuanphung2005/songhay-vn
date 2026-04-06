@@ -22,7 +22,8 @@ describe("admin navigation submenu", () => {
   test("supports new tab keys used by submenu groups", () => {
     const source = readWorkspaceFile("app/admin/page-helpers.ts")
 
-    expect(source).toContain('key: "posts"')
+    expect(source).toContain('key: "posts-draft"')
+    expect(source).toContain('key: "posts-pending-review"')
     expect(source).toContain('key: "media-library"')
     expect(source).toContain('key: "personal-archive"')
     expect(source).toContain('key: "settings-password"')
@@ -31,7 +32,11 @@ describe("admin navigation submenu", () => {
   test("maps sidebar counts to related tabs", () => {
     const source = readWorkspaceFile("app/admin/page-helpers.ts")
 
-    expect(source).toContain('countKey: "postCount"')
+    expect(source).toContain('countKey: "draftPostCount"')
+    expect(source).toContain('countKey: "pendingReviewPostCount"')
+    expect(source).toContain('countKey: "pendingPublishPostCount"')
+    expect(source).toContain('countKey: "publishedPostCount"')
+    expect(source).toContain('countKey: "rejectedPostCount"')
     expect(source).toContain('countKey: "trashedPostCount"')
     expect(source).toContain('countKey: "categoryCount"')
     expect(source).toContain('countKey: "pendingCommentCount"')

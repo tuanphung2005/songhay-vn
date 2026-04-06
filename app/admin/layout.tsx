@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { ShieldCheck } from "lucide-react"
 
 import { getAdminSnapshot } from "@/app/admin/data-loaders/index"
-import { getVisibleTabs, OVERVIEW_TAB, type NavCountKey } from "@/app/admin/page-helpers"
+import { getVisibleTabs, OVERVIEW_TAB, POSTS_SUBMENU_TABS, type NavCountKey } from "@/app/admin/page-helpers"
 import { AdminActionToast } from "@/components/admin/action-toast"
 import { AdminNavButton } from "@/components/admin/admin-nav-button"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +32,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     categoryCount,
     pendingCommentCount,
     trashedPostCount,
+    draftPostCount,
+    pendingReviewPostCount,
+    pendingPublishPostCount,
+    publishedPostCount,
+    rejectedPostCount,
   } = await getAdminSnapshot()
 
   const navCountByKey: Record<NavCountKey, number> = {
@@ -39,6 +44,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     categoryCount,
     pendingCommentCount,
     trashedPostCount,
+    draftPostCount,
+    pendingReviewPostCount,
+    pendingPublishPostCount,
+    publishedPostCount,
+    rejectedPostCount,
   }
 
   return (
@@ -82,6 +92,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">
                     Quản lý tin
                   </p>
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-2">
+                    <div className="px-2 pb-1 text-[12px] font-semibold text-zinc-900">
+                      Bài viết
+                    </div>
+                    <div className="space-y-1 border-l border-zinc-200 pl-2">
+                      {POSTS_SUBMENU_TABS.map((tab) => (
+                        <AdminNavButton
+                          key={tab.key}
+                          tab={tab}
+                          count={
+                            tab.countKey ? navCountByKey[tab.countKey] : undefined
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
                   {contentTabs.map((tab) => (
                     <AdminNavButton
                       key={tab.key}

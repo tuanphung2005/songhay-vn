@@ -1,8 +1,7 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Search, X } from "lucide-react"
+import { CalendarDays, FolderKanban, Search, UserRound, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,13 +28,13 @@ export function PostsFilterBar({
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const params = new URLSearchParams()
-    
+
     formData.forEach((value, key) => {
       if (typeof value === "string" && value) {
         params.append(key, value)
       }
     })
-    
+
     router.replace(`/admin?${params.toString()}`, { scroll: false })
   }
 
@@ -47,6 +46,8 @@ export function PostsFilterBar({
     >
       <input type="hidden" name="tab" value="posts" />
       <input type="hidden" name="postsPage" value="1" />
+      <input type="hidden" name="postsStatus" value={filters.status} />
+      <input type="hidden" name="postsApproval" value="all" />
 
       {/* Search input */}
       <div className="relative min-w-[220px] flex-1">
@@ -59,53 +60,62 @@ export function PostsFilterBar({
         />
       </div>
 
-      {/* Filters */}
-      <Select name="postsStatus" defaultValue={filters.status} className="h-8 w-auto text-sm">
-        <option value="all">Tất cả trạng thái</option>
-        <option value="draft">Nháp</option>
-        <option value="pending-review">Chờ duyệt</option>
-        <option value="pending-publish">Chờ đăng</option>
-        <option value="published">Đã đăng</option>
-        <option value="rejected">Từ chối</option>
-      </Select>
-
-      <Select name="postsApproval" defaultValue={filters.approval} className="h-8 w-auto text-sm">
-        <option value="all">Tất cả duyệt</option>
-        <option value="approved">Đã duyệt</option>
-        <option value="unapproved">Chưa duyệt</option>
-      </Select>
-
       {isAdmin ? (
+        <div className="relative">
+          <UserRound className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+          <Select
+            name="postsAuthor"
+            defaultValue={filters.authorId || "all"}
+            className="h-8 w-auto min-w-44 pl-8 text-sm"
+          >
+            <option value="all">Tất cả tác giả</option>
+            {filterOptions.authors.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      ) : (
+        <input type="hidden" name="postsAuthor" value={filters.authorId || "all"} />
+      )}
+
+      <div className="relative">
+        <FolderKanban className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
         <Select
-          name="postsAuthor"
-          defaultValue={filters.authorId || "all"}
-          className="h-8 w-auto text-sm"
+          name="postsCategory"
+          defaultValue={filters.categoryId || "all"}
+          className="h-8 w-auto min-w-44 pl-8 text-sm"
         >
-          <option value="all">Tất cả tác giả</option>
-          {filterOptions.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name}
+          <option value="all">Tất cả danh mục</option>
+          {filterOptions.categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
             </option>
           ))}
         </Select>
-      ) : (
-        <input type="hidden" name="postsAuthor" value="all" />
-      )}
+      </div>
 
-      <Input
-        name="postsFrom"
-        type="date"
-        defaultValue={filters.fromDate}
-        className="h-8 w-auto text-sm"
-        title="Từ ngày"
-      />
-      <Input
-        name="postsTo"
-        type="date"
-        defaultValue={filters.toDate}
-        className="h-8 w-auto text-sm"
-        title="Đến ngày"
-      />
+      <div className="relative">
+        <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+        <Input
+          name="postsFrom"
+          type="date"
+          defaultValue={filters.fromDate}
+          className="h-8 w-auto pl-8 text-sm"
+          title="Từ ngày"
+        />
+      </div>
+      <div className="relative">
+        <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+        <Input
+          name="postsTo"
+          type="date"
+          defaultValue={filters.toDate}
+          className="h-8 w-auto pl-8 text-sm"
+          title="Đến ngày"
+        />
+      </div>
 
       <Button type="submit" size="sm" className="h-8 gap-1.5 text-xs">
         <Search className="size-3" />
@@ -113,12 +123,12 @@ export function PostsFilterBar({
       </Button>
 
       {hasActiveFilters && (
-        <Button 
+        <Button
           type="button"
-          variant="ghost" 
-          size="sm" 
+          variant="ghost"
+          size="sm"
           className="h-8 gap-1 text-xs text-zinc-500"
-          onClick={() => router.replace("/admin?tab=posts", { scroll: false })}
+          onClick={() => router.replace(`/admin?tab=posts&postsStatus=${filters.status}`, { scroll: false })}
         >
           <X className="size-3" />
           Xóa lọc

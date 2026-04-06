@@ -1,6 +1,5 @@
 "use client"
 
-import type { MouseEvent } from "react"
 import { Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -51,8 +50,13 @@ type AdminNavButtonProps = {
 export function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
   const searchParams = useSearchParams()
   const activeTab = searchParams.get("tab") || "overview"
+  const activePostsStatus = searchParams.get("postsStatus")
   const TabIcon = navIcons[tab.iconName]
-  const isActive = activeTab === tab.key
+  const isActive = tab.activeWhen
+    ? activeTab === tab.activeWhen.tab &&
+    (typeof tab.activeWhen.postsStatus === "undefined" ||
+      activePostsStatus === tab.activeWhen.postsStatus)
+    : activeTab === tab.tabKey
 
   return (
     <Tooltip>
@@ -60,32 +64,29 @@ export function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
         <Button
           asChild
           variant="ghost"
-          className={`h-10 w-full justify-start rounded-xl border px-3.5 ${
-            isActive
+          className={`h-10 w-full justify-start rounded-xl border px-3.5 ${isActive
               ? "border-zinc-200 bg-zinc-100 text-zinc-900 hover:bg-zinc-100 hover:text-zinc-900"
               : "border-transparent text-zinc-600 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900"
-          }`}
+            }`}
         >
           <Link
-            href={`/admin?tab=${tab.key}`}
+            href={tab.href || `/admin?tab=${tab.tabKey}`}
             className="flex w-full items-center gap-2"
           >
             <span className="flex min-w-0 flex-1 items-center gap-2.5">
               <TabIcon
-                className={`size-4 ${
-                  isActive ? "text-zinc-900" : "text-zinc-500"
-                }`}
+                className={`size-4 ${isActive ? "text-zinc-900" : "text-zinc-500"
+                  }`}
               />
               <span className="truncate">{tab.label}</span>
             </span>
             {typeof count === "number" ? (
               <Badge
                 variant="secondary"
-                className={`ml-auto h-5 min-w-6 justify-center px-1.5 text-[11px] font-semibold tabular-nums ${
-                  isActive
+                className={`ml-auto h-5 min-w-6 justify-center px-1.5 text-[11px] font-semibold tabular-nums ${isActive
                     ? "bg-zinc-900 text-white"
                     : "bg-zinc-100 text-zinc-600"
-                }`}
+                  }`}
               >
                 {count.toLocaleString("vi-VN")}
               </Badge>

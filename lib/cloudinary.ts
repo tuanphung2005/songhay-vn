@@ -75,7 +75,11 @@ async function uploadAssetToCloudinary({
     formData.append("upload_preset", uploadPreset)
   } else {
     const timestamp = Math.floor(Date.now() / 1000)
-    const signature = toSignature({ folder, timestamp }, apiSecret!)
+    const signature = toSignature({
+      folder,
+      timestamp,
+      ...(transformation ? { transformation } : {}),
+    }, apiSecret!)
     formData.append("api_key", apiKey!)
     formData.append("timestamp", String(timestamp))
     formData.append("signature", signature)

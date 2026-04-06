@@ -31,6 +31,22 @@ function toPaging(input: string | null, fallback: number) {
   return value
 }
 
+const SUPPORTED_IMAGE_EXTENSION_REGEX = /\.(gif|png|jpe?g|webp|avif)$/i
+
+function resolveImageMimeType(file: File) {
+  if (file.type.startsWith("image/")) {
+    return file.type
+  }
+
+  const lowerName = file.name.toLowerCase()
+  if (lowerName.endsWith(".gif")) return "image/gif"
+  if (lowerName.endsWith(".png")) return "image/png"
+  if (lowerName.endsWith(".webp")) return "image/webp"
+  if (lowerName.endsWith(".avif")) return "image/avif"
+  if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) return "image/jpeg"
+  return "image/jpeg"
+}
+
 export async function GET(request: unknown) {
   const incomingRequest = request as Request
   const token = readCookie(incomingRequest.headers.get("cookie"), authCookieName)
@@ -135,9 +151,16 @@ export async function POST(request: unknown) {
     return NextResponse.json({ error: "invalid_file" }, { status: 400 })
   }
 
-  if (!file.type.startsWith("image/")) {
+  const isImageMimeType = file.type.startsWith("image/")
+  const hasSupportedImageExtension = SUPPORTED_IMAGE_EXTENSION_REGEX.test(
+    file.name
+  )
+
+  if (!isImageMimeType && !hasSupportedImageExtension) {
     return NextResponse.json({ error: "invalid_file_type" }, { status: 400 })
   }
+
+  const imageMimeType = resolveImageMimeType(file)
 
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
@@ -146,7 +169,7 @@ export async function POST(request: unknown) {
     const url = await uploadImageToCloudinary({
       buffer,
       filename: file.name,
-      mimeType: file.type,
+      mimeType: imageMimeType,
       folder: "songhay/editor",
       transformation: "c_limit,w_1920",
     })
@@ -160,7 +183,7 @@ export async function POST(request: unknown) {
           url,
           displayName: displayNameInput.length > 0 ? displayNameInput.slice(0, 120) : null,
           filename: file.name,
-          mimeType: file.type || "image/jpeg",
+          mimeType: imageMimeType,
           sizeBytes: file.size,
           uploaderId: session.userId,
         },

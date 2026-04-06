@@ -67,6 +67,7 @@ type ResolvedSearchParams = {
   postsAuthor?: string
   postsStatus?: string
   postsApproval?: string
+  postsCategory?: string
   postsFrom?: string
   postsTo?: string
   postsPage?: string
@@ -117,7 +118,7 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
   } = parseAdminSearchParams(searchParams)
 
   const activeTab: AdminTab = visibleTabs.some(
-    (item) => item.key === tabFromQuery
+    (item) => item.tabKey === tabFromQuery
   )
     ? (tabFromQuery as AdminTab)
     : "overview"

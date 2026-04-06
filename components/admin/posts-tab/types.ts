@@ -29,6 +29,7 @@ export type PostsFilters = {
   authorId: string
   status: "all" | "draft" | "pending-review" | "pending-publish" | "published" | "rejected"
   approval: "all" | "approved" | "unapproved"
+  categoryId: string
   fromDate: string
   toDate: string
 }
@@ -38,7 +39,10 @@ export type PostsData = {
   totalCount: number
   totalPages: number
   currentPage: number
-  filterOptions: Array<{ id: string; name: string; email: string }>
+  filterOptions: {
+    authors: Array<{ id: string; name: string; email: string }>
+    categories: Array<{ id: string; name: string; slug: string }>
+  }
 }
 
 export type PostActions = {
@@ -107,6 +111,7 @@ export function buildPostsQuery(filters: PostsFilters, page: number) {
     (filters.authorId ? `&postsAuthor=${encodeURIComponent(filters.authorId)}` : "") +
     (filters.status !== "all" ? `&postsStatus=${filters.status}` : "") +
     (filters.approval !== "all" ? `&postsApproval=${filters.approval}` : "") +
+    (filters.categoryId ? `&postsCategory=${encodeURIComponent(filters.categoryId)}` : "") +
     (filters.fromDate ? `&postsFrom=${encodeURIComponent(filters.fromDate)}` : "") +
     (filters.toDate ? `&postsTo=${encodeURIComponent(filters.toDate)}` : "") +
     `&postsPage=${page}`

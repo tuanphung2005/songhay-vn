@@ -14,38 +14,178 @@ export type NavIconName =
   | "users"
 
 export type NavLeaf = {
-  key: AdminTab
+  key: string
+  tabKey: AdminTab
   label: string
   description: string
   iconName: NavIconName
   adminOnly?: boolean
   countKey?: NavCountKey
+  href?: string
+  activeWhen?: {
+    tab: AdminTab
+    postsStatus?: "draft" | "pending-review" | "pending-publish" | "published" | "rejected"
+  }
 }
 
-export type NavCountKey = "postCount" | "categoryCount" | "pendingCommentCount" | "trashedPostCount"
+export type NavCountKey =
+  | "postCount"
+  | "categoryCount"
+  | "pendingCommentCount"
+  | "trashedPostCount"
+  | "draftPostCount"
+  | "pendingReviewPostCount"
+  | "pendingPublishPostCount"
+  | "publishedPostCount"
+  | "rejectedPostCount"
 
 export const OVERVIEW_TAB: NavLeaf = {
   key: "overview",
+  tabKey: "overview",
   label: "Tổng quan",
   description: "Bức tranh tổng quan trạng thái CMS",
   iconName: "layoutDashboard",
 }
 
 export const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
-  { key: "write", label: "Viết bài mới", description: "Soạn nội dung và gửi duyệt/xuất bản", iconName: "penSquare" },
-  { key: "media-library", label: "Kho dữ liệu", description: "Tái sử dụng ảnh/video đã upload", iconName: "libraryBig" },
-  { key: "personal-archive", label: "Lưu trữ cá nhân", description: "Bài viết theo tài khoản đăng nhập", iconName: "userSquare2" },
-  { key: "posts", label: "Kho bài", description: "Tổng hợp bài viết theo trạng thái biên tập", iconName: "newspaper", countKey: "postCount" },
-  { key: "trash", label: "Thùng rác", description: "Khôi phục hoặc xóa vĩnh viễn", iconName: "trash2", countKey: "trashedPostCount" },
+  {
+    key: "media-library",
+    tabKey: "media-library",
+    label: "Kho dữ liệu",
+    description: "Tái sử dụng ảnh/video đã upload",
+    iconName: "libraryBig",
+  },
+  {
+    key: "personal-archive",
+    tabKey: "personal-archive",
+    label: "Lưu trữ cá nhân",
+    description: "Bài viết theo tài khoản đăng nhập",
+    iconName: "userSquare2",
+  },
+]
+
+export const POSTS_SUBMENU_TABS: NavLeaf[] = [
+  {
+    key: "posts-write",
+    tabKey: "write",
+    label: "Thêm mới",
+    description: "Soạn nội dung và gửi duyệt/xuất bản",
+    iconName: "penSquare",
+    href: "/admin?tab=write",
+    activeWhen: { tab: "write" },
+  },
+  {
+    key: "posts-draft",
+    tabKey: "posts",
+    label: "Bài đang viết",
+    description: "Danh sách bài đang ở trạng thái nháp",
+    iconName: "newspaper",
+    countKey: "draftPostCount",
+    href: "/admin?tab=posts&postsStatus=draft",
+    activeWhen: { tab: "posts", postsStatus: "draft" },
+  },
+  {
+    key: "posts-rejected",
+    tabKey: "posts",
+    label: "Tin bài bị trả lại",
+    description: "Bài bị từ chối, cần chỉnh sửa",
+    iconName: "newspaper",
+    countKey: "rejectedPostCount",
+    href: "/admin?tab=posts&postsStatus=rejected",
+    activeWhen: { tab: "posts", postsStatus: "rejected" },
+  },
+  {
+    key: "posts-pending-review",
+    tabKey: "posts",
+    label: "Bài chờ duyệt",
+    description: "Bài chờ biên tập viên duyệt",
+    iconName: "newspaper",
+    countKey: "pendingReviewPostCount",
+    href: "/admin?tab=posts&postsStatus=pending-review",
+    activeWhen: { tab: "posts", postsStatus: "pending-review" },
+  },
+  {
+    key: "posts-pending-publish",
+    tabKey: "posts",
+    label: "Bài chờ xuất bản",
+    description: "Bài đã duyệt, chờ xuất bản",
+    iconName: "newspaper",
+    countKey: "pendingPublishPostCount",
+    href: "/admin?tab=posts&postsStatus=pending-publish",
+    activeWhen: { tab: "posts", postsStatus: "pending-publish" },
+  },
+  {
+    key: "posts-published",
+    tabKey: "posts",
+    label: "Bài đã xuất bản",
+    description: "Bài đã xuất bản công khai",
+    iconName: "newspaper",
+    countKey: "publishedPostCount",
+    href: "/admin?tab=posts&postsStatus=published",
+    activeWhen: { tab: "posts", postsStatus: "published" },
+  },
+  {
+    key: "posts-trash",
+    tabKey: "trash",
+    label: "Thùng rác",
+    description: "Khôi phục hoặc xóa vĩnh viễn",
+    iconName: "trash2",
+    countKey: "trashedPostCount",
+    href: "/admin?tab=trash",
+    activeWhen: { tab: "trash" },
+  },
 ]
 
 export const SETTINGS_TABS: NavLeaf[] = [
-  { key: "settings-password", label: "Đổi mật khẩu", description: "Thay đổi mật khẩu", iconName: "keyRound" },
-  { key: "settings-moderation", label: "Kiểm duyệt", description: "Quản lý từ cấm và từ khóa SEO", iconName: "messageSquareMore", adminOnly: true },
-  { key: "categories", label: "Chuyên mục", description: "Quản lý cấu trúc chuyên mục", iconName: "folderKanban", adminOnly: true, countKey: "categoryCount" },
-  { key: "comments", label: "Bình luận", description: "Duyệt và kiểm soát thảo luận", iconName: "messageSquareMore", adminOnly: true, countKey: "pendingCommentCount" },
-  { key: "settings-permissions", label: "Phân quyền", description: "Tùy chỉnh quyền theo từng role", iconName: "shieldCheck", adminOnly: true },
-  { key: "settings-users", label: "Người dùng", description: "Quản lý tài khoản và phân quyền", iconName: "users", adminOnly: true },
+  {
+    key: "settings-password",
+    tabKey: "settings-password",
+    label: "Đổi mật khẩu",
+    description: "Thay đổi mật khẩu",
+    iconName: "keyRound",
+  },
+  {
+    key: "settings-moderation",
+    tabKey: "settings-moderation",
+    label: "Kiểm duyệt",
+    description: "Quản lý từ cấm và từ khóa SEO",
+    iconName: "messageSquareMore",
+    adminOnly: true,
+  },
+  {
+    key: "categories",
+    tabKey: "categories",
+    label: "Chuyên mục",
+    description: "Quản lý cấu trúc chuyên mục",
+    iconName: "folderKanban",
+    adminOnly: true,
+    countKey: "categoryCount",
+  },
+  {
+    key: "comments",
+    tabKey: "comments",
+    label: "Bình luận",
+    description: "Duyệt và kiểm soát thảo luận",
+    iconName: "messageSquareMore",
+    adminOnly: true,
+    countKey: "pendingCommentCount",
+  },
+  {
+    key: "settings-permissions",
+    tabKey: "settings-permissions",
+    label: "Phân quyền",
+    description: "Tùy chỉnh quyền theo từng role",
+    iconName: "shieldCheck",
+    adminOnly: true,
+  },
+  {
+    key: "settings-users",
+    tabKey: "settings-users",
+    label: "Người dùng",
+    description: "Quản lý tài khoản và phân quyền",
+    iconName: "users",
+    adminOnly: true,
+  },
 ]
 
 type RawSearchParams = {
@@ -57,6 +197,7 @@ type RawSearchParams = {
   postsAuthor?: string
   postsStatus?: string
   postsApproval?: string
+  postsCategory?: string
   postsFrom?: string
   postsTo?: string
   postsPage?: string
@@ -77,20 +218,41 @@ export function getVisibleTabs({
 }: {
   canManageSettings: boolean
 }) {
-  const contentTabs = CONTENT_MANAGEMENT_TABS.filter((item) => {
-    if (item.key === "posts" || item.key === "trash" || item.key === "personal-archive") {
-      return true
-    }
-
-    return item.adminOnly ? canManageSettings : true
-  })
+  const contentTabs = CONTENT_MANAGEMENT_TABS.filter((item) => (item.adminOnly ? canManageSettings : true))
 
   const settingsTabs = SETTINGS_TABS.filter((item) => (item.adminOnly ? canManageSettings : true))
+
+  const tabRegistry: NavLeaf[] = [
+    OVERVIEW_TAB,
+    ...contentTabs,
+    ...settingsTabs,
+    {
+      key: "registry-posts",
+      tabKey: "posts",
+      label: "Kho bài",
+      description: "Tổng hợp bài viết theo trạng thái biên tập",
+      iconName: "newspaper",
+    },
+    {
+      key: "registry-write",
+      tabKey: "write",
+      label: "Thêm mới",
+      description: "Soạn nội dung và gửi duyệt/xuất bản",
+      iconName: "penSquare",
+    },
+    {
+      key: "registry-trash",
+      tabKey: "trash",
+      label: "Thùng rác",
+      description: "Khôi phục hoặc xóa vĩnh viễn",
+      iconName: "trash2",
+    },
+  ]
 
   return {
     contentTabs,
     settingsTabs,
-    visibleTabs: [OVERVIEW_TAB, ...contentTabs, ...settingsTabs] as NavLeaf[],
+    visibleTabs: tabRegistry,
   }
 }
 
@@ -102,13 +264,15 @@ export function parseAdminSearchParams(resolvedSearchParams?: RawSearchParams) {
 
   const postsQuery = (resolvedSearchParams?.postsQ || "").trim().slice(0, 120)
   const postsAuthorRaw = (resolvedSearchParams?.postsAuthor || "").trim()
-  const postsAuthor = postsAuthorRaw === "all" ? "" : postsAuthorRaw
+  const postsAuthor = postsAuthorRaw
   const postsStatus = ["all", "draft", "pending-review", "pending-publish", "published", "rejected"].includes(resolvedSearchParams?.postsStatus || "")
     ? (resolvedSearchParams?.postsStatus as "all" | "draft" | "pending-review" | "pending-publish" | "published" | "rejected")
     : "all"
   const postsApproval = ["all", "approved", "unapproved"].includes(resolvedSearchParams?.postsApproval || "")
     ? (resolvedSearchParams?.postsApproval as "all" | "approved" | "unapproved")
     : "all"
+  const postsCategoryRaw = (resolvedSearchParams?.postsCategory || "").trim()
+  const postsCategory = postsCategoryRaw === "all" ? "" : postsCategoryRaw
   const postsFrom = (resolvedSearchParams?.postsFrom || "").trim()
   const postsTo = (resolvedSearchParams?.postsTo || "").trim()
   const rawPostsPage = Number.parseInt(resolvedSearchParams?.postsPage || "1", 10)
@@ -141,6 +305,7 @@ export function parseAdminSearchParams(resolvedSearchParams?: RawSearchParams) {
       authorId: postsAuthor,
       status: postsStatus,
       approval: postsApproval,
+      categoryId: postsCategory,
       fromDate: postsFrom,
       toDate: postsTo,
       requestedPage: requestedPostsPage,
