@@ -144,7 +144,7 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                     {post.seoKeywords && (
                       <div className="flex flex-wrap items-center gap-1">
                         <span className="text-[11px] font-medium text-zinc-700">
-                          Tags:
+                          Từ khóa:
                         </span>
                         <span className="text-[11px] text-zinc-500">
                           {post.seoKeywords

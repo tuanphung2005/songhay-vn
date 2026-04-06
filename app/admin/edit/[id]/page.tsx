@@ -297,16 +297,16 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
           </div>
 
           <div className="space-y-1.5">              <Label htmlFor="postPenName">Bút danh (Tùy chọn)</Label>
-              <Input
-                id="postPenName"
-                name="penName"
-                defaultValue={post.penName || ""}
-                autoComplete="off"
-                placeholder="Tên tác giả hiển thị công khai"
-              />
-            </div>
+            <Input
+              id="postPenName"
+              name="penName"
+              defaultValue={post.penName || ""}
+              autoComplete="off"
+              placeholder="Tên tác giả hiển thị công khai"
+            />
+          </div>
 
-            <div className="space-y-1.5">            <Label htmlFor="postExcerpt">Trích dẫn</Label>
+          <div className="space-y-1.5">            <Label htmlFor="postExcerpt">Trích dẫn</Label>
             <Textarea
               id="postExcerpt"
               name="excerpt"
@@ -393,72 +393,72 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             </fieldset>
           </div>
 
-        <div className="space-y-4">
-          <div className="sticky top-4 space-y-4">
-            <fieldset className="space-y-3 rounded-lg border bg-white p-4">
-              <legend className="px-1 text-sm font-semibold">Phân loại & Cấu hình</legend>
-              <CategorySelector
-                categories={categories}
-                defaultCategoryId={post.categoryId}
-              />
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  className="size-4 rounded border-input"
-                  name="isSensitive"
-                  type="checkbox"
-                  defaultChecked={post.isSensitive}
-                  id="isSensitiveEdit"
+          <div className="space-y-4">
+            <div className="sticky top-4 space-y-4">
+              <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+                <legend className="px-1 text-sm font-semibold">Phân loại & Cấu hình</legend>
+                <CategorySelector
+                  categories={categories}
+                  defaultCategoryId={post.categoryId}
                 />
-                <Label htmlFor="isSensitiveEdit">Nội dung nhạy cảm</Label>
-              </div>
-            </fieldset>
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    className="size-4 rounded border-input"
+                    name="isSensitive"
+                    type="checkbox"
+                    defaultChecked={post.isSensitive}
+                    id="isSensitiveEdit"
+                  />
+                  <Label htmlFor="isSensitiveEdit">Nội dung nhạy cảm</Label>
+                </div>
+              </fieldset>
 
-            <fieldset className="space-y-3 rounded-lg border bg-white p-4">
-              <legend className="px-1 text-sm font-semibold">Đa phương tiện</legend>
-              <div className="space-y-2">
-                <Label htmlFor="thumbnailUrl">Ảnh đại diện</Label>
-                <ThumbnailPicker
-                  defaultValue={post.thumbnailUrl || ""}
-                  mediaAssets={mediaAssets}
-                  currentUserId={currentUser.id}
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                OG image sẽ tự đồng bộ theo ảnh đại diện.
-              </p>
+              <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+                <legend className="px-1 text-sm font-semibold">Đa phương tiện</legend>
+                <div className="space-y-2">
+                  <Label htmlFor="thumbnailUrl">Ảnh đại diện</Label>
+                  <ThumbnailPicker
+                    defaultValue={post.thumbnailUrl || ""}
+                    mediaAssets={mediaAssets}
+                    currentUserId={currentUser.id}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  OG image sẽ tự đồng bộ theo ảnh đại diện.
+                </p>
 
-              <div className="mt-3 border-t pt-3 space-y-1.5">
-                <Label htmlFor="videoEmbed">Video embed URL</Label>
-                <Input
-                  id="videoEmbed"
-                  name="videoEmbedUrl"
-                  defaultValue={post.videoEmbedUrl || ""}
-                  placeholder="https://www.youtube.com/embed/..."
-                />
-              </div>
-            </fieldset>
+                <div className="mt-3 border-t pt-3 space-y-1.5">
+                  <Label htmlFor="videoEmbed">Video embed URL</Label>
+                  <Input
+                    id="videoEmbed"
+                    name="videoEmbedUrl"
+                    defaultValue={post.videoEmbedUrl || ""}
+                    placeholder="https://www.youtube.com/embed/..."
+                  />
+                </div>
+              </fieldset>
 
-            <div className="bg-white">
-              <SeoFields
-                defaultSeoTitle={post.seoTitle || ""}
-                defaultSeoDescription={post.seoDescription || ""}
-                initialTitle={post.title}
-                initialExcerpt={post.excerpt}
-                initialContent={post.content}
-              >
-                <SeoKeywordPicker
-                  options={seoKeywordOptions}
-                  initialSelectedIds={[...selectedSeoKeywordIds]}
-                  initialCustomKeywords={initialCustomSeoKeywords}
-                />
-              </SeoFields>
+              <div className="bg-white">
+                <SeoFields
+                  defaultSeoTitle={post.seoTitle || ""}
+                  defaultSeoDescription={post.seoDescription || ""}
+                  initialTitle={post.title}
+                  initialExcerpt={post.excerpt}
+                  initialContent={post.content}
+                >
+                  <SeoKeywordPicker
+                    options={seoKeywordOptions}
+                    initialSelectedIds={[...selectedSeoKeywordIds]}
+                    initialCustomKeywords={initialCustomSeoKeywords}
+                  />
+                </SeoFields>
+              </div>
+
+
             </div>
-
-
           </div>
         </div>
-      </div>
-    </form>
+      </form>
     </main>
   )
 }

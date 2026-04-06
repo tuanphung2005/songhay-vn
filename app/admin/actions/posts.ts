@@ -73,7 +73,7 @@ export async function createPost(formData: FormData) {
   if (!title) {
     redirect("/admin?tab=write&toast=missing_fields")
   }
-  
+
   if (submitAction !== "save-draft" && (!excerpt || !plainContent || !categoryId)) {
     redirect("/admin?tab=write&toast=missing_fields")
   }
