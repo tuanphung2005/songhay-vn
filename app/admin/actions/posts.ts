@@ -42,6 +42,7 @@ import {
   resolveEditorialFromSubmitAction,
   uniqueCategorySlug,
   uniquePostSlug,
+  logPostHistory,
 } from "@/app/admin/actions-helpers"
 
 export async function createPost(formData: FormData) {
@@ -131,6 +132,16 @@ export async function createPost(formData: FormData) {
   })
 
   await syncPostSeoKeywords(post.id, keywordIds)
+
+  await logPostHistory({
+    postId: post.id,
+    actorId: currentUser.id,
+    actionType: "CREATED",
+    toStatus: post.editorialStatus,
+    snapshotTitle: post.title,
+    snapshotExcerpt: post.excerpt,
+    snapshotContent: post.content,
+  })
 
   revalidatePath("/")
   revalidatePath("/admin")
@@ -224,6 +235,16 @@ export async function createPostForPreview(
 
   await syncPostSeoKeywords(post.id, keywordIds)
 
+  await logPostHistory({
+    postId: post.id,
+    actorId: currentUser.id,
+    actionType: "CREATED",
+    toStatus: post.editorialStatus,
+    snapshotTitle: post.title,
+    snapshotExcerpt: post.excerpt,
+    snapshotContent: post.content,
+  })
+
   revalidatePath("/admin")
   return { postId: post.id }
 }
@@ -279,6 +300,12 @@ export async function updatePostFlags(formData: FormData) {
     include: { category: true },
   })
 
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "UPDATED",
+  })
+
   revalidatePath("/")
   revalidatePath("/admin")
   revalidatePath(`/${updatedPost.category.slug}`)
@@ -330,6 +357,13 @@ export async function movePostToTrash(formData: FormData) {
     },
   })
 
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "TRASHED",
+    fromStatus: existingPost.editorialStatus,
+  })
+
   revalidatePath("/")
   revalidatePath("/admin")
   revalidatePath(`/${existingPost.category.slug}`)
@@ -368,6 +402,13 @@ export async function restorePostFromTrash(formData: FormData) {
       isDeleted: false,
       deletedAt: null,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "RESTORED",
+    toStatus: existingPost.editorialStatus,
   })
 
   revalidatePath("/")

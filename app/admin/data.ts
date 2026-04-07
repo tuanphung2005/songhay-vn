@@ -11,6 +11,7 @@ import {
   getPostsData,
   getTrashedPostsData,
   getUsersData,
+  getHistoryData,
   getRolePermissionsData,
 } from "@/app/admin/data-loaders/index"
 import { buildPaginationItems } from "@/app/admin/data-helpers"
@@ -51,6 +52,7 @@ export async function getAdminPageData({
     overviewAnalytics,
     moderationSettings,
     usersData,
+    historyLogs,
     permissionsMatrix,
   ] = await Promise.all([
     getCategoriesForManage(activeTab),
@@ -64,6 +66,7 @@ export async function getAdminPageData({
     getOverviewAnalytics(activeTab, overviewRange),
     getModerationSettingsData(activeTab),
     getUsersData(activeTab),
+    getHistoryData(activeTab),
     getRolePermissionsData(activeTab),
   ])
 
@@ -95,6 +98,7 @@ export async function getAdminPageData({
     overviewAnalytics,
     moderationSettings,
     usersData,
+    historyLogs,
     permissionsMatrix,
   }
 }

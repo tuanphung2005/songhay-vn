@@ -5,6 +5,7 @@ export type AdminTab =
   | "write"
   | "media-library"
   | "personal-archive"
+  | "history"
   | "categories"
   | "comments"
   | "posts"

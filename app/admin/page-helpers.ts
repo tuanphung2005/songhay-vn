@@ -67,6 +67,13 @@ export const CONTENT_MANAGEMENT_TABS: NavLeaf[] = [
     description: "Bài viết theo tài khoản đăng nhập",
     iconName: "userSquare2",
   },
+  {
+    key: "history",
+    tabKey: "history",
+    label: "Lịch sử tác động",
+    description: "Lưu vết hoạt động biên tập",
+    iconName: "timer",
+  },
 ]
 
 export const POSTS_SUBMENU_TABS: NavLeaf[] = [

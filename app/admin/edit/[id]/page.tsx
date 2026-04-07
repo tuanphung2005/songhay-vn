@@ -37,6 +37,7 @@ import {
   sortCategoriesByTree,
   uniquePostSlug,
 } from "@/app/admin/edit/[id]/helpers"
+import { logPostHistory } from "@/app/admin/actions-helpers"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -150,6 +151,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       String(formData.get("videoEmbedUrl") || "").trim() || null
     const isSensitive = formData.get("isSensitive") === "on"
     const submitAction = String(formData.get("submitAction") || "").trim()
+    const lastUpdatedAt = String(formData.get("lastUpdatedAt") || "").trim()
 
     const thumbnailUpload = formData.get("thumbnailUpload")
     const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
@@ -192,6 +194,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     if (!currentPost) {
       return
+    }
+
+    if (currentPost.updatedAt.toISOString() !== lastUpdatedAt) {
+      redirect(`/admin/edit/${postId}?toast=post_concurrent_modification`)
     }
 
     const canSeeAllPostsAction = canViewAllPosts(currentUser.role)
@@ -254,6 +260,17 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     await syncPostSeoKeywords(postId, keywordIds)
 
+    await logPostHistory({
+      postId,
+      actorId: currentUser.id,
+      actionType: isSaveChanges ? "UPDATED" : "STATUS_CHANGED",
+      fromStatus: currentPost.editorialStatus,
+      toStatus: editorialStatus,
+      snapshotTitle: title,
+      snapshotExcerpt: excerpt,
+      snapshotContent: content,
+    })
+
     revalidatePath("/")
     revalidatePath("/admin")
     revalidatePath(`/${currentPost.category.slug}`)
@@ -302,6 +319,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       <form action={updatePost} className="space-y-6">
         <EditFormDirtyTracker />
         <input type="hidden" name="postId" value={post.id} />
+        <input type="hidden" name="lastUpdatedAt" value={post.updatedAt.toISOString()} />
 
         <div className="space-y-4">
           <div className="space-y-1.5">

@@ -28,6 +28,7 @@ import {
   resolveEditorialFromSubmitAction,
   uniqueCategorySlug,
   uniquePostSlug,
+  logPostHistory,
 } from "@/app/admin/actions-helpers"
 
 export async function approvePendingPost(formData: FormData) {
@@ -39,7 +40,14 @@ export async function approvePendingPost(formData: FormData) {
     return
   }
 
-  await prisma.post.update({
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { editorialStatus: true },
+  })
+
+  if (!existingPost) return
+
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: canPublishNow(currentUser.role) ? "PUBLISHED" : "PENDING_PUBLISH",
@@ -49,6 +57,14 @@ export async function approvePendingPost(formData: FormData) {
       approvedAt: new Date(),
       publishedAt: canPublishNow(currentUser.role) ? new Date() : undefined,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")
@@ -70,7 +86,14 @@ export async function rejectPendingPost(formData: FormData) {
     return
   }
 
-  await prisma.post.update({
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { editorialStatus: true },
+  })
+
+  if (!existingPost) return
+
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "REJECTED",
@@ -79,6 +102,14 @@ export async function rejectPendingPost(formData: FormData) {
       approverId: null,
       approvedAt: null,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/admin")
@@ -97,7 +128,7 @@ export async function submitPostToPendingReview(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true },
+    select: { authorId: true, editorialStatus: true },
   })
 
   if (!existingPost) {
@@ -108,7 +139,7 @@ export async function submitPostToPendingReview(formData: FormData) {
     redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
   }
 
-  await prisma.post.update({
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "PENDING_REVIEW",
@@ -118,6 +149,14 @@ export async function submitPostToPendingReview(formData: FormData) {
       approvedAt: null,
       publishedAt: undefined,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")
@@ -138,7 +177,14 @@ export async function promotePostToPendingPublish(formData: FormData) {
     return
   }
 
-  await prisma.post.update({
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { editorialStatus: true },
+  })
+
+  if (!existingPost) return
+
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "PENDING_PUBLISH",
@@ -148,6 +194,14 @@ export async function promotePostToPendingPublish(formData: FormData) {
       approvedAt: new Date(),
       publishedAt: undefined,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")
@@ -165,7 +219,14 @@ export async function returnPostToPendingReview(formData: FormData) {
     return
   }
 
-  await prisma.post.update({
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { editorialStatus: true },
+  })
+
+  if (!existingPost) return
+
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "PENDING_REVIEW",
@@ -174,6 +235,14 @@ export async function returnPostToPendingReview(formData: FormData) {
       approverId: null,
       approvedAt: null,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")
@@ -191,13 +260,28 @@ export async function returnPostToPendingPublish(formData: FormData) {
     return
   }
 
-  await prisma.post.update({
+  const existingPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { editorialStatus: true },
+  })
+
+  if (!existingPost) return
+
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "PENDING_PUBLISH",
       isPublished: false,
       isDraft: false,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")
@@ -216,7 +300,7 @@ export async function returnPostToDraft(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true },
+    select: { authorId: true, editorialStatus: true },
   })
 
   if (!existingPost) {
@@ -228,7 +312,7 @@ export async function returnPostToDraft(formData: FormData) {
     redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
   }
 
-  await prisma.post.update({
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       editorialStatus: "DRAFT",
@@ -238,6 +322,14 @@ export async function returnPostToDraft(formData: FormData) {
       approvedAt: null,
       publishedAt: undefined,
     },
+  })
+
+  await logPostHistory({
+    postId,
+    actorId: currentUser.id,
+    actionType: "STATUS_CHANGED",
+    fromStatus: existingPost.editorialStatus,
+    toStatus: updatedPost.editorialStatus,
   })
 
   revalidatePath("/")

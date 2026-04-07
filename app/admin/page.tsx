@@ -33,6 +33,7 @@ import {
 } from "@/app/admin/page-helpers"
 import { CategoriesTab } from "@/components/admin/categories-tab"
 import { CommentsTab } from "@/components/admin/comments-tab"
+import { HistoryTab } from "@/components/admin/history-tab"
 import { MediaLibraryTab } from "@/components/admin/media-library-tab"
 import { OverviewTab } from "@/components/admin/overview-tab"
 import { PersonalArchiveTab } from "@/components/admin/personal-archive-tab"
@@ -140,6 +141,7 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
     overviewAnalytics,
     moderationSettings,
     usersData,
+    historyLogs,
     permissionsMatrix,
   } = await getAdminPageData({
     activeTab,
@@ -232,6 +234,9 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
           filters={personalArchiveFilters}
           movePostToTrash={movePostToTrash}
         />
+      ) : null}
+      {activeTab === "history" ? (
+        <HistoryTab historyLogs={historyLogs} />
       ) : null}
       {activeTab === "comments" ? (
         <CommentsTab
