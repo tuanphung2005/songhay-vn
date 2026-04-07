@@ -2,17 +2,13 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MediaAssetType, type UserRole } from "@/generated/prisma/client"
+import { type UserRole } from "@/generated/prisma/client"
 
-import { requireAdminUser, requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
-import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
+import { requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
 import { clearDataCache } from "@/lib/data-cache"
 import {
   can,
-  canApprovePendingReview,
   canCreateSubordinateAccount,
-  canPublishNow,
-  canViewAllPosts,
   roleCanCreate,
   ALL_EDITABLE_ROLES,
   ALL_PERMISSION_ACTIONS,
@@ -23,13 +19,7 @@ import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/password"
 import { normalizeModerationText } from "@/lib/moderation"
 import { normalizeKeyword, toKeywordLabel } from "@/lib/seo-keywords"
-import {
-  ensurePermission,
-  getPlainTextFromHtml,
-  resolveEditorialFromSubmitAction,
-  uniqueCategorySlug,
-  uniquePostSlug,
-} from "@/app/admin/actions-helpers"
+import { ensurePermission } from "@/app/admin/actions-helpers"
 
 export async function updatePasswordMock() {
   await requireCmsUser()

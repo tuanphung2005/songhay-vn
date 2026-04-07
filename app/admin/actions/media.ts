@@ -2,32 +2,12 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MediaAssetType, type UserRole } from "@/generated/prisma/client"
+import { MediaAssetType } from "@/generated/prisma/client"
 
-import { requireAdminUser, requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
-import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
+import { requireCmsUser } from "@/lib/auth"
+import { uploadImageToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary"
 import { clearDataCache } from "@/lib/data-cache"
-import {
-  can,
-  canApprovePendingReview,
-  canCreateSubordinateAccount,
-  canPublishNow,
-  canViewAllPosts,
-  roleCanCreate,
-  ALL_EDITABLE_ROLES,
-  ALL_PERMISSION_ACTIONS,
-  setRolePermissions,
-  type PermissionAction,
-} from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { hashPassword } from "@/lib/password"
-import {
-  ensurePermission,
-  getPlainTextFromHtml,
-  resolveEditorialFromSubmitAction,
-  uniqueCategorySlug,
-  uniquePostSlug,
-} from "@/app/admin/actions-helpers"
 
 const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024
 

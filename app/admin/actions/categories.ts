@@ -2,31 +2,14 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MediaAssetType, type UserRole } from "@/generated/prisma/client"
 
-import { requireAdminUser, requireCmsUser, requireEditorInChiefUser } from "@/lib/auth"
-import { uploadImageToCloudinary, uploadVideoToCloudinary, uploadThumbnail } from "@/lib/cloudinary"
+import { requireAdminUser, requireCmsUser } from "@/lib/auth"
 import { clearDataCache } from "@/lib/data-cache"
-import {
-  can,
-  canApprovePendingReview,
-  canCreateSubordinateAccount,
-  canPublishNow,
-  canViewAllPosts,
-  roleCanCreate,
-  ALL_EDITABLE_ROLES,
-  ALL_PERMISSION_ACTIONS,
-  setRolePermissions,
-  type PermissionAction,
-} from "@/lib/permissions"
+import { can } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { hashPassword } from "@/lib/password"
 import {
   ensurePermission,
-  getPlainTextFromHtml,
-  resolveEditorialFromSubmitAction,
   uniqueCategorySlug,
-  uniquePostSlug,
 } from "@/app/admin/actions-helpers"
 
 export async function createCategory(formData: FormData) {
