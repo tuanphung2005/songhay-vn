@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 
 import { type EditorialStatus, type UserRole } from "@/generated/prisma/client"
 
-import { canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
+import { can, canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 
@@ -47,9 +47,17 @@ export function resolveEditorialFromSubmitAction({
     }
   }
 
+  if (submitAction === "submit-review" && can(role, "submit-pending-review")) {
+    return {
+      editorialStatus: "PENDING_REVIEW",
+      isDraft: false,
+      isPublished: false,
+    }
+  }
+
   return {
-    editorialStatus: "PENDING_REVIEW",
-    isDraft: false,
+    editorialStatus: "DRAFT",
+    isDraft: true,
     isPublished: false,
   }
 }

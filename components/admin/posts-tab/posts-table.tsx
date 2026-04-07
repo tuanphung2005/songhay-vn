@@ -70,12 +70,12 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                     <Image
                       src={post.thumbnailUrl}
                       alt={post.title}
-                      width={120}
-                      height={80}
-                      className="mt-0.5 h-[80px] w-[120px] shrink-0 rounded-md border border-zinc-200 object-cover"
+                      width={84}
+                      height={60}
+                      className="mt-0.5 h-[60px] w-[84px] shrink-0 rounded-md border border-zinc-200 object-cover"
                     />
                   ) : (
-                    <div className="mt-0.5 flex h-[80px] w-[120px] shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
+                    <div className="mt-0.5 flex h-[60px] w-[84px] shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
                       No img
                     </div>
                   )}

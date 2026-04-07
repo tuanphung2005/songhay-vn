@@ -121,9 +121,7 @@ describe("server-side ownership enforcement in actions", () => {
   test("movePostToTrash checks ownership for roles without view-all capability", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
-    expect(source).toMatch(
-      /!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
-    )
+    expect(source).toMatch(/!canTrashOrDeletePost/)
     expect(source).toContain("post_action_forbidden")
   })
 
@@ -131,7 +129,7 @@ describe("server-side ownership enforcement in actions", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toMatch(
-      /export async function restorePostFromTrash[\s\S]*?!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
+      /export async function restorePostFromTrash[\s\S]*?!canTrashOrDeletePost/
     )
   })
 
@@ -139,7 +137,7 @@ describe("server-side ownership enforcement in actions", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
 
     expect(source).toMatch(
-      /export async function deletePostPermanently[\s\S]*?!canViewAllPosts\(currentUser\.role\)\s*&&\s*existingPost\.authorId !== currentUser\.id/
+      /export async function deletePostPermanently[\s\S]*?!canTrashOrDeletePost/
     )
   })
 

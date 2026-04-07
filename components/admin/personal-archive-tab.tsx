@@ -51,6 +51,8 @@ type PersonalPostRow = {
 
 type PersonalArchiveTabProps = {
   isAdmin: boolean
+  canDeletePost: boolean
+  currentUserId: string
   data: {
     rows: PersonalPostRow[]
     totalCount: number
@@ -85,6 +87,8 @@ export function PersonalArchiveTab({
   data,
   filters,
   movePostToTrash,
+  canDeletePost,
+  currentUserId,
 }: PersonalArchiveTabProps) {
   return (
     <div className="space-y-4">
@@ -230,24 +234,26 @@ export function PersonalArchiveTab({
                 </Button>
               </a>
             )}
-            <ConfirmActionForm
-              action={movePostToTrash}
-              fields={[
-                { name: "postId", value: post.id },
-                { name: "sourceTab", value: "personal-archive" },
-              ]}
-              confirmMessage="Chuyển bài viết này vào thùng rác?"
-            >
-              <PendingSubmitButton
-                type="submit"
-                size="sm"
-                variant="destructive"
-                pendingText="Đang chuyển..."
+            {(canDeletePost || (post.author?.id === currentUserId && post.editorialStatus !== "PUBLISHED" && post.editorialStatus !== "PENDING_PUBLISH")) && (
+              <ConfirmActionForm
+                action={movePostToTrash}
+                fields={[
+                  { name: "postId", value: post.id },
+                  { name: "sourceTab", value: "personal-archive" },
+                ]}
+                confirmMessage="Chuyển bài viết này vào thùng rác?"
               >
-                <Trash2 className="size-4" />
-                Chuyển vào thùng rác
-              </PendingSubmitButton>
-            </ConfirmActionForm>
+                <PendingSubmitButton
+                  type="submit"
+                  size="sm"
+                  variant="destructive"
+                  pendingText="Đang chuyển..."
+                >
+                  <Trash2 className="size-4" />
+                  Chuyển vào thùng rác
+                </PendingSubmitButton>
+              </ConfirmActionForm>
+            )}
           </div>
         </div>
       ))}

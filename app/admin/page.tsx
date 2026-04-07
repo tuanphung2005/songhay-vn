@@ -226,6 +226,8 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
       {activeTab === "personal-archive" ? (
         <PersonalArchiveTab
           isAdmin={canSeeAllPosts}
+          canDeletePost={can(currentUser.role, "delete-post")}
+          currentUserId={currentUser.id}
           data={personalPostsData}
           filters={personalArchiveFilters}
           movePostToTrash={movePostToTrash}
@@ -250,6 +252,8 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
       {activeTab === "posts" ? (
         <PostsTab
           isAdmin={canSeeAllPosts}
+          canDeletePost={can(currentUser.role, "delete-post")}
+          currentUserId={currentUser.id}
           canSubmitPendingReview={can(
             currentUser.role,
             "submit-pending-review"

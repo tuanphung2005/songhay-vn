@@ -1,6 +1,6 @@
 import type { EditorialStatus, UserRole } from "@/generated/prisma/client"
 
-import { canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
+import { can, canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { slugify } from "@/lib/slug"
 
@@ -53,6 +53,7 @@ export function resolveEditorialFromSubmitAction({
   const shouldSaveDraft = submitAction === "save-draft"
   const shouldSubmitPublish = submitAction === "submit-publish" && canSubmitPendingPublish(role)
   const shouldPublish = submitAction === "publish" && canPublishNow(role)
+  const shouldSubmitReview = submitAction === "submit-review" && can(role, "submit-pending-review")
 
   const editorialStatus: EditorialStatus = shouldSaveDraft
     ? "DRAFT"
@@ -60,7 +61,9 @@ export function resolveEditorialFromSubmitAction({
       ? "PUBLISHED"
       : shouldSubmitPublish
         ? "PENDING_PUBLISH"
-        : "PENDING_REVIEW"
+        : shouldSubmitReview
+          ? "PENDING_REVIEW"
+          : "DRAFT"
 
   return {
     editorialStatus,

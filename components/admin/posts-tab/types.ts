@@ -58,6 +58,8 @@ export type PostActions = {
 
 export type PostPermissions = {
   isAdmin: boolean
+  canDeletePost: boolean
+  currentUserId: string
   canSubmitPendingReview: boolean
   canSubmitPendingPublish: boolean
   canReviewPending: boolean

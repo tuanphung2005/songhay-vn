@@ -29,6 +29,8 @@ type PostsTabProps = {
 
 export function PostsTab({
   isAdmin,
+  canDeletePost,
+  currentUserId,
   canSubmitPendingReview,
   canSubmitPendingPublish,
   canReviewPending,
@@ -59,6 +61,8 @@ export function PostsTab({
 
   const permissions: PostPermissions = {
     isAdmin,
+    canDeletePost,
+    currentUserId,
     canSubmitPendingReview,
     canSubmitPendingPublish,
     canReviewPending,

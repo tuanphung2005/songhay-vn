@@ -26,6 +26,8 @@ type PostActionsCellProps = {
 
 export function PostActionsCell({
   post,
+  canDeletePost,
+  currentUserId,
   canSubmitPendingReview,
   canSubmitPendingPublish,
   canReviewPending,
@@ -251,25 +253,27 @@ export function PostActionsCell({
       ) : null}
 
       {/* ── Trash ── */}
-      <ConfirmActionForm
-        action={movePostToTrash}
-        fields={[
-          { name: "postId", value: post.id },
-          { name: "sourceTab", value: "posts" },
-        ]}
-        confirmMessage="Xóa bài viết này vào thùng rác?"
-      >
-        <PendingSubmitButton
-          type="submit"
-          size="sm"
-          variant="destructive"
-          className={btn}
-          pendingText="Đang xóa..."
+      {(canDeletePost || (post.author?.id === currentUserId && post.editorialStatus !== "PUBLISHED" && post.editorialStatus !== "PENDING_PUBLISH")) && (
+        <ConfirmActionForm
+          action={movePostToTrash}
+          fields={[
+            { name: "postId", value: post.id },
+            { name: "sourceTab", value: "posts" },
+          ]}
+          confirmMessage="Xóa bài viết này vào thùng rác?"
         >
-          <Trash2 className="mr-1.5 size-3" />
-          Xóa
-        </PendingSubmitButton>
-      </ConfirmActionForm>
+          <PendingSubmitButton
+            type="submit"
+            size="sm"
+            variant="destructive"
+            className={btn}
+            pendingText="Đang xóa..."
+          >
+            <Trash2 className="mr-1.5 size-3" />
+            Xóa
+          </PendingSubmitButton>
+        </ConfirmActionForm>
+      )}
     </div>
   )
 }

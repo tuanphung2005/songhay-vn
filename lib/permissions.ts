@@ -26,6 +26,7 @@ export type PermissionAction =
   | "view-all-posts"
   | "delete-any-media"
   | "create-subordinate-account"
+  | "delete-post"
 
 export const ACTION_LABELS_VI: Record<PermissionAction, string> = {
   "create-category": "Tạo chuyên mục",
@@ -43,6 +44,7 @@ export const ACTION_LABELS_VI: Record<PermissionAction, string> = {
   "view-all-posts": "Xem tất cả bài viết",
   "delete-any-media": "Xóa media của người khác",
   "create-subordinate-account": "Tạo tài khoản cấp dưới",
+  "delete-post": "Xóa bài viết",
 }
 
 export const ALL_PERMISSION_ACTIONS: PermissionAction[] = [
@@ -61,6 +63,7 @@ export const ALL_PERMISSION_ACTIONS: PermissionAction[] = [
   "view-all-posts",
   "delete-any-media",
   "create-subordinate-account",
+  "delete-post",
 ]
 
 export const ALL_EDITABLE_ROLES: UserRole[] = [
@@ -89,6 +92,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
     "view-all-posts",
     "delete-any-media",
     "create-subordinate-account",
+    "delete-post",
   ]),
   USER: new Set([
     "create-post",
@@ -112,6 +116,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
     "view-all-posts",
     "delete-any-media",
     "create-subordinate-account",
+    "delete-post",
   ]),
   MANAGING_EDITOR: new Set([
     "create-category",
@@ -128,6 +133,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, Set<PermissionAction>> = {
     "edit-published",
     "view-all-posts",
     "delete-any-media",
+    "delete-post",
   ]),
   TEAM_LEAD: new Set([
     "create-post",
@@ -261,4 +267,21 @@ export function getAllowedSubmitActions(role: UserRole) {
   }
 
   return actions
+}
+
+export function canTrashOrDeletePost(
+  role: UserRole,
+  authorId: string | null | undefined,
+  currentUserId: string,
+  status: EditorialStatus
+) {
+  if (can(role, "delete-post")) {
+    return true
+  }
+
+  if (authorId === currentUserId && status !== "PUBLISHED" && status !== "PENDING_PUBLISH") {
+    return true
+  }
+
+  return false
 }

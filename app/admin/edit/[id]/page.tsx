@@ -185,14 +185,6 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const ogImage = thumbnailUrl || manualOgImage
 
-    const { editorialStatus, isPublished, isDraft } =
-      resolveEditorialFromSubmitAction({
-        submitAction,
-        role: currentUser.role,
-      })
-    const { keywordIds, seoKeywordsText } =
-      await resolveSeoKeywordSelection(formData)
-
     const currentPost = await prisma.post.findUnique({
       where: { id: postId },
       include: { category: true },
@@ -201,6 +193,33 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     if (!currentPost) {
       return
     }
+
+    const canSeeAllPostsAction = canViewAllPosts(currentUser.role)
+    if (!canSeeAllPostsAction && currentPost.authorId !== currentUser.id) {
+      redirect("/admin?tab=personal-archive&toast=post_action_forbidden")
+    }
+
+    if (!canEditByStatus(currentUser.role, currentPost.editorialStatus)) {
+      redirect("/admin?tab=personal-archive&toast=post_action_forbidden")
+    }
+
+    const isSaveChanges = submitAction === "save-changes"
+    let editorialStatus = currentPost.editorialStatus
+    let isPublished = currentPost.isPublished
+    let isDraft = currentPost.isDraft
+
+    if (!isSaveChanges) {
+      const resolved = resolveEditorialFromSubmitAction({
+        submitAction,
+        role: currentUser.role,
+      })
+      editorialStatus = resolved.editorialStatus
+      isPublished = resolved.isPublished
+      isDraft = resolved.isDraft
+    }
+
+    const { keywordIds, seoKeywordsText } =
+      await resolveSeoKeywordSelection(formData)
 
     const updatedPost = await prisma.post.update({
       where: { id: postId },
@@ -224,9 +243,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         isDraft,
         editorialStatus,
         lastEditorId: currentUser.id,
-        approverId: isPublished ? currentUser.id : null,
-        approvedAt: isPublished ? new Date() : null,
-        publishedAt: isPublished ? new Date() : currentPost.publishedAt,
+        approverId: isSaveChanges ? currentPost.approverId : (isPublished ? currentUser.id : null),
+        approvedAt: isSaveChanges ? currentPost.approvedAt : (isPublished ? new Date() : null),
+        publishedAt: isSaveChanges ? currentPost.publishedAt : (isPublished ? new Date() : currentPost.publishedAt),
         thumbnailUrl,
         updatedAt: new Date(),
       },
@@ -338,12 +357,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                   <Button
                     type="submit"
                     name="submitAction"
-                    value="save-draft"
+                    value="save-changes"
                     variant="outline"
                     size="lg"
                   >
                     <Save className="size-4 mr-1.5" />
-                    Lưu nháp
+                    {post.editorialStatus === "DRAFT" ? "Lưu nháp" : "Cập nhật thay đổi"}
                   </Button>
                   <Button asChild variant="secondary" size="lg">
                     <Link
@@ -358,6 +377,19 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
+                  {post.editorialStatus !== "DRAFT" && (post.editorialStatus !== "PUBLISHED" || canPublish) ? (
+                    <Button
+                      type="submit"
+                      name="submitAction"
+                      value="save-draft"
+                      variant="outline"
+                      size="lg"
+                    >
+                      <Save className="size-4 mr-1.5" />
+                      Chuyển về nháp
+                    </Button>
+                  ) : null}
+
                   <Button
                     type="submit"
                     name="submitAction"

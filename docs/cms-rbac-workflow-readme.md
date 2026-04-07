@@ -64,18 +64,18 @@ Tai lieu nay tong hop bo test cho workflow bien tap va phan quyen theo role tron
 ## Ma tran action theo role (tom tat)
 
 - EDITOR_IN_CHIEF
-  - Duoc: len cho duyet, len cho xuat ban, xuat ban, tra ve kho, tra ve cho xuat ban, sua, xoa.
+  - Duoc: len cho duyet, len cho xuat ban, xuat ban, tra ve kho, tra ve cho xuat ban, sua, xoa tat ca.
 - MANAGING_EDITOR
-  - Duoc: len cho duyet, len cho xuat ban, xuat ban, tra ve kho, tra ve cho xuat ban, sua, xoa.
+  - Duoc: len cho duyet, len cho xuat ban, xuat ban, tra ve kho, tra ve cho xuat ban, sua, xoa tat ca.
 - TEAM_LEAD
-  - Duoc: len cho duyet, len cho xuat ban, sua, xoa.
-  - Khong duoc: xuat ban, tra ve cho xuat ban.
+  - Duoc: len cho duyet, len cho xuat ban, sua, xoa (trong pham vi bai cua minh & chua xuat ban).
+  - Khong duoc: xuat ban, tra ve cho xuat ban, xoa bai/media cua nguoi khac.
 - REPORTER_TRANSLATOR
-  - Duoc: len cho duyet, sua, xoa (trong pham vi quyen/so huu).
-  - Khong duoc: len cho xuat ban, xuat ban, tra ve cho xuat ban.
+  - Duoc: len cho duyet, sua, xoa (trong pham vi bai cua minh & chua xuat ban).
+  - Khong duoc: len cho xuat ban, xuat ban, tra ve cho xuat ban, xoa bai/media cua nguoi khac.
 - CONTRIBUTOR
-  - Duoc: len cho duyet, sua, xoa bai cua minh.
-  - Khong duoc: view all posts, len cho xuat ban, xuat ban, tra ve cho xuat ban.
+  - Duoc: len cho duyet, sua, xoa (trong pham vi bai cua minh & chua xuat ban).
+  - Khong duoc: view all posts, len cho xuat ban, xuat ban, tra ve cho xuat ban, xoa bai/media cua nguoi khac.
 
 Luu y: Vi tri hien nut tren UI con phu thuoc vao trang thai bai va capability gate.
 

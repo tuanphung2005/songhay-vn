@@ -117,6 +117,10 @@ export async function updateUserRole(formData: FormData) {
     redirect("/admin?tab=settings-users&toast=user_role_update_failed")
   }
 
+  if (!roleCanCreate(currentUser.role, newRole) || !roleCanCreate(currentUser.role, target.role)) {
+    redirect("/admin?tab=settings-users&toast=user_role_update_failed")
+  }
+
   await prisma.user.update({ where: { id: userId }, data: { role: newRole } })
 
   clearDataCache()
@@ -141,7 +145,7 @@ export async function deleteUser(formData: FormData) {
     redirect("/admin?tab=settings-users&toast=user_delete_failed")
   }
 
-  if (target.role === "EDITOR_IN_CHIEF" && currentUser.role !== "ADMIN") {
+  if (!roleCanCreate(currentUser.role, target.role)) {
     redirect("/admin?tab=settings-users&toast=user_delete_forbidden")
   }
 

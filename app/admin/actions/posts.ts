@@ -21,6 +21,7 @@ import {
   canCreateSubordinateAccount,
   canPublishNow,
   canViewAllPosts,
+  canTrashOrDeletePost,
   roleCanCreate,
   ALL_EDITABLE_ROLES,
   ALL_PERMISSION_ACTIONS,
@@ -301,6 +302,7 @@ export async function movePostToTrash(formData: FormData) {
     select: {
       authorId: true,
       slug: true,
+      editorialStatus: true,
       category: {
         select: {
           slug: true,
@@ -313,10 +315,7 @@ export async function movePostToTrash(formData: FormData) {
     redirect(`/admin?tab=${sourceTab}&toast=post_not_found`)
   }
 
-  if (
-    !canViewAllPosts(currentUser.role) &&
-    existingPost.authorId !== currentUser.id
-  ) {
+  if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
     redirect(`/admin?tab=${sourceTab}&toast=post_action_forbidden`)
   }
 
@@ -351,6 +350,7 @@ export async function restorePostFromTrash(formData: FormData) {
     where: { id: postId },
     select: {
       authorId: true,
+      editorialStatus: true,
     },
   })
 
@@ -358,10 +358,7 @@ export async function restorePostFromTrash(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (
-    !canViewAllPosts(currentUser.role) &&
-    existingPost.authorId !== currentUser.id
-  ) {
+  if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
@@ -391,6 +388,7 @@ export async function deletePostPermanently(formData: FormData) {
     where: { id: postId },
     select: {
       authorId: true,
+      editorialStatus: true,
     },
   })
 
@@ -398,10 +396,7 @@ export async function deletePostPermanently(formData: FormData) {
     redirect("/admin?tab=trash&toast=post_not_found")
   }
 
-  if (
-    !canViewAllPosts(currentUser.role) &&
-    existingPost.authorId !== currentUser.id
-  ) {
+  if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
     redirect("/admin?tab=trash&toast=post_action_forbidden")
   }
 
