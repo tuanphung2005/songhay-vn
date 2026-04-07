@@ -4,7 +4,11 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import {
+  FileEdit,
+  FileSearch,
+  FileWarning,
   FolderKanban,
+  Globe,
   KeyRound,
   LayoutDashboard,
   LibraryBig,
@@ -12,6 +16,7 @@ import {
   Newspaper,
   PenSquare,
   ShieldCheck,
+  Timer,
   Trash2,
   UserSquare2,
   Users,
@@ -26,8 +31,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-const WRITE_DIRTY_STORAGE_KEY = "admin-write-dirty"
-
 const navIcons: Record<NavIconName, typeof LayoutDashboard> = {
   layoutDashboard: LayoutDashboard,
   penSquare: PenSquare,
@@ -40,6 +43,11 @@ const navIcons: Record<NavIconName, typeof LayoutDashboard> = {
   folderKanban: FolderKanban,
   shieldCheck: ShieldCheck,
   users: Users,
+  fileEdit: FileEdit,
+  fileWarning: FileWarning,
+  fileSearch: FileSearch,
+  timer: Timer,
+  globe: Globe,
 }
 
 type AdminNavButtonProps = {

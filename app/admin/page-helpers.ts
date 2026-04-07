@@ -12,6 +12,11 @@ export type NavIconName =
   | "folderKanban"
   | "shieldCheck"
   | "users"
+  | "fileEdit"
+  | "fileWarning"
+  | "fileSearch"
+  | "timer"
+  | "globe"
 
 export type NavLeaf = {
   key: string
@@ -79,7 +84,7 @@ export const POSTS_SUBMENU_TABS: NavLeaf[] = [
     tabKey: "posts",
     label: "Bài đang viết",
     description: "Danh sách bài đang ở trạng thái nháp",
-    iconName: "newspaper",
+    iconName: "fileEdit",
     countKey: "draftPostCount",
     href: "/admin?tab=posts&postsStatus=draft",
     activeWhen: { tab: "posts", postsStatus: "draft" },
@@ -89,7 +94,7 @@ export const POSTS_SUBMENU_TABS: NavLeaf[] = [
     tabKey: "posts",
     label: "Tin bài bị trả lại",
     description: "Bài bị từ chối, cần chỉnh sửa",
-    iconName: "newspaper",
+    iconName: "fileWarning",
     countKey: "rejectedPostCount",
     href: "/admin?tab=posts&postsStatus=rejected",
     activeWhen: { tab: "posts", postsStatus: "rejected" },
@@ -99,7 +104,7 @@ export const POSTS_SUBMENU_TABS: NavLeaf[] = [
     tabKey: "posts",
     label: "Bài chờ duyệt",
     description: "Bài chờ biên tập viên duyệt",
-    iconName: "newspaper",
+    iconName: "fileSearch",
     countKey: "pendingReviewPostCount",
     href: "/admin?tab=posts&postsStatus=pending-review",
     activeWhen: { tab: "posts", postsStatus: "pending-review" },
@@ -109,7 +114,7 @@ export const POSTS_SUBMENU_TABS: NavLeaf[] = [
     tabKey: "posts",
     label: "Bài chờ xuất bản",
     description: "Bài đã duyệt, chờ xuất bản",
-    iconName: "newspaper",
+    iconName: "timer",
     countKey: "pendingPublishPostCount",
     href: "/admin?tab=posts&postsStatus=pending-publish",
     activeWhen: { tab: "posts", postsStatus: "pending-publish" },
@@ -119,7 +124,7 @@ export const POSTS_SUBMENU_TABS: NavLeaf[] = [
     tabKey: "posts",
     label: "Bài đã xuất bản",
     description: "Bài đã xuất bản công khai",
-    iconName: "newspaper",
+    iconName: "globe",
     countKey: "publishedPostCount",
     href: "/admin?tab=posts&postsStatus=published",
     activeWhen: { tab: "posts", postsStatus: "published" },

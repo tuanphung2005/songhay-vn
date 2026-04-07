@@ -22,11 +22,11 @@ type PersonalPostRow = {
   slug: string
   thumbnailUrl: string | null
   editorialStatus:
-    | "DRAFT"
-    | "PENDING_REVIEW"
-    | "PENDING_PUBLISH"
-    | "PUBLISHED"
-    | "REJECTED"
+  | "DRAFT"
+  | "PENDING_REVIEW"
+  | "PENDING_PUBLISH"
+  | "PUBLISHED"
+  | "REJECTED"
   isPublished: boolean
   isDraft: boolean
   createdAt: Date
@@ -61,12 +61,12 @@ type PersonalArchiveTabProps = {
   filters: {
     query: string
     status:
-      | "all"
-      | "draft"
-      | "pending"
-      | "pending-publish"
-      | "published"
-      | "rejected"
+    | "all"
+    | "draft"
+    | "pending"
+    | "pending-publish"
+    | "published"
+    | "rejected"
     fromDate: string
     toDate: string
   }
