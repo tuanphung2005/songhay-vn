@@ -303,7 +303,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   imageUrl={trending.thumbnailUrl}
                   date={trending.publishedAt}
                   categoryName={trending.category.name}
-                  compact
+                  compact={true}
                 />
               ))}
             </div>
@@ -325,7 +325,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   excerpt={related.excerpt}
                   imageUrl={related.thumbnailUrl}
                   date={related.publishedAt}
-                  compact
+                  compact={true}
                 />
               ))}
             </div>

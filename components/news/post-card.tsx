@@ -11,6 +11,7 @@ type PostCardProps = {
   imageUrl?: string | null
   date?: Date | null
   categoryName?: string
+  compact?: boolean
   variant?: "default" | "overlay" | "horizontal"
   aspectRatio?: "video" | "square" | "portrait" | "3/2"
   className?: string
@@ -25,6 +26,7 @@ export function PostCard({
   imageUrl,
   date,
   categoryName,
+  compact = false,
   variant = "default",
   aspectRatio = "video",
   className,
@@ -138,7 +140,7 @@ export function PostCard({
             </div>
           )}
 
-          {showExcerpt && excerpt && (
+          {!compact && showExcerpt && excerpt && (
             <p
               className={cn(
                 "mt-2 line-clamp-2 text-sm leading-relaxed",
@@ -151,7 +153,7 @@ export function PostCard({
             </p>
           )}
 
-          {(!isHorizontal || className?.includes("lg:flex-col")) && (
+          {!compact && (!isHorizontal || className?.includes("lg:flex-col")) && (
             <div className={cn(
               "mt-3 flex items-center gap-3 text-[10px] font-medium uppercase tracking-wider",
               isOverlay ? "text-zinc-300" : "text-zinc-400",
