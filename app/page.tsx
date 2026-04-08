@@ -90,47 +90,69 @@ export default async function HomePage() {
       <JsonLd data={homepageJsonLd} />
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1200px] space-y-6 px-4 py-5 md:px-6 md:py-6">
+      <main className="mx-auto w-full max-w-[1100px] space-y-6 px-4 py-5 md:px-6 md:py-6">
         <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-6">
-            <section className="space-y-3">
-              {heroPost ? (
-                <article className="overflow-hidden rounded-sm border border-zinc-300 bg-white shadow-sm">
-                  <PostCard
-                    href={`/${heroPost.category.slug}/${heroPost.slug}`}
-                    title={heroPost.title}
-                    excerpt={heroPost.excerpt}
-                    imageUrl={heroPost.thumbnailUrl}
-                    date={heroPost.publishedAt}
-                    categoryName={heroPost.category.name}
-                  />
-                </article>
-              ) : null}
+        {/* ── MAGAZINE HERO SECTION ─────────────────────────────────── */}
+        <section className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Main Featured (2/3 width) */}
+            <div className="lg:col-span-2">
+              {heroSlots[0] && (
+                <PostCard
+                  href={`/${heroSlots[0].category.slug}/${heroSlots[0].slug}`}
+                  title={heroSlots[0].title}
+                  excerpt={heroSlots[0].excerpt}
+                  imageUrl={heroSlots[0].thumbnailUrl}
+                  date={heroSlots[0].publishedAt}
+                  categoryName={heroSlots[0].category.name}
+                  variant="overlay"
+                  className="h-full"
+                  commentCount={heroSlots[0]._count.comments}
+                />
+              )}
+            </div>
 
-              <div className="grid gap-3 rounded-sm border border-zinc-300 bg-white p-3 sm:grid-cols-3">
-                {heroMini.map((post) => (
-                  <Link
-                    key={post.id}
-                    href={`/${post.category.slug}/${post.slug}`}
-                    className="group overflow-hidden rounded-sm border border-zinc-300 bg-zinc-50 transition hover:shadow-md"
-                  >
-                    <div className="h-32 w-full overflow-hidden">
-                      <Image
-                        src={post.thumbnailUrl || "/placeholder-news.svg"}
-                        alt={post.title}
-                        width={480}
-                        height={270}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <p className="line-clamp-2 text-sm font-bold leading-snug text-zinc-800 transition group-hover:text-rose-600">{post.title}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+            {/* Sidebar Posts (1/3 width stacked) */}
+            <div className="flex flex-col gap-6 lg:col-span-1">
+              {heroSlots.slice(1, 3).map((post) => (
+                <PostCard
+                  key={post.id}
+                  href={`/${post.category.slug}/${post.slug}`}
+                  title={post.title}
+                  imageUrl={post.thumbnailUrl}
+                  date={post.publishedAt}
+                  categoryName={post.category.name}
+                  showExcerpt={false}
+                  commentCount={post._count.comments}
+                  className="lg:flex-col"
+                  variant="horizontal"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Row (3 items) */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:gap-6">
+            {heroSlots.slice(3, 6).map((post) => (
+              <PostCard
+                key={post.id}
+                href={`/${post.category.slug}/${post.slug}`}
+                title={post.title}
+                imageUrl={post.thumbnailUrl}
+                date={post.publishedAt}
+                categoryName={post.category.name}
+                showExcerpt={false}
+                aspectRatio="video"
+                commentCount={post._count.comments}
+                className="lg:flex-col"
+                variant="horizontal"
+              />
+            ))}
+          </div>
+        </section>
 
               <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" className="min-h-20" />
 
@@ -138,22 +160,23 @@ export default async function HomePage() {
                 <SectionHeading title="Đừng bỏ lỡ!" />
                 <DontMissWidget />
               </section>
-            </section>
 
             <section className="space-y-4">
               <SectionHeading title="Tin mới nhất" />
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                {latest.slice(0, 8).map((post) => (
-                  <PostCard
-                    key={post.id}
-                    href={`/${post.category.slug}/${post.slug}`}
-                    title={post.title}
-                    excerpt={post.excerpt}
-                    imageUrl={post.thumbnailUrl}
-                    date={post.publishedAt}
-                    categoryName={post.category.name}
-                    compact
-                  />
+              <div className="flex flex-col border-t border-zinc-200">
+                {latest.slice(0, 10).map((post) => (
+                  <div key={post.id} className="border-b border-zinc-200 py-6 last:border-b-0">
+                    <PostCard
+                      href={`/${post.category.slug}/${post.slug}`}
+                      title={post.title}
+                      excerpt={post.excerpt}
+                      imageUrl={post.thumbnailUrl}
+                      date={post.publishedAt}
+                      categoryName={post.category.name}
+                      variant="horizontal"
+                      commentCount={post._count.comments}
+                    />
+                  </div>
                 ))}
               </div>
             </section>
@@ -173,18 +196,20 @@ export default async function HomePage() {
                 return (
                   <div key={first.category.slug} className="space-y-4">
                     <SectionHeading title={first.category.name} />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {items.slice(0, 4).map((post, cardIndex) => (
-                        <PostCard
-                          key={post.id}
-                          href={`/${post.category.slug}/${post.slug}`}
-                          title={post.title}
-                          excerpt={post.excerpt}
-                          imageUrl={post.thumbnailUrl}
-                          date={post.publishedAt}
-                          categoryName={post.category.name}
-                          compact={cardIndex > 1}
-                        />
+                    <div className="flex flex-col border-t border-zinc-200">
+                      {items.slice(0, 4).map((post) => (
+                        <div key={post.id} className="border-b border-zinc-200 py-6 last:border-b-0">
+                          <PostCard
+                            href={`/${post.category.slug}/${post.slug}`}
+                            title={post.title}
+                            excerpt={post.excerpt}
+                            imageUrl={post.thumbnailUrl}
+                            date={post.publishedAt}
+                            categoryName={post.category.name}
+                            variant="horizontal"
+                            commentCount={post._count.comments}
+                          />
+                        </div>
                       ))}
                     </div>
                     {(index + 1) % 2 === 0 ? (
@@ -197,7 +222,6 @@ export default async function HomePage() {
           </div>
 
           <aside className="space-y-4">
-            <AdPlaceholder label="Sidebar trang chủ (Google AdSense)" className="min-h-44" />
             <MostRead
               posts={mostRead.map((post) => ({
                 id: post.id,

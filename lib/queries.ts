@@ -33,14 +33,24 @@ export const getHomepageData = cache(async () => {
       // Most read sidebar
       prisma.post.findMany({
         where: { isPublished: true, isDeleted: false },
-        include: { category: true },
+        include: {
+          category: true,
+          _count: {
+            select: { comments: { where: { isApproved: true } } },
+          },
+        },
         orderBy: [{ views: "desc" }, { publishedAt: "desc" }],
         take: 5,
       }),
       // Latest for category blocks
       prisma.post.findMany({
         where: { isPublished: true, isDeleted: false },
-        include: { category: true },
+        include: {
+          category: true,
+          _count: {
+            select: { comments: { where: { isApproved: true } } },
+          },
+        },
         orderBy: { publishedAt: "desc" },
         take: 30,
       }),
@@ -49,15 +59,8 @@ export const getHomepageData = cache(async () => {
       getTrendingPosts(),
     ])
 
-    // Build hero section: pick the 4 most-recent published posts, 1 per category
-    const categoryMap = new Map<string, (typeof latest)[0]>()
-    for (const post of latest) {
-      if (!categoryMap.has(post.category.slug)) {
-        categoryMap.set(post.category.slug, post)
-      }
-      if (categoryMap.size === 4) break
-    }
-    const heroSlots = Array.from(categoryMap.values())
+    // Build hero section: pick the 7 most-recent published posts
+    const heroSlots = latest.slice(0, 7)
 
     return { heroSlots, mostRead, latest, recommended, mostWatched, trendingPosts }
   })
@@ -74,7 +77,12 @@ export const getPostsByCategory = cache(async (categorySlug: string) => {
           { category: { parent: { slug: categorySlug } } },
         ],
       },
-      include: { category: true },
+      include: {
+        category: true,
+        _count: {
+          select: { comments: { where: { isApproved: true } } },
+        },
+      },
       orderBy: { publishedAt: "desc" },
       take: 20,
     })
@@ -116,6 +124,9 @@ export const searchPublishedPosts = cache(async (query: string, limit = 24) => {
               name: true,
               slug: true,
             },
+          },
+          _count: {
+            select: { comments: { where: { isApproved: true } } },
           },
         },
         orderBy: { publishedAt: "desc" },
@@ -177,6 +188,9 @@ export const getPublishedSearchResults = cache(
                 name: true,
                 slug: true,
               },
+            },
+            _count: {
+              select: { comments: { where: { isApproved: true } } },
             },
           },
           orderBy: { publishedAt: "desc" },
@@ -266,7 +280,12 @@ export const getRelatedPosts = cache(async (postId: string, categoryId: string, 
         categoryId,
         id: { not: postId },
       },
-      include: { category: true },
+      include: {
+        category: true,
+        _count: {
+          select: { comments: { where: { isApproved: true } } },
+        },
+      },
       orderBy: { publishedAt: "desc" },
       take: limit,
     })
@@ -281,7 +300,12 @@ export const getTrendingPosts = cache(async () => {
         isDeleted: false,
         OR: [{ isTrending: true }, { views: { gt: 100 } }],
       },
-      include: { category: true },
+      include: {
+        category: true,
+        _count: {
+          select: { comments: { where: { isApproved: true } } },
+        },
+      },
       orderBy: [{ isTrending: "desc" }, { views: "desc" }, { publishedAt: "desc" }],
       take: 12,
     })
@@ -324,7 +348,12 @@ export const getRecommendedPosts = cache(
 
       return prisma.post.findMany({
         where,
-        include: { category: true },
+        include: {
+          category: true,
+          _count: {
+            select: { comments: { where: { isApproved: true } } },
+          },
+        },
         orderBy: [{ isFeatured: "desc" }, { isTrending: "desc" }, { publishedAt: "desc" }],
         take: limit,
       })
@@ -381,6 +410,9 @@ export const getLatestByCategory = cache(async (perCategory = 4, categoriesLimit
                 name: true,
                 slug: true,
               },
+            },
+            _count: {
+              select: { comments: { where: { isApproved: true } } },
             },
           },
           orderBy: { publishedAt: "desc" },

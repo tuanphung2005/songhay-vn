@@ -69,7 +69,7 @@ export function MostRead({ posts }: MostReadProps) {
   }, [])
 
   return (
-    <section className="space-y-3 rounded-sm border border-zinc-300 bg-white p-4 shadow-sm">
+    <section className="space-y-3 border-t border-zinc-200 bg-white p-4">
       <h3 className="text-lg font-bold text-zinc-900">Đọc nhiều nhất</h3>
       <ul className="space-y-3">
         {items.slice(0, 5).map((post) => (

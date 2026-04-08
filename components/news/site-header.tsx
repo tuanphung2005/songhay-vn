@@ -30,7 +30,7 @@ export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-red-800 bg-red-700 shadow-md md:border-zinc-200 md:bg-white">
-      <div className="mx-auto flex w-full max-w-[1200px] items-start justify-between px-4 py-4 md:px-6 md:py-5">
+      <div className="mx-auto flex w-full max-w-[1100px] items-start justify-between px-4 py-4 md:px-6 md:py-5">
         <Link href="/" className="group block">
           <div className="flex items-center gap-2 md:gap-3">
             <span className="inline-flex h-12 w-12 items-center justify-center bg-white text-3xl font-black text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-14 md:w-14">
@@ -72,7 +72,7 @@ export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
       </div>
 
       <nav className="hidden border-t border-red-800 bg-red-700 md:block">
-        <ul className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-2.5 text-base font-bold text-white md:px-6">
+        <ul className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-2.5 text-base font-bold text-white md:px-6">
           {navCategories.map((item) => (
             <li key={item.slug} className="group relative">
               <Link

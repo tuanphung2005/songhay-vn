@@ -37,8 +37,10 @@ declare module "next/image" {
   type ImageProps = {
     src: string
     alt: string
-    width: number
-    height: number
+    width?: number
+    height?: number
+    fill?: boolean
+    sizes?: string
     className?: string
     loading?: "lazy" | "eager"
     priority?: boolean

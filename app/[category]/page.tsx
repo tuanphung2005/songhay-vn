@@ -112,19 +112,23 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             {posts.length === 0 ? (
               <p className="text-zinc-600">Chuyên mục này chưa có bài viết.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col border-t border-zinc-200">
                 {posts.map((post, index) => (
                   <div key={post.id} className="contents">
-                    <PostCard
-                      href={`/${post.category.slug}/${post.slug}`}
-                      title={post.title}
-                      excerpt={post.excerpt}
-                      imageUrl={post.thumbnailUrl}
-                      date={post.publishedAt}
-                      categoryName={post.category.name}
-                    />
+                    <div className="border-b border-zinc-200 py-6">
+                      <PostCard
+                        href={`/${post.category.slug}/${post.slug}`}
+                        title={post.title}
+                        excerpt={post.excerpt}
+                        imageUrl={post.thumbnailUrl}
+                        date={post.publishedAt}
+                        categoryName={post.category.name}
+                        variant="horizontal"
+                        commentCount={post._count.comments}
+                      />
+                    </div>
                     {(index + 1) % 6 === 0 ? (
-                      <div className="sm:col-span-2 lg:col-span-3">
+                      <div className="py-4">
                         <AdPlaceholder label="Giữa danh sách chuyên mục (Google AdSense)" className="min-h-24" />
                       </div>
                     ) : null}

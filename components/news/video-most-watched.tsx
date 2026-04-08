@@ -40,7 +40,7 @@ export function VideoMostWatched({ posts }: VideoMostWatchedProps) {
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg transition duration-300 group-hover:scale-110">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-600 text-white transition duration-300 group-hover:scale-110">
                   <Play className="h-6 w-6 fill-current ml-0.5" />
                 </div>
               </div>

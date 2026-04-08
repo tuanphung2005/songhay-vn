@@ -116,11 +116,11 @@ export function LunarCalendarWidget() {
   }
 
   return (
-    <section className="overflow-hidden rounded-sm border border-zinc-300 bg-white shadow-sm">
+    <section className="border-t border-zinc-200 bg-white shadow-none">
       <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-base font-bold text-zinc-800">Âm lịch - Dương lịch</h3>
 
       <div className="space-y-3 p-3">
-        <div className="rounded-sm border border-zinc-300 bg-zinc-50 px-3 py-2 text-center">
+        <div className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-center">
           <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
             {isCurrentToday ? "Hôm nay" : ""}
           </p>
@@ -128,7 +128,7 @@ export function LunarCalendarWidget() {
             <button
               type="button"
               aria-label="Ngày trước"
-              className="rounded-full p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
+              className="p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
               onClick={() => moveDate(-1)}
             >
               <ChevronLeft className="h-5 w-5" />
