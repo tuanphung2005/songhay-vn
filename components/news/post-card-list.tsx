@@ -1,3 +1,4 @@
+import React from "react"
 import { PostCard } from "./post-card"
 import { AdPlaceholder } from "./ad-placeholder"
 
@@ -29,7 +30,7 @@ export function PostCardList({ posts, adEvery, adLabel }: PostCardListProps) {
   return (
     <div className="flex flex-col border-t border-zinc-200">
       {posts.map((post, index) => (
-        <div key={post.id} className="contents">
+        <React.Fragment key={post.id}>
           <div className="border-b border-zinc-200 py-6 last:border-b-0">
             <PostCard
               href={`/${post.category.slug}/${post.slug}`}
@@ -43,11 +44,11 @@ export function PostCardList({ posts, adEvery, adLabel }: PostCardListProps) {
             />
           </div>
           {adEvery && (index + 1) % adEvery === 0 && index !== posts.length - 1 && (
-            <div className="py-4">
+            <div className="py-4 border-b border-zinc-200">
               <AdPlaceholder label={adLabel || "Google AdSense"} className="min-h-24" />
             </div>
           )}
-        </div>
+        </React.Fragment>
       ))}
     </div>
   )
