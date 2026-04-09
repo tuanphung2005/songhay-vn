@@ -39,12 +39,12 @@ export async function SiteHeader({ defaultSearchQuery, navCategories: propNavCat
       <div className="mx-auto flex w-full max-w-[1100px] items-start justify-between px-4 py-4 md:px-6 md:py-5">
         <Link href="/" className="group block">
           <div className="flex items-center gap-2 md:gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center bg-white text-3xl font-black text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-14 md:w-14">
+            <span className="inline-flex h-12 w-12 items-center justify-center bg-white text-3xl font-bold text-red-700 transition group-hover:bg-zinc-100 md:bg-red-700 md:text-white md:group-hover:bg-red-800 md:h-14 md:w-14">
               S
             </span>
             <div>
-              <p className="text-2xl font-black uppercase leading-none tracking-tight text-white md:text-red-700 md:text-4xl">Sống Hay</p>
-              <p className="mt-0.5 text-xs font-extrabold uppercase tracking-wide text-white/90 md:text-zinc-900 md:text-base">Kho Tàng Điều Hay</p>
+              <p className="text-2xl font-bold uppercase leading-none tracking-tight text-white md:text-red-700 md:text-4xl">Sống Hay</p>
+              <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-white/90 md:text-zinc-900 md:text-base">Kho Tàng Điều Hay</p>
             </div>
           </div>
         </Link>

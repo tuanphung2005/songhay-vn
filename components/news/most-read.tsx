@@ -1,8 +1,5 @@
-"use client"
-
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 
 type MostReadItem = {
   id: string
@@ -18,61 +15,11 @@ type MostReadProps = {
 }
 
 export function MostRead({ posts }: MostReadProps) {
-  const [items, setItems] = useState(posts)
-
-  useEffect(() => {
-    let ignore = false
-
-    async function loadMostRead() {
-      try {
-        const response = await fetch("/api/posts/most-read?limit=5", {
-          method: "GET",
-        })
-
-        if (!response.ok || ignore) {
-          return
-        }
-
-        const payload = (await response.json()) as {
-          items: Array<{
-            id: string
-            title: string
-            slug: string
-            thumbnailUrl?: string | null
-            views: number
-            category: {
-              slug: string
-            }
-          }>
-        }
-
-        setItems(
-          payload.items.map((item) => ({
-            id: item.id,
-            title: item.title,
-            thumbnailUrl: item.thumbnailUrl,
-            views: item.views,
-            slug: item.slug,
-            categorySlug: item.category.slug,
-          }))
-        )
-      } catch {
-        // Keep initial server-rendered items if API request fails.
-      }
-    }
-
-    void loadMostRead()
-
-    return () => {
-      ignore = true
-    }
-  }, [])
-
   return (
     <section className="space-y-3 border-t border-zinc-200 bg-white p-4">
       <h3 className="text-lg font-bold text-zinc-900">Đọc nhiều nhất</h3>
       <ul className="space-y-3">
-        {items.slice(0, 5).map((post) => (
+        {posts.slice(0, 5).map((post) => (
           <li key={post.id} className="flex gap-3 border-b border-zinc-200 pb-3 last:border-b-0 last:pb-0">
             <Image
               src={post.thumbnailUrl || "/placeholder-news.svg"}

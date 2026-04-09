@@ -15,13 +15,13 @@ import { cn } from "@/lib/utils"
 
 const fontSans = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "600", "700"],
   variable: "--font-sans",
 })
 
 const fontSerif = Merriweather({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "700", "900"],
+  weight: ["400", "700"],
   variable: "--font-serif",
 })
 

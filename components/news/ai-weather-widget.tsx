@@ -12,6 +12,7 @@ export function AiWeatherWidget() {
         height="450"
         scrolling="no"
         frameBorder="0"
+        loading="lazy"
         className="block w-full"
         style={{ border: "none", overflow: "hidden" }}
       />

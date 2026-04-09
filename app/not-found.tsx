@@ -27,7 +27,7 @@ export default async function NotFound() {
                 <AlertCircle className="h-12 w-12" />
               </div>
 
-              <h1 className="mb-2 bg-gradient-to-br from-red-700 to-rose-500 bg-clip-text font-serif text-8xl font-black tracking-tighter text-transparent md:text-9xl">
+              <h1 className="mb-2 bg-gradient-to-br from-red-700 to-rose-500 bg-clip-text font-serif text-8xl font-bold tracking-tighter text-transparent md:text-9xl">
                 404
               </h1>
 

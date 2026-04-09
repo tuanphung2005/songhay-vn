@@ -120,7 +120,7 @@ export function PostCard({
           {/* Metadata for horizontal layout (Category - Time below title) */}
           {isHorizontal && (
             <div className={cn(
-              "mt-2 flex items-center gap-2 text-xs font-medium",
+              "mt-2 flex items-center gap-2 text-xs font-semibold",
               className?.includes("lg:flex-col") && "lg:hidden"
             )}>
               <span className="text-primary font-bold">{categoryName}</span>
@@ -155,7 +155,7 @@ export function PostCard({
 
           {!compact && (!isHorizontal || className?.includes("lg:flex-col")) && (
             <div className={cn(
-              "mt-3 flex items-center gap-3 text-[10px] font-medium uppercase tracking-wider",
+              "mt-3 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider",
               isOverlay ? "text-zinc-300" : "text-zinc-400",
               isHorizontal && "hidden lg:flex",
               !className?.includes("lg:flex-col") && isHorizontal && "hidden"
