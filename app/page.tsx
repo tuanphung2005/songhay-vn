@@ -85,7 +85,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <JsonLd data={homepageJsonLd} />
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
 
       <main className="mx-auto w-full max-w-[1100px] space-y-6 px-4 py-5 md:px-6 md:py-6">
         <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />

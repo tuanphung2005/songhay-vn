@@ -17,10 +17,16 @@ function getCurrentDate() {
 
 type SiteHeaderProps = {
   defaultSearchQuery?: string
+  navCategories?: Awaited<ReturnType<typeof getNavCategories>>
 }
 
-export async function SiteHeader({ defaultSearchQuery }: SiteHeaderProps = {}) {
-  const [user, navCategories] = await Promise.all([getCurrentUser(), getNavCategories()])
+export async function SiteHeader({ defaultSearchQuery, navCategories: propNavCategories }: SiteHeaderProps = {}) {
+  const [user, fetchedNavCategories] = await Promise.all([
+    getCurrentUser(),
+    propNavCategories ? Promise.resolve(null) : getNavCategories()
+  ])
+
+  const navCategories = propNavCategories ?? fetchedNavCategories!
   const currentDate = getCurrentDate()
 
   async function logoutAction() {
