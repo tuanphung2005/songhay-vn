@@ -1,6 +1,6 @@
 "use client"
 import dynamic from "next/dynamic"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 
 const RichTextField = dynamic(

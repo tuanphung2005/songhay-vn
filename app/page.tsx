@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
 
@@ -8,6 +7,7 @@ import { DontMissWidget } from "@/components/news/dont-miss-widget"
 import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
+import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
 import { RecommendedForYou } from "@/components/news/recommended-for-you"
 import { VideoMostWatched } from "@/components/news/video-most-watched"
@@ -160,22 +160,7 @@ export default async function HomePage() {
 
             <section className="space-y-4">
               <SectionHeading title="Tin mới nhất" />
-              <div className="flex flex-col border-t border-zinc-200">
-                {latest.slice(0, 10).map((post) => (
-                  <div key={post.id} className="border-b border-zinc-200 py-6 last:border-b-0">
-                    <PostCard
-                      href={`/${post.category.slug}/${post.slug}`}
-                      title={post.title}
-                      excerpt={post.excerpt}
-                      imageUrl={post.thumbnailUrl}
-                      date={post.publishedAt}
-                      categoryName={post.category.name}
-                      variant="horizontal"
-                      commentCount={post._count.comments}
-                    />
-                  </div>
-                ))}
-              </div>
+              <PostCardList posts={latest.slice(0, 10)} />
             </section>
 
             <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" className="min-h-20" />
@@ -193,22 +178,7 @@ export default async function HomePage() {
                 return (
                   <div key={first.category.slug} className="space-y-4">
                     <SectionHeading title={first.category.name} />
-                    <div className="flex flex-col border-t border-zinc-200">
-                      {items.slice(0, 4).map((post) => (
-                        <div key={post.id} className="border-b border-zinc-200 py-6 last:border-b-0">
-                          <PostCard
-                            href={`/${post.category.slug}/${post.slug}`}
-                            title={post.title}
-                            excerpt={post.excerpt}
-                            imageUrl={post.thumbnailUrl}
-                            date={post.publishedAt}
-                            categoryName={post.category.name}
-                            variant="horizontal"
-                            commentCount={post._count.comments}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    <PostCardList posts={items.slice(0, 4)} />
                     {(index + 1) % 2 === 0 ? (
                       <AdPlaceholder label="Giữa các cụm chuyên mục (Google AdSense)" className="min-h-24" />
                     ) : null}

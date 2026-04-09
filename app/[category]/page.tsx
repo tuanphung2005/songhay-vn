@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
-import { PostCard } from "@/components/news/post-card"
+import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
@@ -112,29 +112,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             {posts.length === 0 ? (
               <p className="text-zinc-600">Chuyên mục này chưa có bài viết.</p>
             ) : (
-              <div className="flex flex-col border-t border-zinc-200">
-                {posts.map((post, index) => (
-                  <div key={post.id} className="contents">
-                    <div className="border-b border-zinc-200 py-6">
-                      <PostCard
-                        href={`/${post.category.slug}/${post.slug}`}
-                        title={post.title}
-                        excerpt={post.excerpt}
-                        imageUrl={post.thumbnailUrl}
-                        date={post.publishedAt}
-                        categoryName={post.category.name}
-                        variant="horizontal"
-                        commentCount={post._count.comments}
-                      />
-                    </div>
-                    {(index + 1) % 6 === 0 ? (
-                      <div className="py-4">
-                        <AdPlaceholder label="Giữa danh sách chuyên mục (Google AdSense)" className="min-h-24" />
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
+              <PostCardList
+                posts={posts}
+                adEvery={6}
+                adLabel="Giữa danh sách chuyên mục (Google AdSense)"
+              />
             )}
 
             <AdPlaceholder label="Cuối danh sách chuyên mục (Google AdSense)" className="min-h-24" />
