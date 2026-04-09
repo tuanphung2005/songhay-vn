@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { ArrowLeft, Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 
-import { RichTextField } from "@/components/admin/rich-text-field"
+import { RichTextField } from "@/components/admin/rich-text-field/index"
 import { SeoFields } from "@/components/admin/seo-fields"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

@@ -5,7 +5,7 @@ import { Eye, Globe, Save, Send, SendToBack } from "lucide-react"
 
 const RichTextField = dynamic(
   () =>
-    import("@/components/admin/rich-text-field").then((m) => m.RichTextField),
+    import("@/components/admin/rich-text-field/index").then((m) => m.RichTextField),
   { ssr: false }
 )
 
