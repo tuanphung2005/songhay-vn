@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { ShieldCheck } from "lucide-react"
 
+import "ckeditor5/ckeditor5-content.css"
 import { getAdminSnapshot } from "@/app/admin/data-loaders/index"
 import { getVisibleTabs, OVERVIEW_TAB, POSTS_SUBMENU_TABS, type NavCountKey } from "@/app/admin/page-helpers"
 import { AdminActionToast } from "@/components/admin/action-toast"
