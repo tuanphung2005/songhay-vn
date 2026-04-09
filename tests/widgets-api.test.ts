@@ -34,11 +34,10 @@ describe("widgets API integration", () => {
     expect(source).toContain("isDraft: false")
   })
 
-  test("most-read widget performs API fetch", () => {
+  test("most-read widget is a server component and receives posts as props", () => {
     const source = readWorkspaceFile("components/news/most-read.tsx")
 
-    expect(source).toContain("\"use client\"")
-    expect(source).toContain("fetch(\"/api/posts/most-read?limit=5\"")
-    expect(source).toContain("setItems(")
+    expect(source).not.toContain("\"use client\"")
+    expect(source).toContain("{ posts }: MostReadProps")
   })
 })

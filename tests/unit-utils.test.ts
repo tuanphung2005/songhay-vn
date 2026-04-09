@@ -4,6 +4,7 @@ import { slugify } from "../lib/slug"
 import { hashPassword, verifyPassword } from "../lib/password"
 import { cn } from "../lib/utils"
 import { normalizeArticleHtml } from "../lib/html"
+import { buildPaginationItems, sortCategoriesByTree } from "../app/admin/data-helpers"
 
 describe("Unit: BMI Calculation", () => {
   test("calculates BMI correctly for male", () => {
@@ -152,5 +153,32 @@ describe("Unit: HTML Normalization", () => {
     expect(normalizeArticleHtml(img)).toBe(img)
     expect(normalizeArticleHtml(video)).toBe(video)
     expect(normalizeArticleHtml(iframe)).toBe(iframe)
+  })
+})
+
+describe("Unit: Admin Data Helpers", () => {
+  test("buildPaginationItems creates correct sequences and ellipses", () => {
+    // Small number of pages -> [1, 2, 3]
+    expect(buildPaginationItems(1, 3)).toEqual([1, 2, 3])
+
+    // Many pages, at start -> [1, 2, "ellipsis", 10]
+    expect(buildPaginationItems(1, 10)).toEqual([1, 2, "ellipsis", 10])
+
+    // Many pages, in middle -> [1, "ellipsis", 4, 5, 6, "ellipsis", 10]
+    expect(buildPaginationItems(5, 10)).toEqual([1, "ellipsis", 4, 5, 6, "ellipsis", 10])
+
+    // Many pages, at end -> [1, "ellipsis", 8, 9, 10]
+    expect(buildPaginationItems(10, 10)).toEqual([1, "ellipsis", 8, 9, 10])
+  })
+
+  test("sortCategoriesByTree sorts roots first then children", () => {
+    const cats = [
+      { id: "2", name: "Child 1", parentId: "1" },
+      { id: "1", name: "Root 1", parentId: null },
+      { id: "4", name: "Root 2", parentId: null },
+      { id: "3", name: "Child 2", parentId: "1" },
+    ]
+    const sorted = sortCategoriesByTree(cats)
+    expect(sorted.map(c => c.id)).toEqual(["1", "2", "3", "4"])
   })
 })
