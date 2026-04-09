@@ -24,6 +24,8 @@ import {
   getTrendingPosts,
   getMostWatchedVideos,
   getRecommendedPosts,
+  getLatestPostsForSsg,
+  getNavCategories,
 } from "@/lib/queries"
 import {
   injectInlineAdAfterSecondParagraph,
@@ -40,6 +42,14 @@ const getPost = cache(async (category: string, slug: string) =>
 
 type PostPageProps = {
   params: Promise<{ category: string; slug: string }>
+}
+
+export async function generateStaticParams() {
+  const latestPosts = await getLatestPostsForSsg(50)
+  return latestPosts.map((post) => ({
+    category: post.category.slug,
+    slug: post.slug,
+  }))
 }
 
 // Shared logic in lib/html.ts
@@ -106,7 +116,10 @@ export async function generateMetadata({
 
 export default async function PostPage({ params }: PostPageProps) {
   const { category, slug } = await params
-  const post = await getPost(category, slug)
+  const [post, navCategories] = await Promise.all([
+    getPost(category, slug),
+    getNavCategories(),
+  ])
 
   if (!post) {
     notFound()
@@ -187,7 +200,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <ViewTracker postId={article.id} />
 
       <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">

@@ -1,6 +1,7 @@
 "use client"
 
 /* eslint-disable @next/next/no-img-element */
+import Image from "next/image"
 import { type FormEvent, useState } from "react"
 import { ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react"
 
@@ -330,12 +331,12 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   onClick={() => setPreviewAsset(asset)}
                 >
                   {asset.assetType === "IMAGE" ? (
-                    <img
+                    <Image
                       src={asset.url}
                       alt={asset.displayName || asset.filename}
+                      width={200}
+                      height={150}
                       className="max-h-24 w-auto max-w-full rounded object-contain"
-                      loading="lazy"
-                      decoding="async"
                     />
                   ) : (
                     <video
@@ -414,9 +415,11 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               {previewAsset ? (
                 <div className="max-h-[70vh] overflow-auto rounded border bg-zinc-50 p-2">
                   {previewAsset.assetType === "IMAGE" ? (
-                    <img
+                    <Image
                       src={previewAsset.url}
                       alt={previewAsset.displayName || previewAsset.filename}
+                      width={1200}
+                      height={800}
                       className="h-auto max-h-[65vh] w-full rounded object-contain"
                     />
                   ) : (

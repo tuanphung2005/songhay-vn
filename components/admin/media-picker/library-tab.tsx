@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useMemo, useState } from "react"
 import { MediaAsset } from "./types"
 import { Search, Image as ImageIcon, Video as VideoIcon, User, ChevronLeft, ChevronRight, Filter } from "lucide-react"
@@ -114,7 +115,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
               className="group relative aspect-square overflow-hidden rounded-xl border border-input bg-muted/20 hover:border-accent-foreground hover:ring-2 hover:ring-accent/20 transition-all shadow-sm"
             >
               {asset.assetType === "IMAGE" ? (
-                <img src={asset.url} alt={asset.displayName || asset.filename} className="h-full w-full object-cover transition-transform group-hover:scale-110" loading="lazy" />
+                <Image src={asset.url} alt={asset.displayName || asset.filename} width={200} height={200} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">
                   <div className="mb-2 p-2 bg-muted rounded-lg text-muted-foreground group-hover:text-foreground group-hover:bg-muted/80 transition-colors">

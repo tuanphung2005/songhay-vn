@@ -7,8 +7,8 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("public search flow", () => {
-  test("header uses reusable news search popup", () => {
-    const source = readWorkspaceFile("components/news/site-header.tsx")
+  test("header uses reusable news search popup via HeaderUserStatus", () => {
+    const source = readWorkspaceFile("components/news/header-user-status.tsx")
     const popupSource = readWorkspaceFile(
       "components/news/search-icon-popup.tsx"
     )

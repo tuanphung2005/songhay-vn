@@ -7,13 +7,20 @@ import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { JsonLd } from "@/components/seo/json-ld"
-import { getCategoryBySlug, getPostsByCategory } from "@/lib/queries"
+import { getCategoryBySlug, getPostsByCategory, getAllCategorySlugs, getNavCategories } from "@/lib/queries"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
 export const revalidate = 300
 
 type CategoryPageProps = {
   params: Promise<{ category: string }>
+}
+
+export async function generateStaticParams() {
+  const categories = await getAllCategorySlugs()
+  return categories.map((cat) => ({
+    category: cat.slug,
+  }))
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
@@ -54,9 +61,10 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params
-  const [foundCategory, posts] = await Promise.all([
+  const [foundCategory, posts, navCategories] = await Promise.all([
     getCategoryBySlug(category),
     getPostsByCategory(category),
+    getNavCategories(),
   ])
 
   if (!foundCategory) {
@@ -101,7 +109,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div className="min-h-screen bg-zinc-50">
       <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <main className="mx-auto w-full max-w-[1200px] space-y-5 px-4 py-6 md:px-6 md:py-6">
         <AdPlaceholder label="Top chuyên mục (Google AdSense)" className="min-h-20" />
 

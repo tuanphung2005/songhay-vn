@@ -1,19 +1,7 @@
 import Link from "next/link"
 
-import { clearSessionCookie, getCurrentUser } from "@/lib/auth"
 import { getNavCategories } from "@/lib/queries"
-import { MobileNav } from "./mobile-nav"
-import { SearchIconPopup } from "./search-icon-popup"
-
-function getCurrentDate() {
-  const days = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
-  const now = new Date()
-  const dayName = days[now.getDay()]
-  const day = now.getDate()
-  const month = now.getMonth() + 1
-  const year = now.getFullYear()
-  return `${dayName}, ngày ${day} tháng ${month} năm ${year}`
-}
+import { HeaderUserStatus } from "./header-user-status"
 
 type SiteHeaderProps = {
   defaultSearchQuery?: string
@@ -21,18 +9,7 @@ type SiteHeaderProps = {
 }
 
 export async function SiteHeader({ defaultSearchQuery, navCategories: propNavCategories }: SiteHeaderProps = {}) {
-  const [user, fetchedNavCategories] = await Promise.all([
-    getCurrentUser(),
-    propNavCategories ? Promise.resolve(null) : getNavCategories()
-  ])
-
-  const navCategories = propNavCategories ?? fetchedNavCategories!
-  const currentDate = getCurrentDate()
-
-  async function logoutAction() {
-    "use server"
-    await clearSessionCookie()
-  }
+  const navCategories = propNavCategories ?? (await getNavCategories())
 
   return (
     <header className="sticky top-0 z-50 border-b border-red-800 bg-red-700 shadow-md md:border-zinc-200 md:bg-white">
@@ -49,32 +26,10 @@ export async function SiteHeader({ defaultSearchQuery, navCategories: propNavCat
           </div>
         </Link>
 
-        <div className="mt-1 flex items-center gap-3">
-          <div className="hidden text-sm text-zinc-600 md:block">
-            {currentDate}
-          </div>
-          {user ? (
-            <>
-              <Link
-                href="/admin"
-                className="rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/20 md:border-zinc-300 md:bg-white md:text-zinc-700 md:hover:bg-zinc-100"
-              >
-                CMS
-              </Link>
-              <span className="hidden text-sm font-semibold text-white md:inline md:text-zinc-700">{user.name}</span>
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/20 md:border-zinc-300 md:bg-white md:text-zinc-700 md:hover:bg-zinc-100"
-                >
-                  Đăng xuất
-                </button>
-              </form>
-            </>
-          ) : null}
-          <SearchIconPopup defaultValue={defaultSearchQuery} />
-          <MobileNav navCategories={navCategories} defaultSearchQuery={defaultSearchQuery} />
-        </div>
+        <HeaderUserStatus 
+          navCategories={navCategories} 
+          defaultSearchQuery={defaultSearchQuery} 
+        />
       </div>
 
       <nav className="hidden border-t border-red-800 bg-red-700 md:block">

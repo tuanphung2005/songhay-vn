@@ -120,10 +120,11 @@ model Post {
   @@index([approverId])
   @@index([lastEditorId])
   @@index([isDraft])
-  @@index([isPublished, publishedAt])
+  @@index([isPublished, publishedAt(sort: Desc)])
   @@index([editorialStatus])
-  @@index([isDeleted])
-  @@index([views])
+  @@index([isDeleted, isPublished, isDraft, publishedAt(sort: Desc)])
+  @@index([isDeleted, isPublished, views(sort: Desc), publishedAt(sort: Desc)])
+  @@index([categoryId, isDeleted, isPublished, publishedAt(sort: Desc)])
 }
 
 model MediaAsset {

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Image from "next/image"
 import { MediaPicker } from "@/components/admin/media-picker"
 import type { MediaAsset } from "@/components/admin/media-picker/types"
 
@@ -41,10 +42,12 @@ export function ThumbnailPicker({
       </div>
       {thumbnailUrl && (
         <div className="mt-2 text-center bg-zinc-50 border rounded-lg p-2">
-          <img
+          <Image
             src={thumbnailUrl}
             alt="Thumbnail preview"
-            className="max-h-32 mx-auto rounded object-contain"
+            width={400}
+            height={225}
+            className="h-auto max-h-32 mx-auto rounded object-contain"
           />
         </div>
       )}

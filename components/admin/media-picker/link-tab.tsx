@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { Link2, Globe, Image as ImageIcon, Video as VideoIcon, CheckCircle2, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -65,7 +66,7 @@ export function LinkTab({ onSelect }: LinkTabProps) {
                 {assetType === "VIDEO" ? (
                   <video src={url} className="max-h-full max-w-full object-contain" controls />
                 ) : (
-                  <img src={url} alt="Preview" className="max-h-full max-w-full object-contain" />
+                  <Image src={url} alt="Preview" width={800} height={450} className="max-h-full max-w-full object-contain" />
                 )}
               </div>
             )}

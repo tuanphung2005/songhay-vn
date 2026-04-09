@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useMemo, useEffect } from "react"
 import { MediaAsset } from "./types"
 import { UploadCloud, FileImage, FileVideo, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
@@ -88,9 +89,11 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
                     controls
                   />
                 ) : (
-                  <img
+                  <Image
                     src={previewUrl}
                     alt={file.name}
+                    width={800}
+                    height={450}
                     className="max-h-full max-w-full object-contain"
                   />
                 )}

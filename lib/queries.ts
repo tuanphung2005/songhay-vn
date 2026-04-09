@@ -430,3 +430,18 @@ export const getLatestByCategory = cache(async (perCategory = 4, categoriesLimit
     }
   })
 })
+
+export async function getLatestPostsForSsg(limit = 50) {
+  return prisma.post.findMany({
+    where: { isPublished: true, isDeleted: false, isDraft: false },
+    select: { slug: true, category: { select: { slug: true } } },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  })
+}
+
+export async function getAllCategorySlugs() {
+  return prisma.category.findMany({
+    select: { slug: true },
+  })
+}

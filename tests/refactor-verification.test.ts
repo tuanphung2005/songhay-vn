@@ -20,8 +20,7 @@ describe("Refactor and Optimization Verification", () => {
     const source = readWorkspaceFile("components/news/site-header.tsx")
 
     expect(source).toContain("navCategories?: Awaited<ReturnType<typeof getNavCategories>>")
-    expect(source).toContain("propNavCategories ? Promise.resolve(null) : getNavCategories()")
-    expect(source).toContain("propNavCategories ?? fetchedNavCategories!")
+    expect(source).toContain("const navCategories = propNavCategories ?? (await getNavCategories())")
   })
 
   test("Admin data loading implements selective fetching", () => {
