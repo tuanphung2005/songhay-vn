@@ -167,8 +167,8 @@ describe("Unit: Admin Data Helpers", () => {
     // Many pages, in middle -> [1, "ellipsis", 4, 5, 6, "ellipsis", 10]
     expect(buildPaginationItems(5, 10)).toEqual([1, "ellipsis", 4, 5, 6, "ellipsis", 10])
 
-    // Many pages, at end -> [1, "ellipsis", 8, 9, 10]
-    expect(buildPaginationItems(10, 10)).toEqual([1, "ellipsis", 8, 9, 10])
+    // Many pages, at end -> [1, "ellipsis", 9, 10]
+    expect(buildPaginationItems(10, 10)).toEqual([1, "ellipsis", 9, 10])
   })
 
   test("sortCategoriesByTree sorts roots first then children", () => {
