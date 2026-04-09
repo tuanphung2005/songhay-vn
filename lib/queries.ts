@@ -29,7 +29,7 @@ function createPublishedSearchWhere(normalizedQuery: string): Prisma.PostWhereIn
 
 export const getHomepageData = cache(async () => {
   return memoizeWithTtl("homepage-data-v2", CACHE_WINDOW_SECONDS, async () => {
-    const [mostRead, latest, recommended, mostWatched, trendingPosts] = await Promise.all([
+    const [mostRead, latest, recommended, mostWatched] = await Promise.all([
       // Most read sidebar
       prisma.post.findMany({
         where: { isPublished: true, isDeleted: false },
@@ -56,13 +56,12 @@ export const getHomepageData = cache(async () => {
       }),
       getRecommendedPosts(undefined, undefined, 12),
       getMostWatchedVideos(8),
-      getTrendingPosts(),
     ])
 
     // Build hero section: pick the 7 most-recent published posts
     const heroSlots = latest.slice(0, 7)
 
-    return { heroSlots, mostRead, latest, recommended, mostWatched, trendingPosts }
+    return { heroSlots, mostRead, latest, recommended, mostWatched }
   })
 })
 

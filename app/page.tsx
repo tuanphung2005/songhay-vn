@@ -54,9 +54,6 @@ export default async function HomePage() {
     getNavCategories(),
   ])
 
-  const heroPost = heroSlots[0]
-  const heroMini = heroSlots.slice(1, 4)
-
   const groupedByCategory = latest.reduce<Record<string, typeof latest>>((acc, post) => {
     const key = post.category.slug
     if (!acc[key]) {
