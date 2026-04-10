@@ -1,25 +1,33 @@
-import { Save, UserPlus } from "lucide-react"
+import { Save, KeyRound } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
+import type { getUsersData } from "@/app/admin/data-loaders"
 
 type SettingsPasswordTabProps = {
-  updatePasswordMock: (formData: FormData) => Promise<void>
-  createSubordinateAccount: (formData: FormData) => Promise<void>
+  users: Awaited<ReturnType<typeof getUsersData>>
+  updateOwnPassword: (formData: FormData) => Promise<void>
+  resetUserPassword: (formData: FormData) => Promise<void>
   canCreateSubordinateAccount: boolean
 }
 
 export function SettingsPasswordTab({
-  updatePasswordMock,
-  createSubordinateAccount,
+  users,
+  updateOwnPassword,
+  resetUserPassword,
   canCreateSubordinateAccount,
 }: SettingsPasswordTabProps) {
   return (
-    <div className="space-y-4">
-      <section className="space-y-4">
-        <p className="text-sm font-semibold">Đổi mật khẩu</p>
-        <form action={updatePasswordMock} className="space-y-3">
+    <div className="space-y-6">
+      <section className="space-y-4 max-w-md">
+        <div>
+          <h3 className="text-lg font-medium">Đổi mật khẩu bản thân</h3>
+          <p className="text-sm text-zinc-500">
+            Cập nhật mật khẩu đăng nhập của bạn.
+          </p>
+        </div>
+        <form action={updateOwnPassword} className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
             <Input
@@ -35,6 +43,7 @@ export function SettingsPasswordTab({
               id="newPassword"
               name="newPassword"
               type="password"
+              minLength={8}
               required
             />
           </div>
@@ -44,67 +53,62 @@ export function SettingsPasswordTab({
               id="confirmPassword"
               name="confirmPassword"
               type="password"
+              minLength={8}
               required
             />
           </div>
           <PendingSubmitButton type="submit" pendingText="Đang lưu...">
             <Save className="size-4" />
-            Lưu (mock)
+            Lưu thay đổi
           </PendingSubmitButton>
         </form>
       </section>
 
       {canCreateSubordinateAccount ? (
-        <section className="space-y-4">
-          <p className="text-sm font-semibold">Tạo tài khoản cấp dưới</p>
-          <form
-            action={createSubordinateAccount}
-            className="grid gap-3 md:grid-cols-2"
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="subordinateName">Họ tên</Label>
-              <Input id="subordinateName" name="name" required />
+        <>
+          <hr className="border-zinc-200" />
+          <section className="space-y-4 max-w-md">
+            <div>
+              <h3 className="text-lg font-medium text-destructive">
+                Reset mật khẩu người dùng
+              </h3>
+              <p className="text-sm text-zinc-500">
+                Đặt lại mật khẩu cho các tài khoản cấp dưới.
+              </p>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="subordinateEmail">Email</Label>
-              <Input id="subordinateEmail" name="email" type="email" required />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="subordinateRole">Vai trò</Label>
-              <Select
-                id="subordinateRole"
-                name="role"
-                defaultValue="CONTRIBUTOR"
-              >
-                <option value="MANAGING_EDITOR">Thư ký biên tập</option>
-                <option value="TEAM_LEAD">Trưởng nhóm</option>
-                <option value="REPORTER_TRANSLATOR">
-                  Phóng viên/Biên dịch
-                </option>
-                <option value="CONTRIBUTOR">Cộng tác viên</option>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="subordinatePassword">Mật khẩu khởi tạo</Label>
-              <Input
-                id="subordinatePassword"
-                name="password"
-                type="password"
-                minLength={8}
-                required
-              />
-            </div>
-            <div className="md:col-span-2">
+            <form action={resetUserPassword} className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="userId">Chọn người dùng</Label>
+                <Select id="userId" name="userId" required>
+                  <option value="">-- Chọn người dùng --</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} ({user.email}) - {user.role}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adminNewPassword">Mật khẩu mới</Label>
+                <Input
+                  id="adminNewPassword"
+                  name="newPassword"
+                  type="password"
+                  minLength={8}
+                  required
+                />
+              </div>
               <PendingSubmitButton
                 type="submit"
-                pendingText="Đang tạo tài khoản..."
+                variant="destructive"
+                pendingText="Đang reset..."
               >
-                <UserPlus className="size-4" />
-                Tạo tài khoản
+                <KeyRound className="size-4" />
+                Reset mật khẩu
               </PendingSubmitButton>
-            </div>
-          </form>
-        </section>
+            </form>
+          </section>
+        </>
       ) : null}
     </div>
   )

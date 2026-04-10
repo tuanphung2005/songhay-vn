@@ -127,6 +127,7 @@ export async function getAdminPageData({
       permissionsMatrix = await getRolePermissionsData(activeTab)
       break
     case "settings-users":
+    case "settings-password":
       usersData = await getUsersData(activeTab)
       break
     default:

@@ -39,24 +39,25 @@ export async function uploadMediaAsset(formData: FormData) {
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
 
-  const url =
+  const { url, publicId } =
     selectedType === MediaAssetType.IMAGE
       ? await uploadImageToCloudinary({
-        buffer,
-        filename: file.name,
-        mimeType: file.type || "image/jpeg",
-        folder: "songhay/editor",
-      })
+          buffer,
+          filename: file.name,
+          mimeType: file.type || "image/jpeg",
+          folder: "songhay/editor",
+        })
       : await uploadVideoToCloudinary({
-        buffer,
-        filename: file.name,
-        mimeType: file.type || "video/mp4",
-        folder: "songhay/editor/videos",
-      })
+          buffer,
+          filename: file.name,
+          mimeType: file.type || "video/mp4",
+          folder: "songhay/editor/videos",
+        })
 
   await prisma.mediaAsset.create({
     data: {
       assetType: selectedType,
+      publicId,
       visibility: "SHARED",
       url,
       filename: file.name,

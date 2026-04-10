@@ -183,6 +183,12 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
         </aside>
       </main>
 
+      <SiteFooter navCategories={navCategories} />
+    </div>
+  )
+}
+ain>
+
       <SiteFooter />
     </div>
   )

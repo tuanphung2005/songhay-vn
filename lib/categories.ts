@@ -4,6 +4,9 @@ export type NavCategory = {
   children?: { name: string; slug: string }[]
 }
 
+/**
+ * @deprecated Use getNavCategories from @/lib/queries to fetch categories from the database.
+ */
 export const NAV_CATEGORIES: NavCategory[] = [
   {
     name: "Sống hay",

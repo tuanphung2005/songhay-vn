@@ -129,6 +129,7 @@ model Post {
 
 model MediaAsset {
   id          String               @id @default(cuid())
+  publicId    String?
   assetType   MediaAssetType
   visibility  MediaAssetVisibility @default(SHARED)
   url         String

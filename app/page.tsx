@@ -207,22 +207,7 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <nav className="bg-red-700">
-        <ul className="mx-auto grid w-full max-w-[1200px] grid-cols-2 gap-x-3 gap-y-2 px-4 py-4 text-base font-bold text-white md:flex md:min-w-max md:items-center md:gap-6 md:overflow-x-auto md:px-6 md:py-3">
-          {navCategories.map((item) => (
-            <li key={`bottom-${item.slug}`}>
-              <Link
-                href={`/${item.slug}`}
-                className="border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
-              >
-                {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
 
       <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
         <AdPlaceholder label="Bottom page ad (Google AdSense)" className="min-h-24" />

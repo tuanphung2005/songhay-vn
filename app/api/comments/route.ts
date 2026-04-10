@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
 import { containsForbiddenKeyword } from "@/lib/moderation"
 import { prisma } from "@/lib/prisma"
 import { isPrismaSchemaMismatchError } from "@/lib/prisma-errors"
+import { createRateLimitResponse, getIP, rateLimit } from "@/lib/rate-limit"
 
 const schema = z.object({
   postId: z.string().min(1),
@@ -11,10 +12,15 @@ const schema = z.object({
   content: z.string().min(3).max(800),
 })
 
-export async function POST(request: unknown) {
-  const incomingRequest = request as Request
+export async function POST(request: NextRequest) {
+  const ip = getIP(request)
+  const { success, reset } = rateLimit(ip, { limit: 5, windowMs: 60 * 1000 })
 
-  const body = await incomingRequest.json().catch(() => null)
+  if (!success) {
+    return createRateLimitResponse(reset)
+  }
+
+  const body = await request.json().catch(() => null)
   const parsed = schema.safeParse(body)
 
   if (!parsed.success) {

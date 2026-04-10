@@ -1,5 +1,10 @@
 import Link from "next/link"
 import { Facebook, Youtube } from "lucide-react"
+import { getNavCategories } from "@/lib/queries"
+
+type SiteFooterProps = {
+  navCategories?: Awaited<ReturnType<typeof getNavCategories>>
+}
 
 function TikTokIcon() {
   return (
@@ -42,9 +47,26 @@ const socials = [
   },
 ]
 
-export function SiteFooter() {
+export async function SiteFooter({ navCategories: propNavCategories }: SiteFooterProps = {}) {
+  const navCategories = propNavCategories ?? (await getNavCategories())
   return (
     <footer className="border-t border-zinc-200 bg-zinc-100">
+      {navCategories && navCategories.length > 0 && (
+        <nav className="border-b border-zinc-200 bg-red-700">
+          <ul className="mx-auto grid w-full max-w-[1100px] grid-cols-2 gap-x-3 gap-y-2 px-4 py-4 text-sm font-bold text-white sm:text-base md:flex md:flex-wrap md:items-center md:gap-6 md:px-6 md:py-3">
+            {navCategories.map((item) => (
+              <li key={`footer-nav-${item.slug}`}>
+                <Link
+                  href={`/${item.slug}`}
+                  className="border-b-2 border-transparent pb-1 leading-none transition hover:border-white/90 hover:text-white/90"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
       <div className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 py-8 md:grid-cols-[1.3fr_1fr] md:px-6">
         <div className="space-y-3 text-zinc-700">
           <p className="text-2xl font-black text-zinc-900">Songhay.vn</p>

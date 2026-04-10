@@ -5,6 +5,7 @@ import { BabyNameWidget } from "@/components/news/baby-name-widget"
 import { JsonLd } from "@/components/seo/json-ld"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { getNavCategories } from "@/lib/queries"
 
 export const metadata: Metadata = {
   title: "Đặt tên con theo Ngũ Hành",
@@ -15,7 +16,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function BabyNamePage() {
+export default async function BabyNamePage() {
+  const navCategories = await getNavCategories()
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -50,7 +52,7 @@ export default function BabyNamePage() {
   return (
     <div className="min-h-screen bg-white">
       <JsonLd data={faqSchema} />
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 md:px-6">
         <h1 className="text-3xl font-black text-zinc-900">Đặt tên con theo Ngũ Hành</h1>
         <BabyNameWidget />
@@ -142,7 +144,7 @@ export default function BabyNamePage() {
           </p>
         </article>
       </main>
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

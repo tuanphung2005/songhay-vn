@@ -12,6 +12,14 @@ type UploadResourceType = "image" | "video" | "raw"
 
 type CloudinaryUploadResponse = {
   secure_url?: string
+  public_id?: string
+  error?: {
+    message?: string
+  }
+}
+
+type CloudinaryDeleteResponse = {
+  result?: string
   error?: {
     message?: string
   }
@@ -96,7 +104,10 @@ async function uploadAssetToCloudinary({
     throw new Error(payload.error?.message || "Cloudinary upload failed")
   }
 
-  return payload.secure_url
+  return {
+    url: payload.secure_url,
+    publicId: payload.public_id,
+  }
 }
 
 export async function uploadImageToCloudinary({ buffer, filename, mimeType, folder = "songhay", transformation }: UploadParams) {
@@ -118,13 +129,15 @@ export async function uploadThumbnail(file: File | null) {
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
 
-  return uploadImageToCloudinary({
+  const result = await uploadImageToCloudinary({
     buffer,
     filename: file.name,
     mimeType: file.type || "image/jpeg",
     folder: "songhay/thumbnails",
     transformation: "c_fill,w_1200,h_720,g_auto",
   })
+
+  return result.url
 }
 
 export async function uploadVideoToCloudinary({ buffer, filename, mimeType, folder = "songhay", transformation }: UploadParams) {
@@ -136,4 +149,41 @@ export async function uploadVideoToCloudinary({ buffer, filename, mimeType, fold
     resourceType: "video",
     transformation,
   })
+}
+
+export async function deleteCloudinaryAsset(publicId: string, resourceType: UploadResourceType = "image") {
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig()
+
+  if (!apiKey || !apiSecret) {
+    console.error("Missing Cloudinary API Key/Secret for deletion")
+    return
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000)
+  const signature = toSignature({
+    public_id: publicId,
+    timestamp,
+  }, apiSecret)
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`
+  const formData = new FormData()
+  formData.append("public_id", publicId)
+  formData.append("api_key", apiKey)
+  formData.append("timestamp", String(timestamp))
+  formData.append("signature", signature)
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+    })
+
+    const payload = (await response.json()) as CloudinaryDeleteResponse
+
+    if (!response.ok || payload.result !== "ok") {
+      console.error(`Cloudinary deletion failed for ${publicId}:`, payload.error?.message || payload.result)
+    }
+  } catch (error) {
+    console.error(`Error deleting Cloudinary asset ${publicId}:`, error)
+  }
 }

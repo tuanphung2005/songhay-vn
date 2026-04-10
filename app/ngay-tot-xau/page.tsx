@@ -4,6 +4,7 @@ import { GoodDayFullReport } from "@/components/news/good-day-full-report"
 import { GoodDayByAgeTool } from "@/components/news/good-day-by-age-tool"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { getNavCategories } from "@/lib/queries"
 
 export const metadata: Metadata = {
   title: "Xem ngày tốt xấu đầy đủ theo lịch âm",
@@ -14,10 +15,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function GoodDayPage() {
+export default async function GoodDayPage() {
+  const navCategories = await getNavCategories()
+
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 md:px-6">
         <header className="space-y-2">
           <h1 className="text-3xl font-black text-zinc-900">Xem ngày tốt xấu theo tuổi</h1>
@@ -30,7 +33,7 @@ export default function GoodDayPage() {
 
         <GoodDayFullReport />
       </main>
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

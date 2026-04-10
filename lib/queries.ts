@@ -1,6 +1,7 @@
 import { cache } from "react"
 import type { Prisma } from "@prisma/client"
 
+import { NAV_CATEGORIES } from "./categories"
 import { memoizeWithTtl } from "./data-cache"
 import { prisma } from "@/lib/prisma"
 
@@ -363,16 +364,47 @@ export const getRecommendedPosts = cache(
 
 export const getNavCategories = cache(async () => {
   return memoizeWithTtl("nav-categories", CACHE_WINDOW_SECONDS, async () => {
-    const allCats = await prisma.category.findMany({
-      select: { id: true, name: true, slug: true, parentId: true },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    })
+    try {
+      const allCats = await prisma.category.findMany({
+        select: { id: true, name: true, slug: true, parentId: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      })
 
-    const roots = allCats.filter((c) => !c.parentId)
-    return roots.map((root) => ({
-      ...root,
-      children: allCats.filter((c) => c.parentId === root.id),
-    }))
+      if (allCats.length === 0) {
+        return NAV_CATEGORIES.map((cat, idx) => ({
+          id: `static-${idx}`,
+          name: cat.name,
+          slug: cat.slug,
+          parentId: null,
+          children: (cat.children || []).map((child, cIdx) => ({
+            id: `static-${idx}-${cIdx}`,
+            name: child.name,
+            slug: child.slug,
+            parentId: `static-${idx}`,
+          })),
+        }))
+      }
+
+      const roots = allCats.filter((c) => !c.parentId)
+      return roots.map((root) => ({
+        ...root,
+        children: allCats.filter((c) => c.parentId === root.id),
+      }))
+    } catch (error) {
+      console.error("Failed to fetch nav categories from DB, falling back to static:", error)
+      return NAV_CATEGORIES.map((cat, idx) => ({
+        id: `static-${idx}`,
+        name: cat.name,
+        slug: cat.slug,
+        parentId: null,
+        children: (cat.children || []).map((child, cIdx) => ({
+          id: `static-${idx}-${cIdx}`,
+          name: child.name,
+          slug: child.slug,
+          parentId: `static-${idx}`,
+        })),
+      }))
+    }
   })
 })
 

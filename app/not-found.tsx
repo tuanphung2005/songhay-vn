@@ -1,19 +1,22 @@
 import Link from "next/link"
-import { Home, Search, AlertCircle } from "lucide-react"
+import { Home, AlertCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { SiteHeader } from "@/components/news/site-header"
 import { SiteFooter } from "@/components/news/site-footer"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
-import { getHomepageData } from "@/lib/queries"
+import { getHomepageData, getNavCategories } from "@/lib/queries"
 
 export default async function NotFound() {
-  const { latest } = await getHomepageData()
+  const [{ latest }, navCategories] = await Promise.all([
+    getHomepageData(),
+    getNavCategories(),
+  ])
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <main className="flex-1">
         {/* Main 404 Hero Section */}
         <div className="relative overflow-hidden py-16 md:py-24">
@@ -71,7 +74,7 @@ export default async function NotFound() {
           </div>
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

@@ -377,7 +377,7 @@ export default async function PostPage({ params }: PostPageProps) {
         </aside>
       </main>
 
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { authCookieName, decodeSession } from "@/lib/auth"
+import { deleteCloudinaryAsset } from "@/lib/cloudinary"
 import { canDeleteAnyMedia } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 
@@ -40,6 +41,8 @@ export async function DELETE(request: unknown, context: RouteContext) {
     select: {
       id: true,
       uploaderId: true,
+      publicId: true,
+      assetType: true,
     },
   })
 
@@ -49,6 +52,11 @@ export async function DELETE(request: unknown, context: RouteContext) {
 
   if (!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  }
+
+  if (asset.publicId) {
+    const resourceType = asset.assetType === "VIDEO" ? "video" : "image"
+    await deleteCloudinaryAsset(asset.publicId, resourceType)
   }
 
   await prisma.mediaAsset.delete({ where: { id: asset.id } })

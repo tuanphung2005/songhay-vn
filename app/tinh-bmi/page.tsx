@@ -5,6 +5,7 @@ import { BmiWidget } from "@/components/news/bmi-widget"
 import { JsonLd } from "@/components/seo/json-ld"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { getNavCategories } from "@/lib/queries"
 
 export const metadata: Metadata = {
   title: "Đo chỉ số cân nặng - chiều cao (BMI) online",
@@ -15,7 +16,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default function BmiPage() {
+export default async function BmiPage() {
+  const navCategories = await getNavCategories()
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -50,7 +52,7 @@ export default function BmiPage() {
   return (
     <div className="min-h-screen bg-white">
       <JsonLd data={faqSchema} />
-      <SiteHeader />
+      <SiteHeader navCategories={navCategories} />
       <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 md:px-6">
         <h1 className="text-3xl font-black text-zinc-900">Đo chỉ số cân nặng - chiều cao (BMI) online</h1>
         <BmiWidget />
@@ -137,7 +139,7 @@ export default function BmiPage() {
           </section>
         </article>
       </main>
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

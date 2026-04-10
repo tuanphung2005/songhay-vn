@@ -16,14 +16,63 @@ import {
   type PermissionAction,
 } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { hashPassword } from "@/lib/password"
+import { hashPassword, verifyPassword } from "@/lib/password"
 import { normalizeModerationText } from "@/lib/moderation"
 import { normalizeKeyword, toKeywordLabel } from "@/lib/seo-keywords"
 import { ensurePermission } from "@/app/admin/actions-helpers"
 
-export async function updatePasswordMock() {
-  await requireCmsUser()
-  redirect("/admin?tab=settings-password&toast=password_mock_saved")
+export async function updateOwnPassword(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  const currentPassword = String(formData.get("currentPassword") || "")
+  const newPassword = String(formData.get("newPassword") || "")
+
+  if (!currentPassword || !newPassword || newPassword.length < 8) {
+    redirect("/admin?tab=settings-password&toast=password_update_failed")
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: currentUser.id }, select: { passwordHash: true } })
+  if (!user || !verifyPassword(currentPassword, user.passwordHash)) {
+    redirect("/admin?tab=settings-password&toast=password_update_invalid_current")
+  }
+
+  await prisma.user.update({
+    where: { id: currentUser.id },
+    data: { passwordHash: hashPassword(newPassword) },
+  })
+
+  redirect("/admin?tab=settings-password&toast=password_updated")
+}
+
+export async function resetUserPassword(formData: FormData) {
+  const currentUser = await requireEditorInChiefUser()
+  ensurePermission(canCreateSubordinateAccount(currentUser.role), "/admin?tab=settings-password&toast=password_reset_forbidden")
+
+  const userId = String(formData.get("userId") || "").trim()
+  const newPassword = String(formData.get("newPassword") || "")
+
+  if (!userId || !newPassword || newPassword.length < 8) {
+    redirect("/admin?tab=settings-password&toast=password_reset_failed")
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (!target) {
+    redirect("/admin?tab=settings-password&toast=password_reset_failed")
+  }
+
+  if (userId === currentUser.id) {
+    redirect("/admin?tab=settings-password&toast=password_reset_forbidden")
+  }
+
+  if (!roleCanCreate(currentUser.role, target.role)) {
+    redirect("/admin?tab=settings-password?toast=password_reset_forbidden")
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: hashPassword(newPassword) },
+  })
+
+  redirect("/admin?tab=settings-password&toast=password_reset_success")
 }
 
 export async function createSubordinateAccount(formData: FormData) {

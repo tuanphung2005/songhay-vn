@@ -152,7 +152,7 @@ export async function POST(request: unknown) {
   const buffer = Buffer.from(bytes)
 
   try {
-    const url = await uploadVideoToCloudinary({
+    const { url, publicId } = await uploadVideoToCloudinary({
       buffer,
       filename: file.name,
       mimeType: file.type,
@@ -164,6 +164,7 @@ export async function POST(request: unknown) {
       asset = await prisma.mediaAsset.create({
         data: {
           assetType: "VIDEO",
+          publicId,
           visibility: "SHARED",
           url,
           displayName: displayNameInput.length > 0 ? displayNameInput.slice(0, 120) : null,

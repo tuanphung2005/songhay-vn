@@ -21,7 +21,8 @@ import {
   returnPostToPendingReview,
   submitPostToPendingReview,
   updateCategory,
-  updatePasswordMock,
+  updateOwnPassword,
+  resetUserPassword,
   updateRolePermissions,
   updateUserRole,
   deleteUser,
@@ -302,8 +303,9 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
       ) : null}
       {activeTab === "settings-password" ? (
         <SettingsPasswordTab
-          updatePasswordMock={updatePasswordMock}
-          createSubordinateAccount={createSubordinateAccount}
+          users={usersData}
+          updateOwnPassword={updateOwnPassword}
+          resetUserPassword={resetUserPassword}
           canCreateSubordinateAccount={canCreateSubordinateAccount(
             currentUser.role
           )}
@@ -321,6 +323,10 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
           currentUserId={currentUser.id}
           updateUserRole={updateUserRole}
           deleteUser={deleteUser}
+          createSubordinateAccount={createSubordinateAccount}
+          canCreateSubordinateAccount={canCreateSubordinateAccount(
+            currentUser.role
+          )}
         />
       ) : null}
     </>

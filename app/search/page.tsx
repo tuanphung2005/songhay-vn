@@ -6,7 +6,7 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { getPublishedSearchResults } from "@/lib/queries"
+import { getNavCategories, getPublishedSearchResults } from "@/lib/queries"
 
 export const revalidate = 300
 
@@ -69,21 +69,26 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const query = normalizeQuery(resolvedSearchParams?.q)
   const page = toPositiveInt(resolvedSearchParams?.page)
-  const result = query
-    ? await getPublishedSearchResults(query, page, 12)
-    : {
-      query: "",
-      items: [],
-      totalCount: 0,
-      page: 1,
-      pageSize: 12,
-      totalPages: 0,
-    }
+  
+  const [result, navCategories] = await Promise.all([
+    query
+      ? getPublishedSearchResults(query, page, 12)
+      : Promise.resolve({
+          query: "",
+          items: [],
+          totalCount: 0,
+          page: 1,
+          pageSize: 12,
+          totalPages: 0,
+        }),
+    getNavCategories(),
+  ])
+
   const hasPagination = query.length > 0 && result.totalPages > 1
 
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader defaultSearchQuery={query} />
+      <SiteHeader navCategories={navCategories} defaultSearchQuery={query} />
 
       <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
         <AdPlaceholder label="Top trang tìm kiếm (Google AdSense)" className="min-h-20" />
@@ -164,7 +169,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
       </main>
 
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }

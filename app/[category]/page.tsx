@@ -139,7 +139,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       </main>
 
 
-      <SiteFooter />
+      <SiteFooter navCategories={navCategories} />
     </div>
   )
 }
