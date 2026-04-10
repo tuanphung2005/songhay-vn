@@ -12,7 +12,7 @@ const schema = z.object({
   content: z.string().min(3).max(800),
 })
 
-export async function POST(request: NextRequest) {
+export async function POST(request: any) {
   const ip = getIP(request)
   const { success, reset } = rateLimit(ip, { limit: 5, windowMs: 60 * 1000 })
 

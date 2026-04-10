@@ -65,7 +65,7 @@ declare module "next/cache" {
 }
 
 declare module "next/server" {
-  export type NextRequest = Request
+  export type NextRequest = any
   export const NextResponse: {
     json: (body: unknown, init?: ResponseInit) => Response
   }
