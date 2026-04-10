@@ -1,20 +1,19 @@
 import { describe, expect, test } from "bun:test"
 import { rateLimit, getIP, createRateLimitResponse } from "../lib/rate-limit"
-import { NextRequest } from "next/server"
 
 describe("Unit: Rate Limiter", () => {
   test("getIP extracts IP from x-forwarded-for header", () => {
-    const req = new NextRequest("http://localhost/api/test", {
+    const req = new Request("http://localhost/api/test", {
       headers: {
         "x-forwarded-for": "192.168.1.1, 10.0.0.1"
       }
     })
-    expect(getIP(req)).toBe("192.168.1.1")
+    expect(getIP(req as any)).toBe("192.168.1.1")
   })
 
   test("getIP defaults to 127.0.0.1 when header is missing", () => {
-    const req = new NextRequest("http://localhost/api/test")
-    expect(getIP(req)).toBe("127.0.0.1")
+    const req = new Request("http://localhost/api/test")
+    expect(getIP(req as any)).toBe("127.0.0.1")
   })
 
   test("rateLimit allows requests within limit", () => {
