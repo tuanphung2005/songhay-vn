@@ -55,8 +55,10 @@ describe("admin button icons", () => {
 
     expect(moderationSource).toContain("Plus className")
     expect(moderationSource).toContain("Trash2 className")
-    expect(passwordSource).toContain("UserPlus className")
+    expect(passwordSource).toContain("Save className")
+    expect(passwordSource).toContain("KeyRound className")
     expect(permissionsSource).toContain("Save className")
+    expect(usersSource).toContain("UserPlus className")
     expect(usersSource).toContain("Save className")
     expect(usersSource).toContain("Trash2 className")
   })
