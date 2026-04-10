@@ -11,6 +11,16 @@
       "sourceType": "well-known",
       "computedHash": "c20fe20eb84bb56fd5a96eae6e36c5fd8d38f989818a4944f8a08140fe5e7a5b"
     },
+    "caveman": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "computedHash": "9b512c9575fe0c66dcd64c0097072b52437335b80bed5c3f2128c66e906f2eaa"
+    },
+    "compress": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "computedHash": "bbd7d8b1d76fbd6f09f4ca15cd8ae314c856353e4415d1d56a845c8f315e6b3e"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
