@@ -1,23 +1,31 @@
+import { Suspense } from "react"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import type { Metadata } from "next"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
-import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
 import { DontMissWidget } from "@/components/news/dont-miss-widget"
-import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
-import { RecommendedForYou } from "@/components/news/recommended-for-you"
-import { VideoMostWatched } from "@/components/news/video-most-watched"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { JsonLd } from "@/components/seo/json-ld"
-import { getHomepageData, getNavCategories } from "@/lib/queries"
+import { getHomepageData, getNavCategories, type PostWithCategoryAndComments, type CategoryWithChildren } from "@/lib/queries"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
+import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 
-export const revalidate = 300
+const RecommendedForYou = dynamic(
+  () => import("@/components/news/recommended-for-you").then((mod) => mod.RecommendedForYou),
+  { loading: () => <div className="h-60 animate-pulse rounded-lg bg-zinc-100" /> }
+)
+const VideoMostWatched = dynamic(
+  () => import("@/components/news/video-most-watched").then((mod) => mod.VideoMostWatched),
+  { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
+)
+
+export const revalidate = 3600
 
 const siteUrl = getSiteUrl()
 const canonicalUrl = siteUrl
@@ -54,7 +62,7 @@ export default async function HomePage() {
     getNavCategories(),
   ])
 
-  const groupedByCategory = latest.reduce<Record<string, typeof latest>>((acc, post) => {
+  const groupedByCategory = latest.reduce<Record<string, PostWithCategoryAndComments[]>>((acc: Record<string, PostWithCategoryAndComments[]>, post: PostWithCategoryAndComments) => {
     const key = post.category.slug
     if (!acc[key]) {
       acc[key] = []
@@ -63,11 +71,11 @@ export default async function HomePage() {
     return acc
   }, {})
 
-  const categoryBlocks = navCategories.filter((category) =>
+  const categoryBlocks = navCategories.filter((category: CategoryWithChildren) =>
     ["song-khoe", "meo-hay", "doi-song", "goc-stress", "tu-vi", "video"].includes(category.slug)
   )
-    .map((category) => groupedByCategory[category.slug])
-    .filter((items): items is typeof latest => Boolean(items && items.length > 0))
+    .map((category: CategoryWithChildren) => groupedByCategory[category.slug])
+    .filter((items: PostWithCategoryAndComments[] | undefined): items is PostWithCategoryAndComments[] => Boolean(items && items.length > 0))
 
   const homepageJsonLd = {
     "@context": "https://schema.org",
@@ -114,7 +122,7 @@ export default async function HomePage() {
 
             {/* Sidebar Posts (1/3 width stacked) */}
             <div className="flex flex-col gap-6 lg:col-span-1">
-              {heroSlots.slice(1, 3).map((post) => (
+              {heroSlots.slice(1, 3).map((post: PostWithCategoryAndComments) => (
                 <PostCard
                   key={post.id}
                   href={`/${post.category.slug}/${post.slug}`}
@@ -133,7 +141,7 @@ export default async function HomePage() {
 
           {/* Bottom Row (3 items) */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:gap-6">
-            {heroSlots.slice(3, 6).map((post) => (
+            {heroSlots.slice(3, 6).map((post: PostWithCategoryAndComments) => (
               <PostCard
                 key={post.id}
                 href={`/${post.category.slug}/${post.slug}`}
@@ -168,12 +176,18 @@ export default async function HomePage() {
             <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-20" />
 
             {/* Engagement Sections */}
-            <RecommendedForYou posts={recommended} />
+            <Suspense fallback={<div className="h-60 animate-pulse rounded-lg bg-zinc-100" />}>
+              <RecommendedForYou posts={recommended} />
+            </Suspense>
+            
             <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" className="min-h-20" />
-            <VideoMostWatched posts={mostWatched} />
+            
+            <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}>
+              <VideoMostWatched posts={mostWatched} />
+            </Suspense>
 
             <section className="space-y-6 pt-6 border-t border-zinc-200">
-              {categoryBlocks.map((items, index) => {
+              {categoryBlocks.map((items: PostWithCategoryAndComments[], index: number) => {
                 const [first] = items
                 return (
                   <div key={first.category.slug} className="space-y-4">
@@ -190,7 +204,7 @@ export default async function HomePage() {
 
           <aside className="space-y-4">
             <MostRead
-              posts={mostRead.map((post) => ({
+              posts={mostRead.map((post: PostWithCategoryAndComments) => ({
                 id: post.id,
                 title: post.title,
                 thumbnailUrl: post.thumbnailUrl,
@@ -200,8 +214,7 @@ export default async function HomePage() {
               }))}
             />
             <AdPlaceholder label="Sidebar giữa widgets (Google AdSense)" className="min-h-40" />
-            <LunarCalendarWidget />
-            <AiWeatherWidget />
+            <ClientSideWidgets />
             <AdPlaceholder label="Sidebar cuối trang chủ (Google AdSense)" className="min-h-40" />
           </aside>
         </div>

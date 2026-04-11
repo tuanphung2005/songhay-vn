@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+// @ts-ignore
+import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { requireCmsUser } from "@/lib/auth"
@@ -56,6 +57,8 @@ export async function approvePendingPost(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
   redirect(
     canPublishNow(currentUser.role)
@@ -100,6 +103,7 @@ export async function rejectPendingPost(formData: FormData) {
   })
 
   revalidatePath("/admin")
+  revalidateTag("posts")
   clearDataCache()
   redirect("/admin?tab=posts&postsStatus=rejected&toast=post_rejected")
 }
@@ -148,6 +152,7 @@ export async function submitPostToPendingReview(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
   clearDataCache()
   redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")
 }
@@ -193,6 +198,7 @@ export async function promotePostToPendingPublish(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
   clearDataCache()
   redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
 }
@@ -234,6 +240,7 @@ export async function returnPostToPendingReview(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
   clearDataCache()
   redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_returned_review")
 }
@@ -273,6 +280,7 @@ export async function returnPostToPendingPublish(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
   clearDataCache()
   redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_returned_publish_queue")
 }

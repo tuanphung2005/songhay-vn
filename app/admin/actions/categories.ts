@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+// @ts-ignore
+import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { requireAdminUser, requireCmsUser } from "@/lib/auth"
@@ -37,6 +38,7 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("categories")
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_created")
 }
@@ -80,6 +82,7 @@ export async function updateCategory(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${existingCategory.slug}`)
   revalidatePath(`/${slug}`)
+  revalidateTag("categories")
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_updated")
 }
@@ -129,6 +132,7 @@ export async function reorderCategory(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${currentItem.slug}`)
   revalidatePath(`/${targetItem.slug}`)
+  revalidateTag("categories")
   clearDataCache()
   redirect(`/admin?tab=categories&toast=category_reordered&moved=${currentItem.id}&direction=${direction}`)
 }
@@ -183,6 +187,7 @@ export async function deleteCategory(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   revalidatePath(`/${category.slug}`)
+  revalidateTag("categories")
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_deleted")
 }

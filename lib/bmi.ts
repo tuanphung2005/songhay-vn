@@ -1,10 +1,6 @@
-export type BmiGender = "male" | "female"
+import type { BmiGender, BmiResult } from "@/types/health"
 
-export type BmiResult = {
-  bmi: number
-  category: string
-  genderLabel: string
-}
+export type { BmiGender, BmiResult }
 
 export function calculateBmi(heightCm: number, weightKg: number, gender: BmiGender): BmiResult {
   const heightM = heightCm / 100

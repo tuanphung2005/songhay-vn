@@ -6,9 +6,9 @@ import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { getNavCategories, getPublishedSearchResults } from "@/lib/queries"
+import { getNavCategories, getPublishedSearchResults, type SearchResultItem } from "@/lib/queries"
 
-export const revalidate = 300
+export const revalidate = 3600
 
 type SearchPageProps = {
   searchParams?: Promise<{
@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {result.items.length > 0 ? (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {result.items.map((post) => (
+                  {result.items.map((post: SearchResultItem) => (
                     <PostCard
                       key={post.id}
                       href={`/${post.category.slug}/${post.slug}`}

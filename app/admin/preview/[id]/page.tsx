@@ -15,7 +15,7 @@ import { normalizeArticleHtml } from "@/lib/html"
 import { requireCmsUser } from "@/lib/auth"
 import { canViewAllPosts } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { getTrendingPosts } from "@/lib/queries"
+import { getTrendingPosts, type PostWithCategoryAndComments } from "@/lib/queries"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -151,7 +151,7 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
             <section className="space-y-4">
               <h2 className="text-2xl font-extrabold">Bài viết liên quan</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {relatedPosts.map((related) => (
+                {relatedPosts.map((related: any) => (
                   <PostCard
                     key={related.id}
                     href={`/${related.category.slug}/${related.slug}`}
@@ -169,7 +169,7 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
 
         <aside className="space-y-4">
           <MostRead
-            posts={trendingPosts.map((p) => ({
+            posts={trendingPosts.map((p: PostWithCategoryAndComments) => ({
               id: p.id,
               title: p.title,
               thumbnailUrl: p.thumbnailUrl,

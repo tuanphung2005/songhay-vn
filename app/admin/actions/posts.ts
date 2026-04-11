@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+// @ts-ignore
+import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { requireCmsUser } from "@/lib/auth"
@@ -126,6 +127,8 @@ export async function createPost(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
   if (editorialStatus === "DRAFT") {
     redirect("/admin?tab=personal-archive&toast=post_saved_draft")
@@ -291,6 +294,8 @@ export async function updatePostFlags(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${updatedPost.category.slug}`)
   revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
 }
 
@@ -349,6 +354,8 @@ export async function movePostToTrash(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${existingPost.category.slug}`)
   revalidatePath(`/${existingPost.category.slug}/${existingPost.slug}`)
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
   redirect(`/admin?tab=${sourceTab}&toast=post_moved_trash`)
 }
@@ -394,6 +401,8 @@ export async function restorePostFromTrash(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
   redirect("/admin?tab=trash&toast=post_restored")
 }
@@ -426,6 +435,8 @@ export async function deletePostPermanently(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
   clearDataCache()
   redirect("/admin?tab=trash&toast=post_deleted_permanently")
 }

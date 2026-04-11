@@ -1,14 +1,8 @@
 import { createHmac } from "node:crypto"
 
-import type { UserRole } from "@/generated/prisma/client"
+import type { SessionPayload } from "@/types/auth"
 
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
-
-export type SessionPayload = {
-  userId: string
-  role: UserRole
-  exp: number
-}
 
 function getSessionSecret() {
   return (

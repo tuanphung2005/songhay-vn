@@ -1,3 +1,5 @@
+import { Suspense } from "react"
+import dynamic from "next/dynamic"
 import Image from "next/image"
 import Link from "next/link"
 import type { Metadata } from "next"
@@ -5,9 +7,16 @@ import { notFound } from "next/navigation"
 import { cache } from "react"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
-import { AiWeatherWidget } from "@/components/news/ai-weather-widget"
+const RecommendedForYou = dynamic(
+  () => import("@/components/news/recommended-for-you").then((mod) => mod.RecommendedForYou),
+  { loading: () => <div className="h-60 animate-pulse rounded-lg bg-zinc-100" /> }
+)
+const VideoMostWatched = dynamic(
+  () => import("@/components/news/video-most-watched").then((mod) => mod.VideoMostWatched),
+  { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
+)
+import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 import { CommentForm } from "@/components/news/comment-form"
-import { LunarCalendarWidget } from "@/components/news/lunar-calendar-widget"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { JsonLd } from "@/components/seo/json-ld"
@@ -15,8 +24,6 @@ import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
-import { RecommendedForYou } from "@/components/news/recommended-for-you"
-import { VideoMostWatched } from "@/components/news/video-most-watched"
 import { SectionHeading } from "@/components/news/section-heading"
 import {
   getPostByCategoryAndSlug,
@@ -26,6 +33,7 @@ import {
   getRecommendedPosts,
   getLatestPostsForSsg,
   getNavCategories,
+  type PostWithCategoryAndComments,
 } from "@/lib/queries"
 import {
   injectInlineAdAfterSecondParagraph,
@@ -34,7 +42,7 @@ import {
 import { buildAutoSeoDescription, buildAutoSeoTitle } from "@/lib/post-seo"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
-export const revalidate = 300
+export const revalidate = 3600
 
 const getPost = cache(async (category: string, slug: string) =>
   getPostByCategoryAndSlug(category, slug)
@@ -101,8 +109,8 @@ export async function generateMetadata({
       type: "article",
       url: canonicalUrl,
       images: [imageUrl],
-      publishedTime: post.publishedAt.toISOString(),
-      modifiedTime: post.updatedAt.toISOString(),
+      publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
       section: post.category.name,
     },
     twitter: {
@@ -150,8 +158,8 @@ export default async function PostPage({ params }: PostPageProps) {
     "@id": `${fullUrl}#article`,
     headline: article.title,
     description: article.excerpt,
-    datePublished: article.publishedAt.toISOString(),
-    dateModified: article.updatedAt.toISOString(),
+    datePublished: article.publishedAt ? new Date(article.publishedAt).toISOString() : null,
+    dateModified: article.updatedAt ? new Date(article.updatedAt).toISOString() : null,
     inLanguage: "vi-VN",
     articleSection: article.category.name,
     mainEntityOfPage: {
@@ -276,7 +284,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 Chưa có bình luận hiển thị.
               </p>
             ) : (
-              article.comments.map((comment) => (
+              article.comments.map((comment: any) => (
                 <div
                   key={comment.id}
                   className="border border-zinc-200 bg-white p-3"
@@ -295,19 +303,21 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <CommentForm postId={article.id} currentUser={null} />
 
-          <RecommendedForYou posts={recommendedPosts} />
-
+          <Suspense fallback={<div className="h-60 animate-pulse rounded-lg bg-zinc-100" />}>
+            <RecommendedForYou posts={recommendedPosts} />
+          </Suspense>
           <AdPlaceholder
             label="Giữa các cụm liên quan (Google AdSense)"
             className="min-h-24"
           />
-
-          <VideoMostWatched posts={mostWatchedVideos} />
+          <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}>
+            <VideoMostWatched posts={mostWatchedVideos} />
+          </Suspense>
 
           <section className="space-y-4">
             <SectionHeading title="Đọc nhiều nhất" />
             <div className="grid gap-4 sm:grid-cols-2">
-              {trendingPosts.slice(0, 10).map((trending) => (
+              {trendingPosts.slice(0, 10).map((trending: PostWithCategoryAndComments) => (
                 <PostCard
                   key={trending.id}
                   href={`/${trending.category.slug}/${trending.slug}`}
@@ -330,7 +340,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="space-y-4">
             <SectionHeading title="Đọc thêm" />
             <div className="grid gap-4 sm:grid-cols-2">
-              {relatedPosts.map((related) => (
+              {relatedPosts.map((related: PostWithCategoryAndComments) => (
                 <PostCard
                   key={related.id}
                   href={`/${related.category.slug}/${related.slug}`}
@@ -355,7 +365,7 @@ export default async function PostPage({ params }: PostPageProps) {
             className="min-h-40"
           />
           <MostRead
-            posts={trendingPosts.map((post) => ({
+            posts={trendingPosts.map((post: PostWithCategoryAndComments) => ({
               id: post.id,
               title: post.title,
               thumbnailUrl: post.thumbnailUrl,
@@ -368,8 +378,7 @@ export default async function PostPage({ params }: PostPageProps) {
             label="Sidebar giữa tiện ích (Google AdSense)"
             className="min-h-40"
           />
-          <LunarCalendarWidget />
-          <AiWeatherWidget />
+          <ClientSideWidgets />
           <AdPlaceholder
             label="Sidebar cuối bài (Google AdSense)"
             className="min-h-40"

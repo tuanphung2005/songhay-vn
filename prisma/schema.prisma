@@ -125,6 +125,8 @@ model Post {
   @@index([isDeleted, isPublished, isDraft, publishedAt(sort: Desc)])
   @@index([isDeleted, isPublished, views(sort: Desc), publishedAt(sort: Desc)])
   @@index([categoryId, isDeleted, isPublished, publishedAt(sort: Desc)])
+  @@index([editorialStatus, isDeleted, publishedAt(sort: Desc)])
+  @@index([authorId, editorialStatus])
 }
 
 model MediaAsset {
@@ -161,6 +163,7 @@ model Comment {
   @@index([postId])
   @@index([authorId])
   @@index([isApproved, containsBlockedKeyword])
+  @@index([postId, isApproved])
 }
 
 model SeoKeyword {

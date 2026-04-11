@@ -2,21 +2,8 @@ import React from "react"
 import { PostCard } from "./post-card"
 import { AdPlaceholder } from "./ad-placeholder"
 
-export type PostListItem = {
-  id: string
-  title: string
-  slug: string
-  thumbnailUrl: string | null
-  excerpt: string
-  publishedAt: Date
-  category: {
-    name: string
-    slug: string
-  }
-  _count: {
-    comments: number
-  }
-}
+import type { PostCompact as PostListItem } from "@/types/post"
+export type { PostListItem }
 
 type PostCardListProps = {
   posts: PostListItem[]

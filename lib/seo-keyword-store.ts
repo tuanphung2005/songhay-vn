@@ -1,10 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { normalizeKeyword, parseSeoKeywordInput } from "@/lib/seo-keywords"
 
-export type ResolvedSeoKeywordSelection = {
-  keywordIds: string[]
-  seoKeywordsText: string | null
-}
+export type { ResolvedSeoKeywordSelection } from "@/types/seo"
 
 function dedupeKeywords(keywords: string[]) {
   const map = new Map<string, string>()

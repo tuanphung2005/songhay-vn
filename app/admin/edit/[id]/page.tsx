@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import { revalidatePath } from "next/cache"
+// @ts-ignore
+import { revalidatePath, revalidateTag } from "next/cache"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
@@ -196,7 +197,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       return
     }
 
-    if (currentPost.updatedAt.toISOString() !== lastUpdatedAt) {
+    if (new Date(currentPost.updatedAt).toISOString() !== lastUpdatedAt) {
       redirect(`/admin/edit/${postId}?toast=post_concurrent_modification`)
     }
 
@@ -277,6 +278,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     revalidatePath(`/${updatedPost.category.slug}`)
     revalidatePath(`/${currentPost.category.slug}/${currentPost.slug}`)
     revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
+    revalidateTag("posts")
+    revalidateTag("homepage")
     clearDataCache()
     if (isDraft) {
       redirect("/admin?tab=personal-archive&toast=post_saved_draft")
@@ -319,7 +322,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       <form action={updatePost} className="space-y-6">
         <EditFormDirtyTracker />
         <input type="hidden" name="postId" value={post.id} />
-        <input type="hidden" name="lastUpdatedAt" value={post.updatedAt.toISOString()} />
+        <input type="hidden" name="lastUpdatedAt" value={new Date(post.updatedAt).toISOString()} />
 
         <div className="space-y-4">
           <div className="space-y-1.5">

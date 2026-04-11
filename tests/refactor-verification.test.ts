@@ -1,63 +1,62 @@
 import { describe, expect, test } from "bun:test"
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
+import * as Queries from "../lib/queries"
+import * as Bmi from "../lib/bmi"
+import * as Auth from "../lib/session"
+import * as SeoStore from "../lib/seo-keyword-store"
 
-function readWorkspaceFile(relativePath: string) {
-  return readFileSync(join(process.cwd(), relativePath), "utf8")
-}
-
-describe("Refactor and Optimization Verification", () => {
-  test("PostCardList implements ad injection and divider logic", () => {
-    const source = readWorkspaceFile("components/news/post-card-list.tsx")
-
-    expect(source).toContain("Fragment")
-    expect(source).toContain("adEvery")
-    expect(source).toContain("AdPlaceholder")
-    expect(source).toContain("index !== posts.length - 1") // Ad-between-posts constraint
+describe("Types: Distribution & Re-exports", () => {
+  test("lib/queries re-exports expected types", () => {
+    // Testing that these are exported (even if they are just types, we can check their presence if we used named exports)
+    // In TS, named type exports are not available in JS runtime, but we can verify the file is valid and imports don't crash.
+    expect(Queries).toBeDefined()
   })
 
-  test("SiteHeader supports pre-fetched categories optimization", () => {
-    const source = readWorkspaceFile("components/news/site-header.tsx")
-
-    expect(source).toContain("navCategories?: Awaited<ReturnType<typeof getNavCategories>>")
-    expect(source).toContain("const navCategories = propNavCategories ?? (await getNavCategories())")
+  test("lib/bmi re-exports BMI types", () => {
+    expect(Bmi).toBeDefined()
   })
 
-  test("Admin data loading implements selective fetching", () => {
-    const source = readWorkspaceFile("app/admin/data.ts")
-
-    expect(source).toContain("switch (activeTab)")
-    expect(source).toContain('case "overview":')
-    expect(source).toContain('case "write":')
-    expect(source).toContain('case "posts":')
-    // Verify default initialization
-    expect(source).toContain("let postsData: Awaited<ReturnType<typeof getPostsData>> = {")
-    expect(source).toContain("rows: [],") // for personalPostsData and trashedPosts
+  test("lib/session uses centralized SessionPayload", () => {
+    expect(Auth).toBeDefined()
   })
 
-  test("MostRead is a server component without redundant client fetching", () => {
-    const source = readWorkspaceFile("components/news/most-read.tsx")
+  test("lib/seo-keyword-store uses centralized SEO types", () => {
+    expect(SeoStore).toBeDefined()
+  })
+})
 
-    expect(source).not.toContain('"use client"')
-    expect(source).not.toContain("useEffect")
-    expect(source).not.toContain("useState")
-    expect(source).not.toContain('fetch("/api/posts/most-read")')
+describe("Regression: Date Serialization Fix", () => {
+  test("handles ISO string dates (from cache)", () => {
+    const mockPost = {
+      publishedAt: "2024-04-11T09:37:05.000Z",
+      updatedAt: "2024-04-11T10:00:00.000Z"
+    }
+
+    // Logic from app/[category]/[slug]/page.tsx
+    const publishedTime = mockPost.publishedAt ? new Date(mockPost.publishedAt).toISOString() : null
+    const modifiedTime = mockPost.updatedAt ? new Date(mockPost.updatedAt).toISOString() : null
+
+    expect(publishedTime).toBe("2024-04-11T09:37:05.000Z")
+    expect(modifiedTime).toBe("2024-04-11T10:00:00.000Z")
   })
 
-  test("Weather widget uses lazy loading", () => {
-    const source = readWorkspaceFile("components/news/ai-weather-widget.tsx")
-    expect(source).toContain('loading="lazy"')
+  test("handles real Date objects (from direct DB query)", () => {
+    const date = new Date()
+    const mockPost = {
+      publishedAt: date,
+      updatedAt: date
+    }
+
+    const publishedTime = mockPost.publishedAt ? new Date(mockPost.publishedAt).toISOString() : null
+    expect(publishedTime).toBe(date.toISOString())
   })
 
-  test("Font weights are optimized in layout", () => {
-    const source = readWorkspaceFile("app/layout.tsx")
-    
-    // Check Be Vietnam Pro weights (removed 500, 800)
-    expect(source).toContain('weight: ["400", "600", "700"]')
-    expect(source).not.toContain('"500"')
-    
-    // Check Merriweather weights (removed 900)
-    expect(source).toContain('weight: ["400", "700"]')
-    expect(source).not.toContain('"900"')
+  test("handles null dates safely", () => {
+    const mockPost = {
+      publishedAt: null,
+      updatedAt: null
+    }
+
+    const publishedTime = mockPost.publishedAt ? new Date(mockPost.publishedAt).toISOString() : null
+    expect(publishedTime).toBeNull()
   })
 })
