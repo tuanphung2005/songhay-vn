@@ -236,6 +236,12 @@ export default async function PostPage({ params }: PostPageProps) {
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
+          {article.penName && (
+            <div className="mt-4 text-right text-zinc-900">
+              {article.penName}
+            </div>
+          )}
+
           {article.videoEmbedUrl ? (
             <div className="overflow-hidden border border-zinc-200">
               <iframe
@@ -267,7 +273,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 Chưa có bình luận hiển thị.
               </p>
             ) : (
-              article.comments.map((comment: any) => (
+              article.comments.map((comment: PostWithCategoryAndComments['comments'][number]) => (
                 <div
                   key={comment.id}
                   className="border border-zinc-200 bg-white p-3"

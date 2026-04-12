@@ -151,7 +151,15 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
             <section className="space-y-4">
               <h2 className="text-2xl font-extrabold">Bài viết liên quan</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                {relatedPosts.map((related: any) => (
+                {relatedPosts.map((related: {
+                  id: string;
+                  title: string;
+                  excerpt: string;
+                  slug: string;
+                  thumbnailUrl: string | null;
+                  publishedAt: Date | null;
+                  category: { slug: string };
+                }) => (
                   <PostCard
                     key={related.id}
                     href={`/${related.category.slug}/${related.slug}`}

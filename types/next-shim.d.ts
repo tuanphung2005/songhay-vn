@@ -62,6 +62,15 @@ declare module "next/navigation" {
 
 declare module "next/cache" {
   export const revalidatePath: (path: string) => void
+  export const revalidateTag: (tag: string) => void
+  export const unstable_cache: <T extends (...args: any[]) => Promise<any>>(
+    cb: T,
+    keyParts?: string[],
+    options?: {
+      revalidate?: number | false
+      tags?: string[]
+    }
+  ) => T
 }
 
 declare module "next/server" {

@@ -2,8 +2,10 @@ import { describe, expect, test, beforeAll, afterAll } from "bun:test"
 import { setupTestDatabase, teardownTestDatabase } from "./setup-test-db"
 import { prisma } from "@/lib/prisma"
 
+import { User, Category } from "@/generated/prisma/client"
+
 describe("Database Integration Tests", () => {
-  let testData: any
+  let testData: { admin: User; category: Category }
 
   beforeAll(async () => {
     testData = await setupTestDatabase()

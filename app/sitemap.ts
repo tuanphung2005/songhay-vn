@@ -7,7 +7,7 @@ const MAX_POSTS_PER_SITEMAP = 10000
 
 export async function generateSitemaps() {
   const postCount = await prisma.post.count({
-    where: { isPublished: true, isDeleted: false, OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] },
+    where: { isPublished: true, isDeleted: false, AND: [{ OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] }] },
   })
   
   if (postCount === 0) return [{ id: 0 }]
@@ -16,7 +16,10 @@ export async function generateSitemaps() {
   return Array.from({ length: numSitemaps }, (_, i) => ({ id: i }))
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(props: { id: number | string }): Promise<MetadataRoute.Sitemap> {
+  const id = Number(props?.id || 0)
+  const skip = isNaN(id) ? 0 : id * MAX_POSTS_PER_SITEMAP
+  
   const siteUrl = getSiteUrl()
   const staticPages = [
     {
@@ -27,7 +30,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   ]
 
   // Only include categories and static pages on the first sitemap chunk
-  let categoriesData: any[] = []
+  let categoriesData: { slug: string; lastmod: Date }[] = []
   let includeStatic = id === 0
 
   if (includeStatic) {
@@ -36,7 +39,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
         slug: true, 
         updatedAt: true,
         posts: {
-          where: { isPublished: true, isDeleted: false },
+          where: { isPublished: true, isDeleted: false, AND: [{ OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] }] },
           orderBy: { publishedAt: "desc" },
           take: 1,
           select: { publishedAt: true }
@@ -45,13 +48,13 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     })
 
     categoriesData = rawCategories.map(cat => ({
-      ...cat,
-      lastmod: cat.posts.length > 0 ? cat.posts[0].publishedAt : cat.updatedAt
+      slug: cat.slug,
+      lastmod: cat.posts.length > 0 ? (cat.posts[0].publishedAt || cat.updatedAt) : cat.updatedAt
     }))
   }
 
   const posts = await prisma.post.findMany({
-    where: { isPublished: true, isDeleted: false, OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] },
+    where: { isPublished: true, isDeleted: false, AND: [{ OR: [{ scheduledPublishAt: null }, { scheduledPublishAt: { lte: new Date() } }] }] },
     select: {
       title: true,
       slug: true,
@@ -61,7 +64,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
       category: { select: { slug: true } },
     },
     orderBy: { publishedAt: "desc" },
-    skip: id * MAX_POSTS_PER_SITEMAP,
+    skip: skip,
     take: MAX_POSTS_PER_SITEMAP,
   })
 
@@ -97,24 +100,22 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   posts.forEach((post) => {
     const images = post.thumbnailUrl ? [toAbsoluteUrl(post.thumbnailUrl)] : []
     
-    // We add a custom property `news` which might not be strictly typed in MetadataRoute.Sitemap
-    // but some third-party integrations or future Next.js versions might serialize it.
-    // To strictly support Google News, a separate /news-sitemap.xml route is usually recommended,
-    // but the Next.js sitemap type in 15+ allows `images` at least.
-    const item: any = {
+    // Using intersection with 'any' or a specific custom type to allow the 'news' property
+    // while keeping core fields typed. Next.js MetadataRoute.Sitemap is an array of objects.
+    const item = {
       url: `${siteUrl}/${post.category.slug}/${post.slug}`,
       lastModified: post.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
       images,
-      // experimental/custom properties
+      // experimental/custom properties for Google News
       news: {
         title: post.title,
         publicationName: "Songhay.vn",
         publicationLanguage: "vi",
         date: post.publishedAt,
       }
-    }
+    } as MetadataRoute.Sitemap[number] & { news: { title: string; publicationName: string; publicationLanguage: string; date: Date | null } }
     
     sitemapData.push(item)
   })

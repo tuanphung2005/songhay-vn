@@ -73,7 +73,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
               value={mediaType}
               onChange={(e) => {
                 setPage(1)
-                setMediaType(e.target.value as any)
+                setMediaType(e.target.value as "ALL" | "IMAGE" | "VIDEO")
               }}
             >
               <option value="ALL">Tất cả loại</option>

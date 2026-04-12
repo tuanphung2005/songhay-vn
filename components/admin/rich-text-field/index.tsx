@@ -97,7 +97,7 @@ export function RichTextField({
         isOpen={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
         onSelect={insertMedia}
-        mediaAssets={mediaAssets as any}
+        mediaAssets={mediaAssets}
         currentUserId={currentUserId}
       />
 

@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { clearDataCache } from "@/lib/data-cache"
 
-export async function GET(request: Request) {
+export async function GET(
+  request: unknown,
+  context: { params: Promise<{}> }
+) {
+  const req = request as Request
   try {
-    const authHeader = request.headers.get("authorization")
+    const authHeader = req.headers.get("authorization")
     if (
       process.env.CRON_SECRET &&
       authHeader !== `Bearer ${process.env.CRON_SECRET}`
@@ -57,6 +61,8 @@ export async function GET(request: Request) {
     })
     
     revalidatePath("/")
+    revalidateTag("posts")
+    revalidateTag("homepage")
     clearDataCache()
 
     return NextResponse.json({ 
