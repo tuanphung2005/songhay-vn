@@ -148,8 +148,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       formData.get("seoDescription") || ""
     ).trim()
     const manualOgImage = String(formData.get("ogImage") || "").trim() || null
-    const videoEmbedUrl =
-      String(formData.get("videoEmbedUrl") || "").trim() || null
+    const videoEmbedUrl = String(formData.get("videoEmbedUrl") || "").trim() || null
+    const canonicalUrl = String(formData.get("canonicalUrl") || "").trim() || null
+    const rawScheduledPublishAt = String(formData.get("scheduledPublishAt") || "").trim()
+    const scheduledPublishAt = rawScheduledPublishAt ? new Date(rawScheduledPublishAt) : null
     const isSensitive = formData.get("isSensitive") === "on"
     const submitAction = String(formData.get("submitAction") || "").trim()
     const lastUpdatedAt = String(formData.get("lastUpdatedAt") || "").trim()
@@ -243,6 +245,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         seoKeywords: seoKeywordsText,
         ogImage,
         videoEmbedUrl,
+        canonicalUrl,
+        scheduledPublishAt,
         isSensitive,
         isFeatured: currentPost.isFeatured,
         isTrending: currentPost.isTrending,
@@ -444,6 +448,18 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                     </Button>
                   ) : null}
                 </div>
+                {canPublish && (
+                  <div className="mt-4 border-t pt-4 space-y-1.5">
+                    <Label htmlFor="scheduledPublishAt">Hẹn giờ xuất bản</Label>
+                    <Input
+                      type="datetime-local"
+                      id="scheduledPublishAt"
+                      name="scheduledPublishAt"
+                      defaultValue={post.scheduledPublishAt ? new Date(post.scheduledPublishAt.getTime() - post.scheduledPublishAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
+                    />
+                    <p className="text-xs text-muted-foreground">Nếu chọn ngày tương lai, bài viết sẽ ở trạng thái PENDING_PUBLISH cho đến thời điểm xuất bản.</p>
+                  </div>
+                )}
               </div>
             </fieldset>
           </div>
@@ -497,6 +513,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 <SeoFields
                   defaultSeoTitle={post.seoTitle || ""}
                   defaultSeoDescription={post.seoDescription || ""}
+                  defaultCanonicalUrl={post.canonicalUrl || ""}
                   initialTitle={post.title}
                   initialExcerpt={post.excerpt}
                   initialContent={post.content}
@@ -509,6 +526,29 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                 </SeoFields>
               </div>
 
+              {canPublish ? (
+                <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+                  <legend className="px-1 text-sm font-semibold">Lịch xuất bản</legend>
+                  <div className="space-y-2">
+                    <Label htmlFor="scheduledPublishAt">Hẹn giờ xuất bản</Label>
+                    <Input
+                      id="scheduledPublishAt"
+                      name="scheduledPublishAt"
+                      type="datetime-local"
+                      defaultValue={
+                        post.scheduledPublishAt
+                          ? new Date(post.scheduledPublishAt.getTime() - post.scheduledPublishAt.getTimezoneOffset() * 60000)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ""
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Bỏ trống nếu muốn xuất bản ngay khi bấm nút.
+                    </p>
+                  </div>
+                </fieldset>
+              ) : null}
 
             </div>
           </div>

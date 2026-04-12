@@ -272,6 +272,23 @@ export function WriteTab({
               </SeoFields>
             </div>
 
+            {canPublishNow ? (
+              <fieldset className="space-y-3 rounded-lg border bg-white p-4">
+                <legend className="px-1 text-sm font-semibold">Lịch xuất bản</legend>
+                <div className="space-y-2">
+                  <Label htmlFor="scheduledPublishAt">Hẹn giờ xuất bản</Label>
+                  <Input
+                    id="scheduledPublishAt"
+                    name="scheduledPublishAt"
+                    type="datetime-local"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Bỏ trống nếu muốn xuất bản ngay khi bấm nút.
+                  </p>
+                </div>
+              </fieldset>
+            ) : null}
+
           </div>
         </div>
       </form>

@@ -30,7 +30,7 @@ export async function approvePendingPost(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true },
   })
 
   if (!existingPost) return
@@ -55,6 +55,19 @@ export async function approvePendingPost(formData: FormData) {
     toStatus: updatedPost.editorialStatus,
   })
 
+  if (existingPost.authorId && existingPost.authorId !== currentUser.id) {
+    await prisma.notification.create({
+      data: {
+        userId: existingPost.authorId,
+        type: "POST_APPROVED",
+        message: canPublishNow(currentUser.role)
+          ? `Bài viết "${existingPost.title}" của bạn đã được duyệt và xuất bản.`
+          : `Bài viết "${existingPost.title}" của bạn đã được duyệt và đang chờ xuất bản.`,
+        postId,
+      },
+    })
+  }
+
   revalidatePath("/")
   revalidatePath("/admin")
   revalidateTag("posts")
@@ -78,7 +91,7 @@ export async function rejectPendingPost(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true },
   })
 
   if (!existingPost) return
@@ -101,6 +114,17 @@ export async function rejectPendingPost(formData: FormData) {
     fromStatus: existingPost.editorialStatus,
     toStatus: updatedPost.editorialStatus,
   })
+
+  if (existingPost.authorId && existingPost.authorId !== currentUser.id) {
+    await prisma.notification.create({
+      data: {
+        userId: existingPost.authorId,
+        type: "POST_REJECTED",
+        message: `Bài viết "${existingPost.title}" của bạn đã bị từ chối.`,
+        postId,
+      },
+    })
+  }
 
   revalidatePath("/admin")
   revalidateTag("posts")
@@ -171,7 +195,7 @@ export async function promotePostToPendingPublish(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true },
   })
 
   if (!existingPost) return
@@ -195,6 +219,17 @@ export async function promotePostToPendingPublish(formData: FormData) {
     fromStatus: existingPost.editorialStatus,
     toStatus: updatedPost.editorialStatus,
   })
+
+  if (existingPost.authorId && existingPost.authorId !== currentUser.id) {
+    await prisma.notification.create({
+      data: {
+        userId: existingPost.authorId,
+        type: "POST_PENDING_PUBLISH",
+        message: `Bài viết "${existingPost.title}" của bạn đã được duyệt và đang chờ xuất bản.`,
+        postId,
+      },
+    })
+  }
 
   revalidatePath("/")
   revalidatePath("/admin")

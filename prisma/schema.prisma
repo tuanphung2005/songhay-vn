@@ -47,19 +47,20 @@ model RolePermission {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  passwordHash String
-  role         UserRole  @default(CONTRIBUTOR)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id              String         @id @default(cuid())
+  email           String         @unique
+  name            String
+  passwordHash    String
+  role            UserRole       @default(CONTRIBUTOR)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   comments        Comment[]
   posts           Post[]
-  approvedPosts   Post[]   @relation("PostApprover")
-  lastEditedPosts Post[]   @relation("PostLastEditor")
+  approvedPosts   Post[]         @relation("PostApprover")
+  lastEditedPosts Post[]         @relation("PostLastEditor")
   mediaAssets     MediaAsset[]
-  postHistories   PostHistory[] @relation("UserPostHistory")
+  postHistories   PostHistory[]  @relation("UserPostHistory")
+  notifications   Notification[]
 }
 
 model Category {
@@ -77,43 +78,46 @@ model Category {
 }
 
 model Post {
-  id             String   @id @default(cuid())
-  title          String
-  slug           String   @unique
-  excerpt        String
-  content        String
-  penName        String?
-  thumbnailUrl   String?
-  videoEmbedUrl  String?
-  seoTitle       String?
-  seoDescription String?
-  seoKeywords    String?
-  ogImage        String?
-  isSensitive    Boolean  @default(false)
-  isDraft        Boolean  @default(true)
-  isFeatured     Boolean  @default(false)
-  isTrending     Boolean  @default(false)
-  isPublished    Boolean  @default(false)
-  editorialStatus EditorialStatus @default(DRAFT)
-  isDeleted      Boolean  @default(false)
-  deletedAt      DateTime?
-  approvedAt     DateTime?
-  views          Int      @default(0)
-  publishedAt    DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  categoryId     String
-  authorId       String?
-  approverId     String?
-  lastEditorId   String?
-  category       Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  author         User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  approver       User?    @relation("PostApprover", fields: [approverId], references: [id], onDelete: SetNull)
-  lastEditor     User?    @relation("PostLastEditor", fields: [lastEditorId], references: [id], onDelete: SetNull)
-  comments       Comment[]
-  history        PostHistory[]
-  seoKeywordLinks PostSeoKeyword[]
+  id               String                @id @default(cuid())
+  title            String
+  slug             String                @unique
+  excerpt          String
+  content          String
+  penName          String?
+  thumbnailUrl     String?
+  videoEmbedUrl    String?
+  seoTitle         String?
+  seoDescription   String?
+  seoKeywords      String?
+  ogImage          String?
+  isSensitive      Boolean               @default(false)
+  isDraft          Boolean               @default(true)
+  isFeatured       Boolean               @default(false)
+  isTrending       Boolean               @default(false)
+  isPublished      Boolean               @default(false)
+  editorialStatus  EditorialStatus       @default(DRAFT)
+  isDeleted        Boolean               @default(false)
+  deletedAt        DateTime?
+  approvedAt       DateTime?
+  views            Int                   @default(0)
+  publishedAt      DateTime              @default(now())
+  scheduledPublishAt DateTime?
+  canonicalUrl     String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  categoryId       String
+  authorId         String?
+  approverId       String?
+  lastEditorId     String?
+  category         Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author           User?                 @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  approver         User?                 @relation("PostApprover", fields: [approverId], references: [id], onDelete: SetNull)
+  lastEditor       User?                 @relation("PostLastEditor", fields: [lastEditorId], references: [id], onDelete: SetNull)
+  comments         Comment[]
+  history          PostHistory[]
+  seoKeywordLinks  PostSeoKeyword[]
   engagementEvents PostEngagementEvent[]
+  notifications    Notification[]
 
   @@index([categoryId])
   @@index([authorId])
@@ -149,16 +153,16 @@ model MediaAsset {
 }
 
 model Comment {
-  id         String   @id @default(cuid())
-  authorName String
-  content    String
-  isApproved Boolean  @default(false)
-  containsBlockedKeyword Boolean @default(false)
-  createdAt  DateTime @default(now())
-  postId     String
-  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId   String?
-  author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  id                     String   @id @default(cuid())
+  authorName             String
+  content                String
+  isApproved             Boolean  @default(false)
+  containsBlockedKeyword Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  postId                 String
+  post                   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId               String?
+  author                 User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([postId])
   @@index([authorId])
@@ -178,11 +182,11 @@ model SeoKeyword {
 }
 
 model PostSeoKeyword {
-  postId      String
+  postId       String
   seoKeywordId String
-  createdAt   DateTime   @default(now())
-  post        Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
-  seoKeyword  SeoKeyword @relation(fields: [seoKeywordId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  seoKeyword   SeoKeyword @relation(fields: [seoKeywordId], references: [id], onDelete: Cascade)
 
   @@id([postId, seoKeywordId])
   @@index([seoKeywordId])
@@ -213,7 +217,7 @@ model PostHistory {
   id              String           @id @default(cuid())
   postId          String
   actorId         String
-  actionType      String           
+  actionType      String
   fromStatus      EditorialStatus?
   toStatus        EditorialStatus?
   snapshotTitle   String?
@@ -221,9 +225,25 @@ model PostHistory {
   snapshotContent String?
   createdAt       DateTime         @default(now())
 
-  post            Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
-  actor           User             @relation("UserPostHistory", fields: [actorId], references: [id], onDelete: Restrict)
+  post  Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  actor User @relation("UserPostHistory", fields: [actorId], references: [id], onDelete: Restrict)
 
   @@index([postId, createdAt])
   @@index([actorId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  postId    String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead, createdAt])
+  @@index([postId])
 }

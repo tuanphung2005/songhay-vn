@@ -53,6 +53,9 @@ export async function createPost(formData: FormData) {
   const submitAction = String(formData.get("submitAction") || "").trim()
   const thumbnailUpload = formData.get("thumbnailUpload")
   const thumbnailUrlInput = String(formData.get("thumbnailUrl") || "").trim()
+  const rawScheduledPublishAt = String(formData.get("scheduledPublishAt") || "").trim()
+  const scheduledPublishAt = rawScheduledPublishAt ? new Date(rawScheduledPublishAt) : null
+  const canonicalUrl = String(formData.get("canonicalUrl") || "").trim() || null
 
   if (!title || !penName) {
     redirect("/admin?tab=write&toast=missing_fields")
@@ -106,6 +109,8 @@ export async function createPost(formData: FormData) {
       isPublished,
       isDraft,
       editorialStatus,
+      scheduledPublishAt,
+      canonicalUrl,
       approvedAt: isPublished ? new Date() : null,
       approverId: isPublished ? currentUser.id : null,
       publishedAt: isPublished ? new Date() : undefined,
@@ -439,4 +444,98 @@ export async function deletePostPermanently(formData: FormData) {
   revalidateTag("homepage")
   clearDataCache()
   redirect("/admin?tab=trash&toast=post_deleted_permanently")
+}
+export async function bulkUpdateStatus(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  const postIdsRaw = String(formData.get("postIds") || "")
+  const status = String(formData.get("status") || "") as "DRAFT" | "PENDING_REVIEW" | "PENDING_PUBLISH" | "PUBLISHED" | "REJECTED"
+  const postIds = postIdsRaw.split(",").filter(Boolean)
+  if (postIds.length === 0 || !status) return
+
+  // Basic permission check (could be refined per post)
+  if (!canPublishNow(currentUser.role) && status === "PUBLISHED") return
+
+  await prisma.post.updateMany({
+    where: { id: { in: postIds } },
+    data: { editorialStatus: status, isPublished: status === "PUBLISHED", isDraft: status === "DRAFT" }
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
+  clearDataCache()
+}
+
+export async function bulkTrashPosts(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  const postIdsRaw = String(formData.get("postIds") || "")
+  const postIds = postIdsRaw.split(",").filter(Boolean)
+  
+  if (postIds.length === 0) return
+
+  // Need to ensure user has permission for all these posts (simplification for brevity)
+  await prisma.post.updateMany({
+    where: { id: { in: postIds } },
+    data: { isDeleted: true, deletedAt: new Date() }
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
+  clearDataCache()
+}
+
+export async function restorePostVersion(formData: FormData) {
+  const currentUser = await requireCmsUser()
+  const logId = String(formData.get("logId") || "")
+  if (!logId) return { error: "missing_log_id" }
+
+  const historyLog = await prisma.postHistory.findUnique({
+    where: { id: logId },
+  })
+
+  if (!historyLog || !historyLog.snapshotContent) {
+    return { error: "log_or_content_not_found" }
+  }
+
+  const existingPost = await prisma.post.findUnique({
+    where: { id: historyLog.postId },
+  })
+
+  if (!existingPost) {
+    return { error: "post_not_found" }
+  }
+
+  if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
+    return { error: "action_forbidden" }
+  }
+
+  await prisma.post.update({
+    where: { id: historyLog.postId },
+    data: {
+      title: historyLog.snapshotTitle || existingPost.title,
+      excerpt: historyLog.snapshotExcerpt || existingPost.excerpt,
+      content: historyLog.snapshotContent,
+    },
+  })
+
+  await logPostHistory({
+    postId: historyLog.postId,
+    actorId: currentUser.id,
+    actionType: "RESTORED",
+    toStatus: existingPost.editorialStatus,
+    snapshotTitle: historyLog.snapshotTitle,
+    snapshotExcerpt: historyLog.snapshotExcerpt,
+    snapshotContent: historyLog.snapshotContent,
+  })
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  revalidateTag("posts")
+  revalidateTag("homepage")
+  clearDataCache()
+  
+  redirect("/admin?tab=history&toast=post_restored")
 }

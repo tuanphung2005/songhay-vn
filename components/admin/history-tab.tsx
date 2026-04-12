@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   Table,
   TableBody,
@@ -9,40 +10,61 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
+import { Eye, RotateCcw } from "lucide-react"
+
+import { restorePostVersion } from "@/app/admin/actions/posts"
+
+type HistoryLog = {
+  id: string
+  postId: string
+  actorId: string
+  actionType: string
+  fromStatus: string | null
+  toStatus: string | null
+  snapshotTitle: string | null
+  snapshotContent: string | null
+  createdAt: Date
+  post: {
+    id: string
+    title: string
+    slug: string
+    category: { slug: string }
+  }
+  actor: {
+    id: string
+    name: string
+    email: string
+  }
+}
 
 type HistoryTabProps = {
-  historyLogs: Array<{
-    id: string
-    postId: string
-    actorId: string
-    actionType: string
-    fromStatus: string | null
-    toStatus: string | null
-    snapshotTitle: string | null
-    createdAt: Date
-    post: {
-      id: string
-      title: string
-      slug: string
-      category: { slug: string }
-    }
-    actor: {
-      id: string
-      name: string
-      email: string
-    }
-  }>
+  historyLogs: Array<HistoryLog>
 }
 
 export function HistoryTab({ historyLogs }: HistoryTabProps) {
+  const [selectedLog, setSelectedLog] = useState<HistoryLog | null>(null)
+  const [isRestoring, setIsRestoring] = useState(false)
+
   if (historyLogs.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center rounded-lg border bg-white text-zinc-500">
         Chưa có dữ liệu lịch sử.
       </div>
     )
+  }
+
+  const handleRestore = async (logId: string) => {
+    if (!confirm("Bạn có chắc chắn muốn khôi phục lại phiên bản này?")) return
+    setIsRestoring(true)
+    const formData = new FormData()
+    formData.set("logId", logId)
+    await restorePostVersion(formData)
+    setIsRestoring(false)
+    setSelectedLog(null)
   }
 
   function getActionLabel(type: string) {
@@ -102,6 +124,7 @@ export function HistoryTab({ historyLogs }: HistoryTabProps) {
               <TableHead>Hành động</TableHead>
               <TableHead>Bài viết</TableHead>
               <TableHead>Thay đổi trạng thái</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -148,11 +171,42 @@ export function HistoryTab({ historyLogs }: HistoryTabProps) {
                     "-"
                   )}
                 </TableCell>
+                <TableCell className="text-right">
+                  {log.snapshotContent && log.post && (
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedLog(log)}>
+                      <Eye className="size-4 mr-1.5" />
+                      Xem thay đổi
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Chi tiết thay đổi - {selectedLog?.snapshotTitle}</DialogTitle>
+            <DialogDescription>
+              {selectedLog && format(new Date(selectedLog.createdAt), "HH:mm dd/MM/yyyy", { locale: vi })} bởi {selectedLog?.actor.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedLog && (
+            <div className="space-y-4">
+              <div className="rounded border bg-zinc-50 p-4 min-h-[300px] prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selectedLog.snapshotContent || "" }} />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelectedLog(null)}>Đóng</Button>
+                <Button disabled={isRestoring} onClick={() => handleRestore(selectedLog.id)}>
+                  <RotateCcw className="size-4 mr-1.5" />
+                  Khôi phục phiên bản này
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

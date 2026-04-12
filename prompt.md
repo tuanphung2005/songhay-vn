@@ -1,29 +1,3 @@
-Implement Phase 2: Performance Optimization — the goal is to improve response times and reduce database load through Next.js native caching, query optimization, on-demand ISR revalidation, and lazy loading of non-critical components.
-
-**Task 2.1 — Migrate to Next.js Native Caching (`lib/queries.ts`, `lib/data-cache.ts`, `app/admin/actions/`)**
-- Refactor all queries in `lib/queries.ts` to use `unstable_cache()` with semantic cache tags such as `posts`, `categories`, and `homepage`
-- After mutations in Server Actions under `app/admin/actions/` (post create/update, category changes), call `revalidateTag()` with the appropriate tag
-- Remove or repurpose `lib/data-cache.ts` to only handle non-cacheable dynamic queries
-- Set TTLs per query type: homepage = 60s, categories = 300s, post detail = 600s
-
-**Task 2.2 — Optimize Database Queries and Add Missing Indexes (Prisma schema + admin data loaders)**
-- Add a composite index on `Post(editorialStatus, isDeleted, publishedAt)` for posts tab filtering
-- Add an index on `Post(authorId, editorialStatus)` for personal archive queries
-- Add an index on `Comment(postId, isApproved)` for approved comment fetching
-- Review admin data loaders for N+1 query patterns and resolve them with appropriate `include` statements
-
-**Task 2.3 — On-Demand ISR Revalidation (`app/admin/actions/`)**
-- Add `revalidatePath()` calls inside the `publishPost`, `unpublishPost`, and `updatePost` server actions to target affected routes
-- On publish, revalidate: `/` (homepage), `/[category]` (category pages), `/[category]/[slug]` (post pages)
-- Reduce static `revalidate` values in page configs since on-demand revalidation handles freshness
-- Add `revalidatePath()` calls to `createCategory`, `updateCategory`, and `deleteCategory` actions
-
-**Task 2.4 — Lazy Load Non-Critical Homepage Components**
-- Wrap `LunarCalendarWidget`, `BmiWidget`, `BioAgeWidget`, and `BabyNameWidget` using `dynamic()` with `{ ssr: false }`
-- Add loading skeleton components for each deferred widget
-- Add `Suspense` boundaries around the recommended posts and most-watched videos sections
-- Move AdSense initialization to use `requestIdleCallback` or an `IntersectionObserver`
-
 Implement Phase 3: Editorial Workflow Enhancements — the goal is to add high-value CMS features including scheduled publishing, in-app notifications, bulk post operations, and content revision comparison.
 
 **Task 3.1 — Scheduled Publishing (Prisma schema, write/edit form, `/api/cron/publish-scheduled`)**

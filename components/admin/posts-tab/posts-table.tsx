@@ -1,7 +1,11 @@
+"use client"
+
+import { useState } from "react"
 import Image from "next/image"
-import { BookOpen, Clock } from "lucide-react"
+import { BookOpen, Clock, Trash, Tag } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   TableBody,
   TableCell,
@@ -11,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
+import { bulkTrashPosts, bulkUpdateStatus } from "@/app/admin/actions/posts"
 import { PostActionsCell } from "./post-actions-cell"
 import { STATUS_CONFIG, getTimelineLabel } from "./types"
 import type { PostActions, PostPermissions, PostRow } from "./types"
@@ -21,6 +26,48 @@ type PostsTableProps = {
   PostActions
 
 export function PostsTable({ posts, ...rest }: PostsTableProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isPending, setIsPending] = useState(false)
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === posts.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(posts.map((p) => p.id)))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    setSelectedIds(newSet)
+  }
+
+  const handleBulkTrash = async () => {
+    if (!confirm("Bạn có chắc chắn muốn xóa các bài viết đã chọn?")) return
+    setIsPending(true)
+    const formData = new FormData()
+    formData.set("postIds", Array.from(selectedIds).join(","))
+    await bulkTrashPosts(formData)
+    setSelectedIds(new Set())
+    setIsPending(false)
+  }
+
+  const handleBulkStatus = async (status: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn chuyển các bài viết đã chọn sang trạng thái ${status}?`)) return
+    setIsPending(true)
+    const formData = new FormData()
+    formData.set("postIds", Array.from(selectedIds).join(","))
+    formData.set("status", status)
+    await bulkUpdateStatus(formData)
+    setSelectedIds(new Set())
+    setIsPending(false)
+  }
+
   if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-16 text-center">
@@ -35,37 +82,83 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
   }
 
   return (
-    <div className="max-h-[calc(100vh-14rem)] overflow-x-auto overflow-y-auto rounded-xl border border-zinc-200">
-      <table className="w-full caption-bottom text-sm">
-        <TableHeader className="sticky top-0 z-20 bg-zinc-50 shadow-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-zinc-200">
-          <TableRow className="bg-transparent hover:bg-transparent">
-            <TableHead className="w-[10%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-              Ảnh
-            </TableHead>
-            <TableHead className="w-[45%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-              Bài viết
-            </TableHead>
-            <TableHead className="w-[20%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-              Nhân sự & Lịch sử
-            </TableHead>
-            <TableHead className="w-[8%] py-2.5 text-right text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-              Views
-            </TableHead>
-            <TableHead className="py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
-              Thao tác
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {posts.map((post) => {
-            const cfg = STATUS_CONFIG[post.editorialStatus]
-            return (
-              <TableRow
-                key={post.id}
-                className={cn("align-top transition-colors", cfg.rowClass)}
-              >
-                {/* ── Column 1: Image ── */}
-                <TableCell className="py-3">
+    <div className="space-y-4">
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-indigo-800 shadow-sm">
+          <span className="text-sm font-medium">Đã chọn {selectedIds.size} bài viết</span>
+          <div className="flex items-center gap-2">
+            <select
+              className="h-8 rounded-md border border-indigo-200 bg-white px-2 text-xs font-medium text-indigo-700 outline-none"
+              onChange={(e) => {
+                if (e.target.value) handleBulkStatus(e.target.value)
+                e.target.value = ""
+              }}
+              disabled={isPending}
+              defaultValue=""
+            >
+              <option value="" disabled>Đổi trạng thái...</option>
+              <option value="DRAFT">Nháp</option>
+              <option value="PENDING_REVIEW">Chờ duyệt</option>
+              <option value="PENDING_PUBLISH">Chờ xuất bản</option>
+              {rest.canPublishNow && <option value="PUBLISHED">Đã xuất bản</option>}
+              <option value="REJECTED">Từ chối</option>
+            </select>
+            <button
+              onClick={handleBulkTrash}
+              disabled={isPending}
+              className="flex h-8 items-center gap-1 rounded-md bg-white px-3 text-xs font-medium text-rose-600 border border-rose-200 hover:bg-rose-50 disabled:opacity-50"
+            >
+              <Trash className="size-3" />
+              Xóa (Thùng rác)
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="max-h-[calc(100vh-14rem)] overflow-x-auto overflow-y-auto rounded-xl border border-zinc-200">
+        <table className="w-full caption-bottom text-sm">
+          <TableHeader className="sticky top-0 z-20 bg-zinc-50 shadow-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-zinc-200">
+            <TableRow className="bg-transparent hover:bg-transparent">
+              <TableHead className="w-12 px-4 py-2.5 text-center">
+                <Checkbox
+                  checked={selectedIds.size === posts.length && posts.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
+              <TableHead className="w-[10%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                Ảnh
+              </TableHead>
+              <TableHead className="w-[45%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                Bài viết
+              </TableHead>
+              <TableHead className="w-[20%] py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                Nhân sự & Lịch sử
+              </TableHead>
+              <TableHead className="w-[8%] py-2.5 text-right text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                Views
+              </TableHead>
+              <TableHead className="py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+                Thao tác
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {posts.map((post) => {
+              const cfg = STATUS_CONFIG[post.editorialStatus]
+              return (
+                <TableRow
+                  key={post.id}
+                  className={cn("align-top transition-colors", cfg.rowClass, selectedIds.has(post.id) && "bg-indigo-50/50")}
+                >
+                  <TableCell className="px-4 py-3 align-middle">
+                    <Checkbox
+                      checked={selectedIds.has(post.id)}
+                      onCheckedChange={() => toggleSelect(post.id)}
+                      aria-label={`Select ${post.title}`}
+                    />
+                  </TableCell>
+                  {/* ── Column 1: Image ── */}
+                  <TableCell className="py-3">
                   {post.thumbnailUrl ? (
                     <Image
                       src={post.thumbnailUrl}
@@ -204,6 +297,7 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
           })}
         </TableBody>
       </table>
+    </div>
     </div>
   )
 }

@@ -20,6 +20,7 @@ import { CommentForm } from "@/components/news/comment-form"
 import { MostRead } from "@/components/news/most-read"
 import { PostCard } from "@/components/news/post-card"
 import { JsonLd } from "@/components/seo/json-ld"
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd"
 import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
 import { SiteFooter } from "@/components/news/site-footer"
@@ -181,30 +182,11 @@ export default async function PostPage({ params }: PostPageProps) {
     },
   }
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Trang chu",
-        item: siteUrl,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: article.category.name,
-        item: `${siteUrl}/${article.category.slug}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: article.title,
-        item: fullUrl,
-      },
-    ],
-  }
+  const breadcrumbItems = [
+    { name: "Trang chủ", url: siteUrl },
+    { name: article.category.name, url: `${siteUrl}/${article.category.slug}` },
+    { name: article.title, url: fullUrl },
+  ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -213,7 +195,8 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">
         <article className="space-y-6">
-          <JsonLd data={[articleJsonLd, breadcrumbJsonLd]} />
+          <JsonLd data={[articleJsonLd]} />
+          <BreadcrumbJsonLd items={breadcrumbItems} />
           <header className="space-y-3">
             <Link
               href={`/${article.category.slug}`}

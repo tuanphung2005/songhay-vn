@@ -11,6 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { requireCmsUser } from "@/lib/auth"
 import { can, ROLE_LABELS_VI } from "@/lib/permissions"
+import { prisma } from "@/lib/prisma"
+import { AdminNotifications } from "@/components/admin/admin-notifications"
 
 export const metadata: Metadata = {
   title: "CMS Admin",
@@ -52,6 +54,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     rejectedPostCount,
   }
 
+  const notifications = await prisma.notification.findMany({
+    where: { userId: currentUser.id },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  })
+
   return (
     <main className="min-h-screen bg-zinc-100">
       <AdminActionToast />
@@ -65,13 +73,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               Bảng điều khiển quản trị
             </h1>
           </div>
-          <Badge
-            variant="secondary"
-            className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"
-          >
-            <ShieldCheck className="size-3.5" />
-            {ROLE_LABELS_VI[currentUser.role]}
-          </Badge>
+          <div className="flex items-center gap-4">
+            <AdminNotifications notifications={notifications} />
+            <Badge
+              variant="secondary"
+              className="hidden h-8 items-center gap-1.5 px-3 md:inline-flex"
+            >
+              <ShieldCheck className="size-3.5" />
+              {ROLE_LABELS_VI[currentUser.role]}
+            </Badge>
+          </div>
         </div>
       </header>
 

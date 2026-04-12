@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 type SeoFieldsProps = {
   defaultSeoTitle?: string | null
   defaultSeoDescription?: string | null
+  defaultCanonicalUrl?: string | null
   initialTitle?: string | null
   initialExcerpt?: string | null
   initialContent?: string | null
@@ -31,6 +32,7 @@ function readFieldValue(form: HTMLFormElement, name: string) {
 export function SeoFields({
   defaultSeoTitle = "",
   defaultSeoDescription = "",
+  defaultCanonicalUrl = "",
   initialTitle = "",
   initialExcerpt = "",
   initialContent = "",
@@ -117,6 +119,18 @@ export function SeoFields({
       <div className="space-y-1.5">
         <Label htmlFor="seoKeywords">Từ khóa SEO</Label>
         {children}
+      </div>
+      <div className="space-y-1.5 mt-3 pt-3 border-t">
+        <Label htmlFor="canonicalUrl">Canonical URL (Tuỳ chọn)</Label>
+        <Input
+          id="canonicalUrl"
+          name="canonicalUrl"
+          defaultValue={defaultCanonicalUrl || ""}
+          placeholder="https://example.com/original-post"
+        />
+        <p className="text-xs text-muted-foreground">
+          Dùng khi copy bài từ nguồn khác để tránh lỗi trùng lặp nội dung.
+        </p>
       </div>
     </fieldset>
   )
