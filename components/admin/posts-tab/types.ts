@@ -13,6 +13,7 @@ export type PostRow = {
   updatedAt: Date
   publishedAt: Date | null
   approvedAt: Date | null
+  scheduledPublishAt: Date | null
   isFeatured: boolean
   isTrending: boolean
   isPublished: boolean
@@ -133,6 +134,14 @@ export function canEditPost(
 }
 
 export function getTimelineLabel(post: PostRow) {
+  if (post.editorialStatus === "PENDING_PUBLISH" && post.scheduledPublishAt) {
+    return `Hẹn ${new Date(post.scheduledPublishAt).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`
+  }
   if (post.editorialStatus === "PUBLISHED" && post.publishedAt) {
     return `Đăng ${new Date(post.publishedAt).toLocaleDateString("vi-VN")}`
   }

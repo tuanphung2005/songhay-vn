@@ -1,6 +1,4 @@
 import { cache } from "react"
-// @ts-expect-error
-// next cache types are currently broken, but we can ignore that since we know the API is correct
 import { unstable_cache } from "next/cache"
 import type { Prisma } from "@/generated/prisma/client"
 

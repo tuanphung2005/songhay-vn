@@ -86,6 +86,7 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
       updatedAt: true,
       publishedAt: true,
       approvedAt: true,
+      scheduledPublishAt: true,
       isFeatured: true,
       isTrending: true,
       isPublished: true,
