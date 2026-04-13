@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { MediaPickerProps, PickerTab } from "./types"
+import { useState, useEffect } from "react"
+import { MediaPickerProps, PickerTab, MediaAsset } from "./types"
 import { LibraryTab } from "./library-tab"
 import { UploadTab } from "./upload-tab"
 import { LinkTab } from "./link-tab"
@@ -11,6 +11,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 export function MediaPicker({ isOpen, onClose, onSelect, mediaAssets, currentUserId }: MediaPickerProps) {
   const [activeTab, setActiveTab] = useState<PickerTab>("library")
+  const [localAssets, setLocalAssets] = useState<MediaAsset[]>(mediaAssets)
+
+  useEffect(() => {
+    setLocalAssets(mediaAssets)
+  }, [mediaAssets])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -48,13 +53,19 @@ export function MediaPicker({ isOpen, onClose, onSelect, mediaAssets, currentUse
           <div className="flex-1 overflow-hidden flex flex-col min-h-0 relative">
             <TabsContent value="library" className="flex-1 flex-col data-[state=active]:flex data-[state=inactive]:hidden min-h-0 m-0 outline-none">
               <LibraryTab
-                mediaAssets={mediaAssets}
+                mediaAssets={localAssets}
                 currentUserId={currentUserId}
                 onSelect={onSelect}
               />
             </TabsContent>
             <TabsContent value="upload" className="flex-1 flex-col data-[state=active]:flex data-[state=inactive]:hidden min-h-0 m-0 outline-none">
-              <UploadTab onSelect={onSelect} />
+              <UploadTab 
+                currentUserId={currentUserId}
+                onSelect={(item, fullAsset) => {
+                  if (fullAsset) setLocalAssets(prev => [fullAsset, ...prev])
+                  onSelect(item)
+                }} 
+              />
             </TabsContent>
             <TabsContent value="link" className="flex-1 flex-col data-[state=active]:flex data-[state=inactive]:hidden min-h-0 m-0 outline-none">
               <LinkTab onSelect={onSelect} />

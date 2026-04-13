@@ -8,15 +8,19 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+import { MediaAsset } from "./types"
+
 type UploadTabProps = {
-  onSelect: (asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }) => void
+  onSelect: (
+    asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null },
+    fullAsset?: MediaAsset
+  ) => void
   submitText?: string
-  hideSaveToLibrary?: boolean
+  currentUserId?: string
 }
 
-export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và chèn", hideSaveToLibrary = false }: UploadTabProps) {
+export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và chèn", currentUserId }: UploadTabProps) {
   const [files, setFiles] = useState<File[]>([])
-  const [saveToLibrary, setSaveToLibrary] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,7 +51,7 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
       for (const file of files) {
         const formData = new FormData()
         formData.append("file", file)
-        formData.append("skipLibrary", (!saveToLibrary).toString())
+        formData.append("skipLibrary", "false")
 
         const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
 
@@ -62,12 +66,24 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
         }
 
         const data = await response.json()
-        onSelect({
-          assetType: file.type.startsWith("video/") ? "VIDEO" : "IMAGE",
+        const assetType = file.type.startsWith("video/") ? "VIDEO" as const : "IMAGE" as const
+        
+        const fullAsset: MediaAsset = {
+          id: data.asset?.id || `temp-${Date.now()}-${Math.random()}`,
+          assetType,
+          visibility: "SHARED",
           url: data.url,
           filename: file.name,
           displayName: null,
-        })
+          uploader: { id: currentUserId || "me", name: "Tôi" }
+        }
+
+        onSelect({
+          assetType,
+          url: data.url,
+          filename: file.name,
+          displayName: null,
+        }, fullAsset)
       }
       setFiles([])
     } catch (err) {
@@ -86,8 +102,9 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
             multiple
             className="absolute inset-0 opacity-0 cursor-pointer z-10"
             onChange={(e) => {
-               if (e.target.files) {
-                 setFiles((prev) => [...prev, ...Array.from(e.target.files!)])
+               if (e.target.files && e.target.files.length > 0) {
+                 const newFiles = Array.from(e.target.files)
+                 setFiles((prev) => [...prev, ...newFiles])
                }
                e.target.value = ""
             }}
@@ -127,19 +144,6 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {!hideSaveToLibrary && (
-          <div className="flex items-center space-x-3 px-1">
-            <Checkbox
-              id="saveToLibrary"
-              checked={saveToLibrary}
-              onCheckedChange={(v) => setSaveToLibrary(v === true)}
-            />
-            <Label htmlFor="saveToLibrary" className="text-sm font-bold text-muted-foreground cursor-pointer select-none">
-              Lưu vào kho media chung của hệ thống
-            </Label>
           </div>
         )}
 

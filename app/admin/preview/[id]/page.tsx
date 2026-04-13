@@ -134,6 +134,12 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
+          {post.penName && (
+            <div className="mt-4 text-right text-zinc-900 font-bold">
+              {post.penName}
+            </div>
+          )}
+
           {/* <AdPlaceholder label="In-article ad (Google AdSense)" className="min-h-24" /> */}
 
           {post.videoEmbedUrl ? (

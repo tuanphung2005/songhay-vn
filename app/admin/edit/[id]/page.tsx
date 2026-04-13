@@ -324,7 +324,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       </div>
 
       <form action={updatePost} className="space-y-6">
-        <EditFormDirtyTracker />
+        <EditFormDirtyTracker postId={post.id} />
         <input type="hidden" name="postId" value={post.id} />
         <input type="hidden" name="lastUpdatedAt" value={new Date(post.updatedAt).toISOString()} />
 
@@ -389,15 +389,23 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                     <Save className="size-4 mr-1.5" />
                     {post.editorialStatus === "DRAFT" ? "Lưu nháp" : "Cập nhật thay đổi"}
                   </Button>
-                  <Button asChild variant="secondary" size="lg">
-                    <Link
-                      href={`/admin/preview/${post.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <Eye className="size-4 mr-1.5" />
-                      Xem trước
-                    </Link>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="lg"
+                    onClick={(e) => {
+                      const penNameInput = document.getElementById("postPenName") as HTMLInputElement
+                      if (penNameInput && !penNameInput.value.trim()) {
+                        e.preventDefault()
+                        alert("Vui lòng nhập Bút danh trước khi Xem trước!")
+                        penNameInput.focus()
+                        return
+                      }
+                      window.open(`/admin/preview/${post.id}`, "_blank", "noreferrer")
+                    }}
+                  >
+                    <Eye className="size-4 mr-1.5" />
+                    Xem trước
                   </Button>
                 </div>
 

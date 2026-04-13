@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useRef } from "react"
 import { EditorMode, RichTextFieldProps } from "./types"
 import { CKEditorWrapper } from "./ck-editor-wrapper"
 import { MonacoEditorWrapper } from "./monaco-editor-wrapper"
@@ -28,6 +28,7 @@ export function RichTextField({
   const [mode, setMode] = useState<EditorMode>("classic")
   const [html, setHtml] = useState(defaultValue)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
+  const editorRef = useRef<any>(null)
 
   const isEmpty = useMemo(() => toPlainText(html).length === 0, [html])
 
@@ -39,10 +40,19 @@ export function RichTextField({
 
     const snippet =
       asset.assetType === "IMAGE"
-        ? `\n<figure class="image">\n  <img src="${asset.url}" alt="${caption}" loading="lazy" />\n  <figcaption>${caption}</figcaption>\n</figure>\n<p>&nbsp;</p>\n`
-        : `\n<div class="video-wrap">\n  <video controls src="${asset.url}" title="${caption}"></video>\n</div>\n<p>&nbsp;</p>\n`
+        ? `\n<figure class="image image-style-align-center" style="display: table; margin: 2em auto; text-align: center;">\n  <img src="${asset.url}" alt="${caption}" loading="lazy" />\n  <figcaption>${caption}</figcaption>\n</figure>\n<p>&nbsp;</p>\n`
+        : `\n<div class="video-wrap" style="text-align: center; margin: 2em auto;">\n  <video controls src="${asset.url}" title="${caption}" style="max-width: 100%; height: auto; display: inline-block;"></video>\n  <div class="video-caption" style="margin-top: 0.3em; font-size: 0.9em; color: #6b7280; font-style: italic; text-align: center;">${caption}</div>\n</div>\n<p>&nbsp;</p>\n`
 
-    setHtml((previous) => `${previous}${snippet}`)
+    if (mode === "classic" && editorRef.current) {
+        const viewFragment = editorRef.current.data.processor.toView(snippet)
+        const modelFragment = editorRef.current.data.toModel(viewFragment)
+        editorRef.current.model.change((writer: any) => {
+           editorRef.current.model.insertContent(modelFragment)
+        })
+        setHtml(editorRef.current.getData())
+    } else {
+        setHtml((previous) => `${previous}${snippet}`)
+    }
     setShowMediaPicker(false)
   }
 
@@ -83,6 +93,7 @@ export function RichTextField({
               data={html}
               onChange={setHtml}
               placeholder={placeholder}
+              onReady={(editor) => { editorRef.current = editor }}
             />
           ) : (
             <MonacoEditorWrapper
@@ -140,7 +151,15 @@ export function RichTextField({
         }
 
         .ck-content figure.image figcaption {
-          margin-top: 0.8em;
+          margin-top: 0.3em;
+          font-size: 0.9em;
+          color: #6b7280;
+          font-style: italic;
+          text-align: center;
+        }
+
+        .ck-content .video-caption {
+          margin-top: 0.3em;
           font-size: 0.9em;
           color: #6b7280;
           font-style: italic;

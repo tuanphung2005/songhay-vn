@@ -196,9 +196,10 @@ type CKEditorWrapperProps = {
   data: string
   onChange: (data: string) => void
   placeholder?: string
+  onReady?: (editor: any) => void
 }
 
-export function CKEditorWrapper({ data, onChange, placeholder }: CKEditorWrapperProps) {
+export function CKEditorWrapper({ data, onChange, placeholder, onReady }: CKEditorWrapperProps) {
   const wordCountRef = useRef<HTMLDivElement>(null)
 
   const config = useMemo(() => ({
@@ -265,6 +266,7 @@ export function CKEditorWrapper({ data, onChange, placeholder }: CKEditorWrapper
           config={config}
           onChange={(_event, editor) => onChange(editor.getData())}
           onReady={(editor) => {
+            if (onReady) onReady(editor)
             const wordCountPlugin = editor.plugins.get("WordCount")
             if (wordCountRef.current && wordCountPlugin) {
               wordCountRef.current.innerHTML = ""

@@ -186,14 +186,26 @@
   }
 
   .article-content.ck-content figure {
-    margin: 1.25rem 0 !important;
+    margin: 1.25rem auto !important;
+    display: table;
   }
 
-  .article-content.ck-content figcaption {
-    margin-top: 0.5rem !important;
+  .article-content.ck-content .video-wrap {
+    margin: 1.25rem 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .article-content.ck-content figcaption,
+  .article-content.ck-content .video-caption {
+    margin-top: 0.25rem !important;
     text-align: center !important;
     font-size: 0.875rem !important;
     color: oklch(0.55 0 0) !important;
+    font-style: italic !important;
   }
 
   .article-content.ck-content pre {
@@ -221,7 +233,7 @@
   .article-content.ck-content img,
   .article-content.ck-content iframe,
   .article-content.ck-content video {
-    @apply h-auto max-w-full;
+    @apply h-auto max-w-full mx-auto;
   }
 
   .article-content.ck-content iframe {

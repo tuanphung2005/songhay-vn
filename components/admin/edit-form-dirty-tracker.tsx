@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect } from "react"
+import { autosaveDraftAction } from "@/app/admin/edit/[id]/autosave-action"
 
-export function EditFormDirtyTracker() {
+export function EditFormDirtyTracker({ postId }: { postId?: string }) {
   useEffect(() => {
     let isDirty = false
 
@@ -47,7 +48,31 @@ export function EditFormDirtyTracker() {
     window.addEventListener("beforeunload", handleBeforeUnload)
     document.addEventListener("click", handleGlobalClick, { capture: true })
 
+    const autosaveInterval = setInterval(async () => {
+      if (isDirty && postId && form) {
+        isDirty = false // Optimistically reset. Typing during request resets it to true.
+        try {
+          const formData = new FormData(form)
+          const title = String(formData.get("title") || "")
+          const excerpt = String(formData.get("excerpt") || "")
+          const content = String(formData.get("content") || "")
+
+          const result = await autosaveDraftAction(postId, { title, excerpt, content })
+          if (result.error) {
+            console.error("Autosave failed", result.error)
+            isDirty = true
+          } else {
+            console.log("Autosave successful at", result.timestamp)
+          }
+        } catch (e) {
+          console.error("Autosave failed", e)
+          isDirty = true
+        }
+      }
+    }, 20000) // 20 seconds cooldown
+
     return () => {
+      clearInterval(autosaveInterval)
       if (form) {
         form.removeEventListener("input", handleMarkDirty, true)
         form.removeEventListener("change", handleMarkDirty, true)
@@ -56,7 +81,7 @@ export function EditFormDirtyTracker() {
       window.removeEventListener("beforeunload", handleBeforeUnload)
       document.removeEventListener("click", handleGlobalClick, { capture: true })
     }
-  }, [])
+  }, [postId])
 
   return null
 }
