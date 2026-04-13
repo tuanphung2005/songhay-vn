@@ -2,8 +2,7 @@
 
 import Image from "next/image"
 import { useState, useMemo, useEffect } from "react"
-import { MediaAsset } from "./types"
-import { UploadCloud, FileImage, FileVideo, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
+import { UploadCloud, FileImage, FileVideo, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -16,52 +15,61 @@ type UploadTabProps = {
 }
 
 export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và chèn", hideSaveToLibrary = false }: UploadTabProps) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [saveToLibrary, setSaveToLibrary] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const previewUrl = useMemo(() => {
-    if (!file) return null
-    return URL.createObjectURL(file)
-  }, [file])
+  const previews = useMemo(() => {
+    return files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }))
+  }, [files])
 
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      previews.forEach((p) => URL.revokeObjectURL(p.url))
     }
-  }, [previewUrl])
+  }, [previews])
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
 
   async function handleUpload() {
-    if (!file) return
+    if (files.length === 0) return
 
     setIsUploading(true)
     setError(null)
 
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("skipLibrary", (!saveToLibrary).toString())
-
-    const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
-
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      })
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append("file", file)
+        formData.append("skipLibrary", (!saveToLibrary).toString())
 
-      if (!response.ok) {
+        const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || `Upload failed for ${file.name}`)
+        }
+
         const data = await response.json()
-        throw new Error(data.error || "Upload failed")
+        onSelect({
+          assetType: file.type.startsWith("video/") ? "VIDEO" : "IMAGE",
+          url: data.url,
+          filename: file.name,
+          displayName: null,
+        })
       }
-
-      const data = await response.json()
-      onSelect({
-        assetType: file.type.startsWith("video/") ? "VIDEO" : "IMAGE",
-        url: data.url,
-        filename: file.name,
-        displayName: null,
-      })
+      setFiles([])
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra khi upload.")
     } finally {
@@ -71,49 +79,56 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
 
   return (
     <div className="p-8 flex flex-col items-center justify-center min-h-[40vh] space-y-8 bg-white flex-1 relative">
-      <div className="w-full max-w-md space-y-6">
-        <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-12 text-center hover:border-zinc-400 hover:bg-zinc-50/50 transition-all cursor-pointer relative group">
+      <div className="w-full max-w-2xl space-y-6">
+        <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-8 text-center hover:border-zinc-400 hover:bg-zinc-50/50 transition-all relative group">
           <input
             type="file"
+            multiple
             className="absolute inset-0 opacity-0 cursor-pointer z-10"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            onChange={(e) => {
+               if (e.target.files) {
+                 setFiles((prev) => [...prev, ...Array.from(e.target.files!)])
+               }
+               e.target.value = ""
+            }}
             accept="image/gif,image/png,image/jpeg,image/webp,image/avif,video/*"
           />
-          <div className="space-y-4">
-            {file && previewUrl ? (
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/5 flex items-center justify-center border shadow-inner">
-                {file.type.startsWith("video/") ? (
-                  <video
-                    src={previewUrl}
-                    className="max-h-full max-w-full object-contain"
-                    controls
-                  />
-                ) : (
-                  <Image
-                    src={previewUrl}
-                    alt={file.name}
-                    width={800}
-                    height={450}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                )}
-                <div className="absolute top-2 right-2 bg-black/60 text-white backdrop-blur-md px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">
-                  Nhấp để chọn lại
-                </div>
-              </div>
-            ) : (
-              <div className="mx-auto w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 group-hover:bg-zinc-100 transition-all shadow-sm">
-                <UploadCloud className="w-7 h-7" />
-              </div>
-            )}
+          <div className="space-y-4 pointer-events-none">
+            <div className="mx-auto w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 group-hover:bg-zinc-100 transition-all shadow-sm">
+              <UploadCloud className="w-7 h-7" />
+            </div>
             <div className="space-y-1.5">
-              <p className="text-sm font-bold text-zinc-900 line-clamp-1 px-4">
-                {file ? file.name : "Kéo thả hoặc nhấp để chọn tệp"}
+              <p className="text-sm font-bold text-zinc-900 px-4">
+                Kéo thả nhiều tệp hoặc nhấp để chọn
               </p>
-              {!file && <p className="text-xs text-zinc-400 font-medium">Hỗ trợ GIF, PNG, JPG, WEBP, AVIF và Video (Tối đa 200MB)</p>}
+              <p className="text-xs text-zinc-400 font-medium">Hỗ trợ GIF, PNG, JPG, WEBP, AVIF và Video (Tối đa 200MB/tệp)</p>
             </div>
           </div>
         </div>
+
+        {files.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[30vh] overflow-y-auto p-1">
+            {previews.map((p, i) => (
+              <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-zinc-100 border shadow-sm group">
+                {p.file.type.startsWith("video/") ? (
+                  <video src={p.url} className="w-full h-full object-cover" />
+                ) : (
+                  <Image src={p.url} alt={p.file.name} fill className="object-cover" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-[10px] text-white truncate font-medium">
+                  {p.file.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {!hideSaveToLibrary && (
           <div className="flex items-center space-x-3 px-1">
@@ -137,19 +152,19 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
 
         <Button
           type="button"
-          disabled={!file || isUploading}
+          disabled={files.length === 0 || isUploading}
           onClick={handleUpload}
           className="w-full h-12 rounded-xl font-bold shadow-md transition-all"
         >
           {isUploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Đang xử lý tải lên...
+              Đang xử lý {files.length} tệp...
             </>
           ) : (
             <>
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              {submitText}
+              {submitText} ({files.length})
             </>
           )}
         </Button>
