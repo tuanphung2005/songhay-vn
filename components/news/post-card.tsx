@@ -3,6 +3,7 @@ import Link from "next/link"
 import { MessageSquare } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { resolveAspectRatio } from "@/lib/media-utils"
 
 type PostCardProps = {
   href: string
@@ -55,10 +56,7 @@ export function PostCard({
         <div
           className={cn(
             "relative overflow-hidden bg-zinc-100 flex-shrink-0",
-            aspectRatio === "video" && "aspect-video",
-            aspectRatio === "square" && "aspect-square",
-            aspectRatio === "3/2" && "aspect-[3/2]",
-            aspectRatio === "12/7" && "aspect-[12/7]",
+            resolveAspectRatio(aspectRatio),
             isOverlay && "absolute inset-0 h-full w-full",
             isHorizontal && "w-32 sm:w-48 lg:w-64",
             // If the article is forced to flex-col on LG, the thumbnail should be full width
