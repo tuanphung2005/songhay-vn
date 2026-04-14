@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useState, useMemo, useEffect } from "react"
-import { UploadCloud, FileImage, FileVideo, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react"
+import { UploadCloud, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -17,12 +17,20 @@ type UploadTabProps = {
   ) => void
   submitText?: string
   currentUserId?: string
+  hideSaveToLibrary?: boolean
 }
 
-export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và chèn", currentUserId }: UploadTabProps) {
+export function UploadTab({
+  onSelect,
+  submitText = "Xác nhận tải lên và chèn",
+  currentUserId,
+  hideSaveToLibrary = false,
+}: UploadTabProps) {
   const [files, setFiles] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saveToLibrary, setSaveToLibrary] = useState(true)
+  const shouldSaveToLibrary = hideSaveToLibrary ? true : saveToLibrary
 
   const previews = useMemo(() => {
     return files.map((file) => ({
@@ -51,7 +59,7 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
       for (const file of files) {
         const formData = new FormData()
         formData.append("file", file)
-        formData.append("skipLibrary", "false")
+        formData.append("skipLibrary", String(!shouldSaveToLibrary))
 
         const endpoint = file.type.startsWith("video/") ? "/api/uploads/video" : "/api/uploads/image"
 
@@ -153,6 +161,19 @@ export function UploadTab({ onSelect, submitText = "Xác nhận tải lên và c
             <AlertDescription className="text-xs font-bold">{error}</AlertDescription>
           </Alert>
         )}
+
+        {!hideSaveToLibrary ? (
+          <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+            <Checkbox
+              id="save-to-library"
+              checked={shouldSaveToLibrary}
+              onCheckedChange={(checked) => setSaveToLibrary(checked === true)}
+            />
+            <Label htmlFor="save-to-library" className="cursor-pointer text-sm font-medium text-zinc-700">
+              Lưu vào kho media dùng chung
+            </Label>
+          </div>
+        ) : null}
 
         <Button
           type="button"
