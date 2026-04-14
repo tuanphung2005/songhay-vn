@@ -13,7 +13,7 @@ type PostCardProps = {
   categoryName?: string
   compact?: boolean
   variant?: "default" | "overlay" | "horizontal"
-  aspectRatio?: "video" | "square" | "portrait" | "3/2"
+  aspectRatio?: "video" | "square" | "portrait" | "3/2" | "12/7"
   className?: string
   showExcerpt?: boolean
   commentCount?: number
@@ -28,7 +28,7 @@ export function PostCard({
   categoryName,
   compact = false,
   variant = "default",
-  aspectRatio = "video",
+  aspectRatio = "12/7",
   className,
   showExcerpt = true,
   commentCount = 0,
@@ -58,6 +58,7 @@ export function PostCard({
             aspectRatio === "video" && "aspect-video",
             aspectRatio === "square" && "aspect-square",
             aspectRatio === "3/2" && "aspect-[3/2]",
+            aspectRatio === "12/7" && "aspect-[12/7]",
             isOverlay && "absolute inset-0 h-full w-full",
             isHorizontal && "w-32 sm:w-48 lg:w-64",
             // If the article is forced to flex-col on LG, the thumbnail should be full width

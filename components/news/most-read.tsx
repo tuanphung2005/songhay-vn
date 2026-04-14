@@ -25,9 +25,9 @@ export function MostRead({ posts }: MostReadProps) {
               src={post.thumbnailUrl || "/placeholder-news.svg"}
               alt={post.title}
               width={120}
-              height={80}
+              height={70}
               loading="lazy"
-              className="h-16 w-24 flex-shrink-0 rounded-sm object-cover"
+              className="w-24 aspect-[12/7] flex-shrink-0 rounded-sm object-cover"
             />
             <div className="flex-1 space-y-1">
               <Link

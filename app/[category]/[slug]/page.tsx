@@ -220,9 +220,9 @@ export default async function PostPage({ params }: PostPageProps) {
           <Image
             src={article.thumbnailUrl || "/placeholder-news.svg"}
             alt={article.title}
-            width={1280}
-            height={720}
-            className="h-auto w-full border border-zinc-200 object-cover"
+            width={1200}
+            height={700}
+            className="h-auto w-full border border-zinc-200 object-cover aspect-[12/7]"
             priority
           />
 

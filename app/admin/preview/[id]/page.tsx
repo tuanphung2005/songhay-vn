@@ -123,9 +123,9 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
           <Image
             src={post.thumbnailUrl || "/placeholder-news.svg"}
             alt={post.title}
-            width={1280}
-            height={720}
-            className="h-auto w-full border border-zinc-200 object-cover"
+            width={1200}
+            height={700}
+            className="h-auto w-full border border-zinc-200 object-cover aspect-[12/7]"
             priority
           />
 

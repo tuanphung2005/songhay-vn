@@ -150,7 +150,7 @@ export default async function HomePage() {
                 date={post.publishedAt}
                 categoryName={post.category.name}
                 showExcerpt={false}
-                aspectRatio="video"
+                aspectRatio="12/7"
                 commentCount={post._count.comments}
                 className="lg:flex-col"
                 variant="horizontal"
