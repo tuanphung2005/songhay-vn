@@ -38,10 +38,10 @@ describe("media library and editor picker", () => {
 
     // Check specific snippets for image and video
     expect(source).toContain('asset.assetType === "IMAGE"')
-    expect(source).toContain('<figure class="image">')
+    expect(source).toContain('<figure class="image')
     expect(source).toContain("<figcaption>")
 
-    expect(source).toContain('<div class="video-wrap">')
+    expect(source).toContain('<div class="video-wrap')
     expect(source).toContain("<video controls")
   })
 

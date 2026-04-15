@@ -15,7 +15,7 @@ import { normalizeArticleHtml } from "@/lib/html"
 import { requireCmsUser } from "@/lib/auth"
 import { canViewAllPosts } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { getTrendingPosts, type PostWithCategoryAndComments } from "@/lib/queries"
+import { getTrendingPosts, type PostListItem } from "@/lib/queries"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -183,7 +183,7 @@ export default async function AdminPreviewPage({ params }: PreviewPageProps) {
 
         <aside className="space-y-4">
           <MostRead
-            posts={trendingPosts.map((p: PostWithCategoryAndComments) => ({
+            posts={trendingPosts.map((p: PostListItem) => ({
               id: p.id,
               title: p.title,
               thumbnailUrl: p.thumbnailUrl,

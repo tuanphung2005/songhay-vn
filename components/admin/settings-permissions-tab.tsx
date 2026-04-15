@@ -10,7 +10,7 @@ import {
   type PermissionAction,
 } from "@/lib/permissions"
 import type { PermissionsMatrixRow } from "@/app/admin/data-loaders/permissions"
-import type { UserRole } from "@/generated/prisma/client"
+import type { UserRole } from "@prisma/client"
 
 type SettingsPermissionsTabProps = {
   permissionsMatrix: PermissionsMatrixRow[]

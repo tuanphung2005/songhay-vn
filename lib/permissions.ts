@@ -1,4 +1,4 @@
-import type { EditorialStatus, UserRole } from "@/generated/prisma/client"
+import type { EditorialStatus, UserRole } from "@prisma/client"
 
 export const ROLE_LABELS_VI: Record<UserRole, string> = {
   ADMIN: "Quản trị (cũ)",

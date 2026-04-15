@@ -1,4 +1,4 @@
-import type { EditorialStatus, UserRole } from "@/generated/prisma/client"
+import type { EditorialStatus, UserRole } from "@prisma/client"
 
 import { can, canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"

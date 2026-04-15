@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { type EditorialStatus, type UserRole } from "@/generated/prisma/client"
+import { type EditorialStatus, type UserRole } from "@prisma/client"
 
 import { can, canPublishNow, canSubmitPendingPublish } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"

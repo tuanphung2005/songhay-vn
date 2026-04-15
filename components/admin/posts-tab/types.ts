@@ -1,4 +1,4 @@
-import type { EditorialStatus } from "@/generated/prisma/client"
+import type { EditorialStatus } from "@prisma/client"
 
 export type PostRow = {
   id: string

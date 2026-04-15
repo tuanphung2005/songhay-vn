@@ -82,13 +82,13 @@ describe("schema default field awareness", () => {
     const schema = readWorkspaceFile("prisma/schema.prisma")
 
     // This is the trap: isDraft defaults true, so published posts must explicitly set false
-    expect(schema).toContain("isDraft        Boolean  @default(true)")
+    expect(schema).toMatch(/isDraft\s+Boolean\s+@default\(true\)/)
   })
 
   test("schema defaults editorialStatus to DRAFT", () => {
     const schema = readWorkspaceFile("prisma/schema.prisma")
 
-    expect(schema).toContain("editorialStatus EditorialStatus @default(DRAFT)")
+    expect(schema).toMatch(/editorialStatus\s+EditorialStatus\s+@default\(DRAFT\)/)
     // The EditorialStatus enum includes PENDING_REVIEW
     expect(schema).toContain("PENDING_REVIEW")
     expect(schema).toContain("PENDING_PUBLISH")

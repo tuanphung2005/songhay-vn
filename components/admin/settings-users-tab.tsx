@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { ROLE_LABELS_VI, ALL_EDITABLE_ROLES } from "@/lib/permissions"
 import type { UserRow } from "@/app/admin/data-types"
-import type { UserRole } from "@/generated/prisma/client"
+import type { UserRole } from "@prisma/client"
 
 const ROLE_BADGE_COLORS: Record<UserRole, string> = {
   ADMIN: "bg-red-100 text-red-700 border-red-200",

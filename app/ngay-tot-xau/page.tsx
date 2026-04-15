@@ -10,7 +10,7 @@ import { MostRead } from "@/components/news/most-read"
 import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
 import { ClientSideWidgets } from "@/components/news/client-side-widgets"
-import { getHomepageData, getNavCategories, type PostWithCategoryAndComments } from "@/lib/queries"
+import { getHomepageData, getNavCategories, type PostListItem } from "@/lib/queries"
 
 export const metadata: Metadata = {
   title: "Xem ngày tốt xấu đầy đủ theo lịch âm",
@@ -52,7 +52,7 @@ export default async function GoodDayPage() {
 
           <aside className="flex flex-col gap-4">
             <MostRead
-              posts={mostRead.map((post: PostWithCategoryAndComments) => ({
+              posts={mostRead.map((post: PostListItem) => ({
                 id: post.id,
                 title: post.title,
                 thumbnailUrl: post.thumbnailUrl,

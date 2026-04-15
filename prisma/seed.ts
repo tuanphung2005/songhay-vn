@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient } from "../generated/prisma/client"
+import { PrismaClient } from "@prisma/client"
 
 import { NAV_CATEGORIES } from "../lib/categories"
 import { hashPassword } from "../lib/password"

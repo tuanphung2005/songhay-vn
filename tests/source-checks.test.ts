@@ -9,10 +9,10 @@ function readWorkspaceFile(relativePath: string) {
 describe("Source Verification: Type Centralization", () => {
   test("lib/queries.ts uses centralized types", () => {
     const source = readWorkspaceFile("lib/queries.ts")
-    expect(source).toContain('import type { PostWithCategoryAndComments } from "@/types/post"')
+    expect(source).toContain('import type { PostListItem, PostFull } from "@/types/post"')
     expect(source).toContain('import type { SearchResultItem } from "@/types/search"')
     expect(source).toContain('import type { CategoryWithChildren } from "@/types/category"')
-    expect(source).toContain("export type { PostWithCategoryAndComments, SearchResultItem, CategoryWithChildren }")
+    expect(source).toContain("export type { PostListItem, PostFull, SearchResultItem, CategoryWithChildren }")
   })
 
   test("lib/session.ts uses centralized auth types", () => {

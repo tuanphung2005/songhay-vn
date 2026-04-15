@@ -13,7 +13,7 @@ import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { JsonLd } from "@/components/seo/json-ld"
-import { getHomepageData, getNavCategories, type PostWithCategoryAndComments, type CategoryWithChildren } from "@/lib/queries"
+import { getHomepageData, getNavCategories, type PostListItem, type CategoryWithChildren } from "@/lib/queries"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 
@@ -63,7 +63,7 @@ export default async function HomePage() {
     getNavCategories(),
   ])
 
-  const groupedByCategory = latest.reduce<Record<string, PostWithCategoryAndComments[]>>((acc: Record<string, PostWithCategoryAndComments[]>, post: PostWithCategoryAndComments) => {
+  const groupedByCategory = latest.reduce<Record<string, PostListItem[]>>((acc: Record<string, PostListItem[]>, post: PostListItem) => {
     const key = post.category.slug
     if (!acc[key]) {
       acc[key] = []
@@ -76,7 +76,7 @@ export default async function HomePage() {
     ["song-khoe", "meo-hay", "doi-song", "goc-stress", "tu-vi", "video"].includes(category.slug)
   )
     .map((category: CategoryWithChildren) => groupedByCategory[category.slug])
-    .filter((items: PostWithCategoryAndComments[] | undefined): items is PostWithCategoryAndComments[] => Boolean(items && items.length > 0))
+    .filter((items: PostListItem[] | undefined): items is PostListItem[] => Boolean(items && items.length > 0))
 
   const homepageJsonLd = {
     "@context": "https://schema.org",
@@ -123,7 +123,7 @@ export default async function HomePage() {
 
             {/* Sidebar Posts (1/3 width stacked) */}
             <div className="flex flex-col gap-6 lg:col-span-1">
-              {heroSlots.slice(1, 3).map((post: PostWithCategoryAndComments) => (
+              {heroSlots.slice(1, 3).map((post: PostListItem) => (
                 <PostCard
                   key={post.id}
                   href={`/${post.category.slug}/${post.slug}`}
@@ -142,7 +142,7 @@ export default async function HomePage() {
 
           {/* Bottom Row (3 items) */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:gap-6">
-            {heroSlots.slice(3, 6).map((post: PostWithCategoryAndComments) => (
+            {heroSlots.slice(3, 6).map((post: PostListItem) => (
               <PostCard
                 key={post.id}
                 href={`/${post.category.slug}/${post.slug}`}
@@ -188,7 +188,7 @@ export default async function HomePage() {
             </Suspense>
 
             <section className="space-y-6 pt-6 border-t border-zinc-200">
-              {categoryBlocks.map((items: PostWithCategoryAndComments[], index: number) => {
+              {categoryBlocks.map((items: PostListItem[], index: number) => {
                 const [first] = items
                 return (
                   <div key={first.category.slug} className="flex flex-col gap-4">
@@ -205,7 +205,7 @@ export default async function HomePage() {
 
           <aside className="flex flex-col gap-4">
             <MostRead
-              posts={mostRead.map((post: PostWithCategoryAndComments) => ({
+              posts={mostRead.map((post: PostListItem) => ({
                 id: post.id,
                 title: post.title,
                 thumbnailUrl: post.thumbnailUrl,

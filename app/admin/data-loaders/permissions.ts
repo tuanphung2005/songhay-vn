@@ -5,7 +5,7 @@ import {
   hydratePermissionsFromDb,
   type PermissionAction,
 } from "@/lib/permissions"
-import type { UserRole } from "@/generated/prisma/client"
+import type { UserRole } from "@prisma/client"
 
 export type PermissionsMatrixRow = {
   role: UserRole

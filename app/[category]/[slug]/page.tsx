@@ -35,7 +35,8 @@ import {
   getRecommendedPosts,
   getLatestPostsForSsg,
   getNavCategories,
-  type PostWithCategoryAndComments,
+  type PostListItem,
+  type PostFull,
 } from "@/lib/queries"
 import {
   injectInlineAdAfterSecondParagraph,
@@ -271,7 +272,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 Chưa có bình luận hiển thị.
               </p>
             ) : (
-              article.comments.map((comment: PostWithCategoryAndComments['comments'][number]) => (
+              article.comments.map((comment: PostFull['comments'][number]) => (
                 <div
                   key={comment.id}
                   className="border border-zinc-200 bg-white p-3"
@@ -302,7 +303,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="space-y-4">
             <SectionHeading title="Đọc nhiều nhất" />
             <div className="grid gap-4 sm:grid-cols-2">
-              {trendingPosts.slice(0, 10).map((trending: PostWithCategoryAndComments) => (
+              {trendingPosts.slice(0, 10).map((trending: PostListItem) => (
                 <PostCard
                   key={trending.id}
                   href={`/${trending.category.slug}/${trending.slug}`}
@@ -325,7 +326,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="space-y-4">
             <SectionHeading title="Đọc thêm" />
             <div className="grid gap-4 sm:grid-cols-2">
-              {relatedPosts.map((related: PostWithCategoryAndComments) => (
+              {relatedPosts.map((related: PostListItem) => (
                 <PostCard
                   key={related.id}
                   href={`/${related.category.slug}/${related.slug}`}
@@ -350,7 +351,7 @@ export default async function PostPage({ params }: PostPageProps) {
             className="min-h-40"
           />
           <MostRead
-            posts={trendingPosts.map((post: PostWithCategoryAndComments) => ({
+            posts={trendingPosts.map((post: PostListItem) => ({
               id: post.id,
               title: post.title,
               thumbnailUrl: post.thumbnailUrl,

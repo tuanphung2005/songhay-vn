@@ -1,4 +1,4 @@
-import type { UserRole } from "@/generated/prisma/client"
+import type { UserRole } from "@prisma/client"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 

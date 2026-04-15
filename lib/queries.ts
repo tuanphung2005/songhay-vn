@@ -1,15 +1,15 @@
 import { cache } from "react"
 import { unstable_cache } from "next/cache"
-import type { Prisma } from "@/generated/prisma/client"
+import type { Prisma } from "@prisma/client"
 
 import { NAV_CATEGORIES } from "./categories"
 import { prisma } from "@/lib/prisma"
 
-import type { PostWithCategoryAndComments } from "@/types/post"
+import type { PostListItem, PostFull } from "@/types/post"
 import type { SearchResultItem } from "@/types/search"
 import type { CategoryWithChildren } from "@/types/category"
 
-export type { PostWithCategoryAndComments, SearchResultItem, CategoryWithChildren }
+export type { PostListItem, PostFull, SearchResultItem, CategoryWithChildren }
 
 
 const CACHE_WINDOW_SECONDS = 300

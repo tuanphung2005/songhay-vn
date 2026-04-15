@@ -1,9 +1,18 @@
 import { Prisma } from "@prisma/client"
 
-export type PostWithCategoryAndComments = Prisma.PostGetPayload<{
+export type PostListItem = Prisma.PostGetPayload<{
   include: {
     category: true
     _count: { select: { comments: { where: { isApproved: true } } } }
+  }
+}>
+
+export type PostFull = Prisma.PostGetPayload<{
+  include: {
+    category: true
+    comments: {
+      where: { isApproved: true }
+    }
   }
 }>
 
