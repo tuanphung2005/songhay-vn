@@ -31,9 +31,10 @@ export function PostCardList({ posts, adEvery, adLabel }: PostCardListProps) {
             />
           </div>
           {adEvery && (index + 1) % adEvery === 0 && index !== posts.length - 1 && (
-            <div className="py-4 border-b border-zinc-200">
-              <AdPlaceholder label={adLabel || "Google AdSense"} className="min-h-24" />
-            </div>
+            <AdPlaceholder
+              label={adLabel || "Google AdSense"}
+              className="py-4 border-b border-zinc-200"
+            />
           )}
         </React.Fragment>
       ))}

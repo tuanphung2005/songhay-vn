@@ -23,6 +23,7 @@ import { JsonLd } from "@/components/seo/json-ld"
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd"
 import { SocialShare } from "@/components/news/social-share"
 import { ViewTracker } from "@/components/news/view-tracker"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
 import { SectionHeading } from "@/components/news/section-heading"
@@ -193,11 +194,11 @@ export default async function PostPage({ params }: PostPageProps) {
       <SiteHeader navCategories={navCategories} />
       <ViewTracker postId={article.id} />
 
-      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">
-        <article className="space-y-6">
+      <SiteMainContainer className="grid gap-8 py-8 md:grid-cols-[1fr_320px]">
+        <article className="flex flex-col gap-6">
           <JsonLd data={[articleJsonLd]} />
           <BreadcrumbJsonLd items={breadcrumbItems} />
-          <header className="space-y-3">
+          <header className="flex flex-col gap-3">
             <Link
               href={`/${article.category.slug}`}
               className="text-sm font-bold text-rose-600"
@@ -209,7 +210,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </h1>
             <AdPlaceholder
               label="Dưới tiêu đề (Google AdSense)"
-              className="mx-auto min-h-20 max-w-2xl"
+              className="mx-auto max-w-2xl"
             />
             <p className="text-lg text-zinc-600">{article.excerpt}</p>
             <p className="text-sm text-zinc-500">
@@ -228,7 +229,6 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <AdPlaceholder
             label="Sau ảnh bài viết (Google AdSense)"
-            className="min-h-24"
           />
 
           <div
@@ -256,14 +256,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <AdPlaceholder
             label="Sau video nội dung (Google AdSense)"
-            className="min-h-24"
           />
 
           <SocialShare title={article.title} url={fullUrl} />
 
           <AdPlaceholder
             label="Sau bài viết (Google AdSense)"
-            className="min-h-24"
           />
 
           <section className="space-y-3 border border-zinc-200 bg-zinc-50 p-4">
@@ -287,7 +285,6 @@ export default async function PostPage({ params }: PostPageProps) {
 
           <AdPlaceholder
             label="Trước form bình luận (Google AdSense)"
-            className="min-h-24"
           />
 
           <CommentForm postId={article.id} currentUser={null} />
@@ -297,7 +294,6 @@ export default async function PostPage({ params }: PostPageProps) {
           </Suspense>
           <AdPlaceholder
             label="Giữa các cụm liên quan (Google AdSense)"
-            className="min-h-24"
           />
           <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}>
             <VideoMostWatched posts={mostWatchedVideos} />
@@ -344,7 +340,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </section>
         </article>
 
-        <aside className="space-y-4">
+        <aside className="flex flex-col gap-4">
           <AdPlaceholder
             label="Sidebar (Google AdSense)"
             className="min-h-44"
@@ -373,7 +369,7 @@ export default async function PostPage({ params }: PostPageProps) {
             className="min-h-40"
           />
         </aside>
-      </main>
+      </SiteMainContainer>
 
       <SiteFooter navCategories={navCategories} />
     </div>

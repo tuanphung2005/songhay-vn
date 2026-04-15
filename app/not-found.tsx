@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/news/site-header"
 import { SiteFooter } from "@/components/news/site-footer"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 import { getHomepageData, getNavCategories, type PostWithCategoryAndComments } from "@/lib/queries"
 
 export default async function NotFound() {
@@ -24,7 +25,7 @@ export default async function NotFound() {
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(190,18,60,0.05)_0%,transparent_50%)]" />
           <div className="absolute left-1/2 top-0 -z-10 h-72 w-full -translate-x-1/2 bg-gradient-to-b from-rose-50/50 to-transparent blur-3xl" />
 
-          <div className="mx-auto max-w-[1200px] px-4 md:px-6">
+          <SiteMainContainer as="div">
             <div className="flex flex-col items-center text-center">
               <div className="mb-6 flex items-center justify-center rounded-full bg-rose-100 p-4 text-rose-600 shadow-inner">
                 <AlertCircle className="h-12 w-12" />
@@ -51,11 +52,11 @@ export default async function NotFound() {
                 </Button>
               </div>
             </div>
-          </div>
+          </SiteMainContainer>
         </div>
 
         {/* Suggested Content Section */}
-        <div className="mx-auto w-full max-w-[1200px] px-4 pb-16 md:px-6">
+        <SiteMainContainer as="div" className="pb-16">
           <div className="mb-8 border-t border-zinc-200 pt-16">
             <SectionHeading title="Bài viết mới nhất bạn có thể quan tâm" />
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -72,7 +73,7 @@ export default async function NotFound() {
               ))}
             </div>
           </div>
-        </div>
+        </SiteMainContainer>
       </main>
       <SiteFooter navCategories={navCategories} />
     </div>

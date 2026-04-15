@@ -1,11 +1,12 @@
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 
 export default function PostLoading() {
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader />
-      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 md:grid-cols-[1fr_320px] md:px-6">
+      <SiteMainContainer className="grid gap-8 py-8 md:grid-cols-[1fr_320px]">
         <article className="space-y-6">
           <div className="space-y-3">
             <div className="h-4 w-24 animate-pulse bg-zinc-200" />
@@ -26,7 +27,7 @@ export default function PostLoading() {
           <div className="h-40 w-full animate-pulse border border-zinc-200 bg-zinc-100" />
           <div className="h-40 w-full animate-pulse border border-zinc-200 bg-zinc-100" />
         </aside>
-      </main>
+      </SiteMainContainer>
       <SiteFooter />
     </div>
   )

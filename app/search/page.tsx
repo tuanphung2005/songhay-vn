@@ -5,6 +5,7 @@ import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 import { SiteHeader } from "@/components/news/site-header"
 import { getNavCategories, getPublishedSearchResults, type SearchResultItem } from "@/lib/queries"
 
@@ -90,11 +91,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="min-h-screen bg-white">
       <SiteHeader navCategories={navCategories} defaultSearchQuery={query} />
 
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
-        <AdPlaceholder label="Top trang tìm kiếm (Google AdSense)" className="min-h-20" />
+      <SiteMainContainer className="flex flex-col gap-6 py-8">
+        <AdPlaceholder label="Top trang tìm kiếm (Google AdSense)" />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="space-y-6">
+          <section className="flex flex-col gap-6">
             <SectionHeading title="Tìm kiếm" />
 
             {query ? (
@@ -123,7 +124,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   ))}
                 </div>
 
-                <AdPlaceholder label="Giữa kết quả tìm kiếm (Google AdSense)" className="min-h-24" />
+                <AdPlaceholder label="Giữa kết quả tìm kiếm (Google AdSense)" />
               </>
             ) : null}
 
@@ -159,15 +160,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </nav>
             ) : null}
 
-            <AdPlaceholder label="Cuối trang tìm kiếm (Google AdSense)" className="min-h-24" />
+            <AdPlaceholder label="Cuối trang tìm kiếm (Google AdSense)" />
           </section>
 
-          <aside className="space-y-4">
-            <AdPlaceholder label="Sidebar tìm kiếm trên (Google AdSense)" className="min-h-40" />
-            <AdPlaceholder label="Sidebar tìm kiếm dưới (Google AdSense)" className="min-h-40" />
+          <aside className="flex flex-col gap-4">
+            <AdPlaceholder label="Sidebar tìm kiếm trên (Google AdSense)" />
+            <AdPlaceholder label="Sidebar tìm kiếm dưới (Google AdSense)" />
           </aside>
         </div>
-      </main>
+      </SiteMainContainer>
 
       <SiteFooter navCategories={navCategories} />
     </div>

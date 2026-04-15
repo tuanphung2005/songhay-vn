@@ -1,6 +1,8 @@
+import { SiteMainContainer } from "@/components/news/site-main-container"
+
 export default function SearchLoading() {
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-8 md:px-6">
+    <SiteMainContainer className="space-y-4 py-8">
       <div className="h-8 w-56 animate-pulse rounded bg-zinc-200" />
       <div className="h-4 w-72 animate-pulse rounded bg-zinc-100" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -15,6 +17,6 @@ export default function SearchLoading() {
           </div>
         ))}
       </div>
-    </div>
+    </SiteMainContainer>
   )
 }

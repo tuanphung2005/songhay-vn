@@ -6,6 +6,8 @@ import { clearSessionCookie, setSessionCookie } from "@/lib/auth"
 import { verifyPassword } from "@/lib/password"
 import { prisma } from "@/lib/prisma"
 
+import { SiteMainContainer } from "@/components/news/site-main-container"
+
 export const metadata: Metadata = {
   title: "Đăng nhập quản trị",
   robots: {
@@ -49,7 +51,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const hasError = resolvedSearchParams?.error === "missing" || resolvedSearchParams?.error === "invalid"
 
   return (
-    <main className="mx-auto flex min-h-[70vh] w-full max-w-7xl items-center justify-center px-4 py-10 md:px-6">
+    <SiteMainContainer className="flex min-h-[70vh] items-center justify-center py-10">
       <section className="w-full max-w-md space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <header className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-rose-600">Songhay CMS</p>
@@ -89,6 +91,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           Quay về trang chủ
         </Link>
       </section>
-    </main>
+    </SiteMainContainer>
   )
 }

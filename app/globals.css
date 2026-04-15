@@ -240,4 +240,48 @@
     width: 100%;
     aspect-ratio: 16 / 9;
   }
+
+  /* AdSense specific: collapse and hide blank spaces */
+  .ad-slot-wrapper {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-top-width: 0 !important;
+    border-bottom-width: 0 !important;
+    min-height: 0 !important;
+    height: auto;
+  }
+
+  .ad-slot-wrapper:has(ins[data-ad-status="filled"]) {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Handle specific utility classes when filled */
+  .ad-slot-wrapper.py-4:has(ins[data-ad-status="filled"]) {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .ad-slot-wrapper.py-6:has(ins[data-ad-status="filled"]) {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .ad-slot-wrapper.border-b:has(ins[data-ad-status="filled"]) {
+    border-bottom-width: 1px !important;
+  }
+
+  .ad-slot-wrapper.border-t:has(ins[data-ad-status="filled"]) {
+    border-top-width: 1px !important;
+  }
+
+  .ad-slot-wrapper:has(ins[data-ad-status="unfilled"]) {
+    display: none !important;
+  }
+
+  ins.adsbygoogle[data-ad-status="unfilled"] {
+    display: none !important;
+  }
 }

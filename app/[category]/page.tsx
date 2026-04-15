@@ -6,6 +6,7 @@ import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 import { JsonLd } from "@/components/seo/json-ld"
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd"
 import { getCategoryBySlug, getPostsByCategory, getAllCategorySlugs, getNavCategories } from "@/lib/queries"
@@ -111,11 +112,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <div className="min-h-screen bg-zinc-50">
       <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       <SiteHeader navCategories={navCategories} />
-      <main className="mx-auto w-full max-w-[1200px] space-y-5 px-4 py-6 md:px-6 md:py-6">
-        <AdPlaceholder label="Top chuyên mục (Google AdSense)" className="min-h-20" />
+      <SiteMainContainer className="flex flex-col gap-5 py-6 md:py-6">
+        <AdPlaceholder label="Top chuyên mục (Google AdSense)" />
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="space-y-4">
+          <section className="flex flex-col gap-4">
             <SectionHeading title={currentCategory.name} />
 
             {posts.length === 0 ? (
@@ -128,16 +129,16 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               />
             )}
 
-            <AdPlaceholder label="Cuối danh sách chuyên mục (Google AdSense)" className="min-h-24" />
+            <AdPlaceholder label="Cuối danh sách chuyên mục (Google AdSense)" />
           </section>
 
-          <aside className="space-y-4">
-            <AdPlaceholder label="Sidebar chuyên mục trên (Google AdSense)" className="min-h-40" />
-            <AdPlaceholder label="Sidebar chuyên mục giữa (Google AdSense)" className="min-h-40" />
-            <AdPlaceholder label="Sidebar chuyên mục dưới (Google AdSense)" className="min-h-40" />
+          <aside className="flex flex-col gap-4">
+            <AdPlaceholder label="Sidebar chuyên mục trên (Google AdSense)" />
+            <AdPlaceholder label="Sidebar chuyên mục giữa (Google AdSense)" />
+            <AdPlaceholder label="Sidebar chuyên mục dưới (Google AdSense)" />
           </aside>
         </div>
-      </main>
+      </SiteMainContainer>
 
 
       <SiteFooter navCategories={navCategories} />

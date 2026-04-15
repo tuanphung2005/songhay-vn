@@ -1,11 +1,12 @@
 import { SiteFooter } from "@/components/news/site-footer"
 import { SiteHeader } from "@/components/news/site-header"
+import { SiteMainContainer } from "@/components/news/site-main-container"
 
 export default function CategoryLoading() {
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 md:px-6">
+      <SiteMainContainer className="space-y-6 py-8">
         <div className="h-8 w-56 animate-pulse bg-zinc-200" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
@@ -17,7 +18,7 @@ export default function CategoryLoading() {
             </div>
           ))}
         </div>
-      </main>
+      </SiteMainContainer>
       <SiteFooter />
     </div>
   )

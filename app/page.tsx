@@ -3,6 +3,7 @@ import dynamic from "next/dynamic"
 import Link from "next/link"
 import type { Metadata } from "next"
 
+import { SiteMainContainer } from "@/components/news/site-main-container"
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { DontMissWidget } from "@/components/news/dont-miss-widget"
 import { MostRead } from "@/components/news/most-read"
@@ -95,11 +96,11 @@ export default async function HomePage() {
       <JsonLd data={homepageJsonLd} />
       <SiteHeader navCategories={navCategories} />
 
-      <main className="mx-auto w-full max-w-[1100px] space-y-6 px-4 py-5 md:px-6 md:py-6">
-        <AdPlaceholder label="Top banner (Google AdSense)" className="min-h-20" />
+      <SiteMainContainer className="flex flex-col gap-6 py-5 md:py-6">
+        <AdPlaceholder label="Top banner (Google AdSense)" />
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
         {/* ── MAGAZINE HERO SECTION ─────────────────────────────────── */}
         <section className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -159,7 +160,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-              <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" className="min-h-20" />
+              <AdPlaceholder label="Sau cụm nổi bật (Google AdSense)" />
 
               <section className="space-y-3">
                 <SectionHeading title="Đừng bỏ lỡ!" />
@@ -171,16 +172,16 @@ export default async function HomePage() {
               <PostCardList posts={latest.slice(0, 10)} />
             </section>
 
-            <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" className="min-h-20" />
+            <AdPlaceholder label="Sau cụm tin mới (Google AdSense)" />
 
-            <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" className="min-h-20" />
+            <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" />
 
             {/* Engagement Sections */}
             <Suspense fallback={<div className="h-60 animate-pulse rounded-lg bg-zinc-100" />}>
               <RecommendedForYou posts={recommended} />
             </Suspense>
             
-            <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" className="min-h-20" />
+            <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" />
             
             <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}>
               <VideoMostWatched posts={mostWatched} />
@@ -190,11 +191,11 @@ export default async function HomePage() {
               {categoryBlocks.map((items: PostWithCategoryAndComments[], index: number) => {
                 const [first] = items
                 return (
-                  <div key={first.category.slug} className="space-y-4">
+                  <div key={first.category.slug} className="flex flex-col gap-4">
                     <SectionHeading title={first.category.name} />
                     <PostCardList posts={items.slice(0, 4)} />
                     {(index + 1) % 2 === 0 ? (
-                      <AdPlaceholder label="Giữa các cụm chuyên mục (Google AdSense)" className="min-h-24" />
+                      <AdPlaceholder label="Giữa các cụm chuyên mục (Google AdSense)" />
                     ) : null}
                   </div>
                 )
@@ -202,7 +203,7 @@ export default async function HomePage() {
             </section>
           </div>
 
-          <aside className="space-y-4">
+          <aside className="flex flex-col gap-4">
             <MostRead
               posts={mostRead.map((post: PostWithCategoryAndComments) => ({
                 id: post.id,
@@ -213,18 +214,18 @@ export default async function HomePage() {
                 categorySlug: post.category.slug,
               }))}
             />
-            <AdPlaceholder label="Sidebar giữa widgets (Google AdSense)" className="min-h-40" />
+            <AdPlaceholder label="Sidebar giữa widgets (Google AdSense)" />
             <ClientSideWidgets />
-            <AdPlaceholder label="Sidebar cuối trang chủ (Google AdSense)" className="min-h-40" />
+            <AdPlaceholder label="Sidebar cuối trang chủ (Google AdSense)" />
           </aside>
         </div>
-      </main>
+      </SiteMainContainer>
 
       <SiteFooter navCategories={navCategories} />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-8 md:px-6">
-        <AdPlaceholder label="Bottom page ad (Google AdSense)" className="min-h-24" />
-      </div>
+      <SiteMainContainer as="div" className="pb-8">
+        <AdPlaceholder label="Bottom page ad (Google AdSense)" />
+      </SiteMainContainer>
     </div>
   )
 }

@@ -12,7 +12,7 @@ export function AdPlaceholder({ label, className, slot }: AdPlaceholderProps) {
   const slotProps = slot ? { "data-ad-slot": slot } : {}
 
   return (
-    <div className={cn("w-full overflow-hidden", className)} data-ad-label={label}>
+    <div className={cn("ad-slot-wrapper w-full overflow-hidden", className)} data-ad-label={label}>
       <ins
         className="adsbygoogle block w-full"
         style={{ display: "block" }}
