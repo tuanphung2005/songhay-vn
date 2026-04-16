@@ -61,13 +61,12 @@ This project is indexed by GitNexus as **songhay-vn** (1145 symbols, 3383 relati
 | `gitnexus://repo/songhay-vn/processes` | All execution flows |
 | `gitnexus://repo/songhay-vn/process/{name}` | Step-by-step execution trace |
 
-## Self-Check Before Finishing
-
-Before completing any code modification task, verify:
-1. `gitnexus_impact` was run for all modified symbols
-2. No HIGH/CRITICAL risk warnings were ignored
-3. `gitnexus_detect_changes()` confirms changes match expected scope
-4. All d=1 (WILL BREAK) dependents were updated
+## Post-Change Workflow
+- **Commit changes** with clear messages.
+- **Run tests** (`bun test`).
+- **Run build** (`bun run build`).
+- **Push changes** to remote.
+- Fix any build/test errors immediately.
 
 ## Keeping the Index Fresh
 

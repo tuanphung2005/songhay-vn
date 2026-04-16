@@ -213,7 +213,7 @@ export default async function PostPage({ params }: PostPageProps) {
               label="Dưới tiêu đề (Google AdSense)"
               className="mx-auto max-w-2xl"
             />
-            <p className="text-lg text-zinc-600">{article.excerpt}</p>
+            <p className="text-lg text-zinc-600">{article.excerpt.trim()}</p>
             <p className="text-sm text-zinc-500">
               {new Date(article.publishedAt).toLocaleString("vi-VN")}
             </p>

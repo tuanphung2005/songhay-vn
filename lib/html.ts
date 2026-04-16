@@ -1,5 +1,11 @@
 export function normalizeArticleHtml(rawHtml: string) {
+  const blockTags = "p|h1|h2|h3|h4|h5|h6|li|blockquote|div|figure|figcaption|ul|ol|table|thead|tbody|tr|td|th|section|article|aside|header|footer"
+
   return rawHtml
+    .replace(/\r?\n|\r/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(new RegExp(`<(${blockTags})>([\\s]|&nbsp;)+`, "gi"), "<$1>")
+    .replace(new RegExp(`([\\s]|&nbsp;)+<\\/(${blockTags})>`, "gi"), "</$1>")
     .replace(/<span([^>]*)style="([^"]*)"([^>]*)>([\s\S]*?)<\/span>/gi, (match, before, styleValue, after, content) => {
       const hasUnderline = /text-decoration\s*:\s*underline/i.test(styleValue)
       const hasStrikethrough = /text-decoration\s*:\s*line-through/i.test(styleValue)
