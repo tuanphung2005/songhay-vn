@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
-import { ArrowLeft, Eye, Globe, Save, Send, SendToBack } from "lucide-react"
+import { ArrowLeft, Globe, Save, Send, SendToBack } from "lucide-react"
 
 import { RichTextField } from "@/components/admin/rich-text-field/index"
 import { SeoFields } from "@/components/admin/seo-fields"
@@ -26,6 +26,7 @@ import {
 import { resolvePostSeoInput } from "@/lib/post-seo"
 import { EditFormDirtyTracker } from "@/components/admin/edit-form-dirty-tracker"
 import { ThumbnailPicker } from "@/components/admin/thumbnail-picker"
+import { PreviewButton } from "@/components/admin/preview-button"
 import { prisma } from "@/lib/prisma"
 import {
   resolveSeoKeywordSelection,
@@ -389,24 +390,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                     <Save className="size-4 mr-1.5" />
                     {post.editorialStatus === "DRAFT" ? "Lưu nháp" : "Cập nhật thay đổi"}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="lg"
-                    onClick={(e) => {
-                      const penNameInput = document.getElementById("postPenName") as HTMLInputElement
-                      if (penNameInput && !penNameInput.value.trim()) {
-                        e.preventDefault()
-                        alert("Vui lòng nhập Bút danh trước khi Xem trước!")
-                        penNameInput.focus()
-                        return
-                      }
-                      window.open(`/admin/preview/${post.id}`, "_blank", "noreferrer")
-                    }}
-                  >
-                    <Eye className="size-4 mr-1.5" />
-                    Xem trước
-                  </Button>
+                  <PreviewButton postId={post.id} />
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
