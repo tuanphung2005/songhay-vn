@@ -5,11 +5,11 @@ import type { Prisma } from "@prisma/client"
 import { NAV_CATEGORIES } from "./categories"
 import { prisma } from "@/lib/prisma"
 
-import type { PostListItem, PostFull } from "@/types/post"
+import type { PostListItem, PostFull, PostWithCategoryAndComments } from "@/types/post"
 import type { SearchResultItem } from "@/types/search"
 import type { CategoryWithChildren } from "@/types/category"
 
-export type { PostListItem, PostFull, SearchResultItem, CategoryWithChildren }
+export type { PostListItem, PostFull, SearchResultItem, CategoryWithChildren, PostWithCategoryAndComments }
 
 
 const CACHE_WINDOW_SECONDS = 300

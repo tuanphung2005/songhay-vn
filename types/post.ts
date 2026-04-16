@@ -7,6 +7,8 @@ export type PostListItem = Prisma.PostGetPayload<{
   }
 }>
 
+export type PostWithCategoryAndComments = PostListItem
+
 export type PostFull = Prisma.PostGetPayload<{
   include: {
     category: true
