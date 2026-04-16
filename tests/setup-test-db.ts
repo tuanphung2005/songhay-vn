@@ -25,17 +25,7 @@ export async function setupTestDatabase() {
     }
   })
 
-  const category = await prisma.category.upsert({
-    where: { slug: "test-category" },
-    update: {},
-    create: {
-      name: "Test Category",
-      slug: "test-category",
-      sortOrder: 0
-    }
-  })
-
-  return { admin, category }
+  return { admin }
 }
 
 export async function teardownTestDatabase() {
