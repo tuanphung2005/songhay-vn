@@ -139,10 +139,13 @@
 
 @layer components {
   .article-content.ck-content {
-    --ck-content-font-family: var(--font-sans);
-    --ck-content-font-size: 1rem;
-    --ck-content-line-height: 1.75;
+    --ck-content-font-family: var(--font-serif);
+    --ck-content-font-size: 1.25rem;
+    --ck-content-line-height: 1.8;
     @apply text-zinc-800;
+    font-family: var(--ck-content-font-family);
+    font-size: var(--ck-content-font-size);
+    line-height: var(--ck-content-line-height);
   }
 
   .article-content.ck-content :is(h1, h2, h3, h4) {

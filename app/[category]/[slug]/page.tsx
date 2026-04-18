@@ -196,7 +196,7 @@ export default async function PostPage({ params }: PostPageProps) {
       <ViewTracker postId={article.id} />
 
       <SiteMainContainer className="grid gap-8 py-8 md:grid-cols-[1fr_320px]">
-        <article className="flex flex-col gap-6">
+        <article className="mx-auto flex w-full max-w-xl flex-col gap-6 font-serif">
           <JsonLd data={[articleJsonLd]} />
           <BreadcrumbJsonLd items={breadcrumbItems} />
           <header className="flex flex-col gap-3">
@@ -211,9 +211,10 @@ export default async function PostPage({ params }: PostPageProps) {
             </h1>
             <AdPlaceholder
               label="Dưới tiêu đề (Google AdSense)"
-              className="mx-auto max-w-2xl"
             />
-            <p className="text-lg text-zinc-600">{article.excerpt.trim()}</p>
+            <p className="text-xl font-bold leading-relaxed text-zinc-950">
+              {article.excerpt.trim()}
+            </p>
             <p className="text-sm text-zinc-500">
               {new Date(article.publishedAt).toLocaleString("vi-VN")}
             </p>
