@@ -247,6 +247,20 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                         </span>
                       </div>
                     )}
+                    {/* SEO title */}
+                    {post.seoTitle && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[11px] font-medium text-zinc-700">SEO title:</span>
+                        <span className="text-[11px] text-zinc-500">{post.seoTitle}</span>
+                      </div>
+                    )}
+                    {/* SEO description */}
+                    {post.seoDescription && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="text-[11px] font-medium text-zinc-700">SEO desc:</span>
+                        <span className="line-clamp-2 text-[11px] text-zinc-500">{post.seoDescription}</span>
+                      </div>
+                    )}
                   </div>
                 </TableCell>
 

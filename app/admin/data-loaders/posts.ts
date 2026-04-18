@@ -80,6 +80,8 @@ export async function getPostsData(activeTab: AdminTab, postsFilters: PostsFilte
       views: true,
       penName: true,
       excerpt: true,
+      seoTitle: true,
+      seoDescription: true,
       seoKeywords: true,
       thumbnailUrl: true,
       createdAt: true,

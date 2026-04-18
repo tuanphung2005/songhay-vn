@@ -5,6 +5,8 @@ export type PostRow = {
   title: string
   penName: string | null
   excerpt: string
+  seoTitle: string | null
+  seoDescription: string | null
   seoKeywords: string | null
   slug: string
   views: number
