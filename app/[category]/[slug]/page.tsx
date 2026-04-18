@@ -196,7 +196,15 @@ export default async function PostPage({ params }: PostPageProps) {
       <ViewTracker postId={article.id} />
 
       <SiteMainContainer className="grid gap-8 py-8 md:grid-cols-[1fr_320px]">
-        <article className="mx-auto flex w-full max-w-xl flex-col gap-6 font-serif">
+        <div className="relative">
+          <div className="absolute -left-20 top-0 hidden h-full lg:block">
+            <SocialShare
+              title={article.title}
+              url={fullUrl}
+              variant="sidebar"
+            />
+          </div>
+          <article className="mx-auto flex w-full max-w-xl flex-col gap-6 font-serif">
           <JsonLd data={[articleJsonLd]} />
           <BreadcrumbJsonLd items={breadcrumbItems} />
           <header className="flex flex-col gap-3">
@@ -341,6 +349,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </section>
         </article>
+      </div>
 
         <aside className="flex flex-col gap-4">
           <AdPlaceholder
