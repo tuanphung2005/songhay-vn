@@ -24,7 +24,6 @@ describe("admin pending submit patterns", () => {
 
     expect(pendingPosts).toContain("PendingSubmitButton")
     expect(posts).toContain("PendingSubmitButton")
-    expect(personalArchive).toContain("PendingSubmitButton")
     expect(trash).toContain("PendingSubmitButton")
     expect(categories).toContain("PendingSubmitButton")
   })

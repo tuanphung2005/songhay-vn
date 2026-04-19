@@ -264,8 +264,9 @@ export function CategoryRow({
           </p>
           <ConfirmActionForm
             action={async (fd) => {
-              await deleteCategory(fd)
+              const res = await deleteCategory(fd)
               setDeleting(false)
+              return res
             }}
             className="space-y-2"
             fields={[{ name: "categoryId", value: category.id }]}

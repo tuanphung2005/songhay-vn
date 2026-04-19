@@ -1,9 +1,13 @@
+"use client"
+
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { CalendarDays, Filter, RotateCcw, Search, Trash2, UserRound, X } from "lucide-react"
+import { CalendarDays, ChevronLeft, ChevronRight, RotateCcw, Search, Trash2, UserRound, X } from "lucide-react"
 
 import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
+import { showToastByKey } from "@/components/admin/action-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -50,8 +54,8 @@ type TrashTabProps = {
     fromDate: string
     toDate: string
   }
-  restorePostFromTrash: (formData: FormData) => Promise<void>
-  deletePostPermanently: (formData: FormData) => Promise<void>
+  restorePostFromTrash: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  deletePostPermanently: (formData: FormData) => Promise<{ toast: string } | void | undefined>
 }
 
 export function TrashTab({
@@ -61,30 +65,43 @@ export function TrashTab({
   restorePostFromTrash,
   deletePostPermanently,
 }: TrashTabProps) {
+  const router = useRouter()
+  const hasActiveFilters = Boolean(filters.query || (isAdmin && filters.authorId && filters.authorId !== "all") || filters.fromDate || filters.toDate)
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const params = new URLSearchParams()
+    formData.forEach((value, key) => {
+      if (typeof value === "string" && value) params.append(key, value)
+    })
+    router.replace(`/admin?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="space-y-4">
-      <p className="text-sm font-semibold">Thùng rác</p>
       <form
         method="get"
-        className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_160px_160px_auto_auto] md:items-center"
+        onSubmit={onSubmit}
+        className="sticky top-4 z-30 flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 shadow-sm"
       >
         <input type="hidden" name="tab" value="trash" />
         <input type="hidden" name="trashPage" value="1" />
 
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
           <Input
             name="trashQ"
             defaultValue={filters.query}
             placeholder="Tìm theo tiêu đề, slug, danh mục hoặc tác giả..."
-            className="pl-8"
+            className="h-8 pl-8 text-sm"
           />
         </div>
 
         {isAdmin ? (
           <div className="relative">
-            <UserRound className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-            <Select name="trashAuthor" defaultValue={filters.authorId || "all"} className="pl-8">
+            <UserRound className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+            <Select name="trashAuthor" defaultValue={filters.authorId || "all"} className="h-8 w-auto min-w-44 pl-8 text-sm">
               <option value="all">Tất cả người viết</option>
               {data.authorOptions.map((author) => (
                 <option key={author.id} value={author.id}>
@@ -98,24 +115,31 @@ export function TrashTab({
         )}
 
         <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} className="pl-8" />
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} className="h-8 w-auto pl-8 text-sm" title="Từ ngày" />
         </div>
         <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-          <Input name="trashTo" type="date" defaultValue={filters.toDate} className="pl-8" />
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+          <Input name="trashTo" type="date" defaultValue={filters.toDate} className="h-8 w-auto pl-8 text-sm" title="Đến ngày" />
         </div>
 
-        <Button type="submit" variant="outline">
-          <Filter className="size-4" />
+        <Button type="submit" size="sm" className="h-8 gap-1.5 text-xs">
+          <Search className="size-3" />
           Lọc
         </Button>
-        <Link href="/admin?tab=trash">
-          <Button type="button" variant="ghost">
-            <X className="size-4" />
+
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 text-xs text-zinc-500"
+            onClick={() => router.replace(`/admin?tab=trash`, { scroll: false })}
+          >
+            <X className="size-3" />
             Xóa lọc
           </Button>
-        </Link>
+        )}
       </form>
 
       {data.rows.length === 0 ? (
@@ -155,7 +179,10 @@ export function TrashTab({
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <form action={restorePostFromTrash}>
+                <form action={async (fd) => {
+                  const res = await restorePostFromTrash(fd)
+                  if (res && res.toast) showToastByKey(res.toast)
+                }}>
                   <input type="hidden" name="postId" value={post.id} />
                   <PendingSubmitButton
                     type="submit"
@@ -188,26 +215,60 @@ export function TrashTab({
         ))
       )}
 
-      {data.totalPages > 1 ? (
-        <Pagination className="justify-start">
-          <PaginationContent>
-            {data.paginationItems.map((item, index) => (
-              <PaginationItem key={`trash-page-${index}-${String(item)}`}>
-                {item === "ellipsis" ? (
-                  <PaginationEllipsis />
-                ) : (
-                  <PaginationLink
-                    href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${item}`}
-                    isActive={item === data.currentPage}
-                  >
-                    {item}
-                  </PaginationLink>
-                )}
-              </PaginationItem>
-            ))}
-          </PaginationContent>
-        </Pagination>
-      ) : null}
+      {data.totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3">
+          <p className="text-xs text-zinc-500">
+            Trang {data.currentPage}/{data.totalPages} ·{" "}
+            {data.totalCount.toLocaleString("vi-VN")} bài
+          </p>
+
+          <div className="flex items-center gap-1">
+            {data.currentPage > 1 ? (
+              <Link href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId && filters.authorId !== "all" ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${data.currentPage - 1}`}>
+                <Button size="icon" variant="outline" className="size-7">
+                  <ChevronLeft className="size-3.5" />
+                </Button>
+              </Link>
+            ) : (
+              <Button size="icon" variant="outline" className="size-7" disabled>
+                <ChevronLeft className="size-3.5" />
+              </Button>
+            )}
+
+            <Pagination className="justify-start">
+              <PaginationContent className="gap-0.5">
+                {data.paginationItems.map((item, index) => (
+                  <PaginationItem key={`trash-page-${index}-${String(item)}`}>
+                    {item === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId && filters.authorId !== "all" ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${item}`}
+                        isActive={item === data.currentPage}
+                        className="size-7 text-xs"
+                      >
+                        {item}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+              </PaginationContent>
+            </Pagination>
+
+            {data.currentPage < data.totalPages ? (
+              <Link href={`/admin?tab=trash${filters.query ? `&trashQ=${encodeURIComponent(filters.query)}` : ""}${isAdmin && filters.authorId && filters.authorId !== "all" ? `&trashAuthor=${encodeURIComponent(filters.authorId)}` : ""}${filters.fromDate ? `&trashFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&trashTo=${encodeURIComponent(filters.toDate)}` : ""}&trashPage=${data.currentPage + 1}`}>
+                <Button size="icon" variant="outline" className="size-7">
+                  <ChevronRight className="size-3.5" />
+                </Button>
+              </Link>
+            ) : (
+              <Button size="icon" variant="outline" className="size-7" disabled>
+                <ChevronRight className="size-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

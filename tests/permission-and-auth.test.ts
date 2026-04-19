@@ -99,7 +99,7 @@ describe("auth guard source checks", () => {
       'ensurePermission(can(currentUser.role, "edit-category")'
     )
     expect(categoriesSource).toContain(
-      'ensurePermission(can(currentUser.role, "delete-category")'
+      'if (!can(currentUser.role, "delete-category"))'
     )
   })
 

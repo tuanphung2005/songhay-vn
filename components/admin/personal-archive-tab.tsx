@@ -1,10 +1,9 @@
-import Link from "next/link"
-import Image from "next/image"
-import { CalendarDays, Eye, Filter, Funnel, Pencil, Search, Trash2, X } from "lucide-react"
+"use client"
 
-import { ConfirmActionForm } from "@/components/admin/confirm-action-form"
-import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
-import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { CalendarDays, ChevronLeft, ChevronRight, Eye, Filter, Funnel, Pencil, Search, X } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,46 +14,14 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination"
 import { Select } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
-type PersonalPostRow = {
-  id: string
-  title: string
-  slug: string
-  thumbnailUrl: string | null
-  editorialStatus:
-  | "DRAFT"
-  | "PENDING_REVIEW"
-  | "PENDING_PUBLISH"
-  | "PUBLISHED"
-  | "REJECTED"
-  isPublished: boolean
-  isDraft: boolean
-  createdAt: Date
-  publishedAt: Date
-  approvedAt: Date | null
-  updatedAt: Date
-  author: {
-    id: string
-    name: string
-    email: string
-  } | null
-  approver: {
-    id: string
-    name: string
-    email: string
-  } | null
-  category: {
-    name: string
-    slug: string
-  }
-}
+import { PostsTable } from "@/components/admin/posts-tab/posts-table"
+import type { PostPermissions, PostActions, PostRow } from "@/components/admin/posts-tab/types"
 
 type PersonalArchiveTabProps = {
-  isAdmin: boolean
-  canDeletePost: boolean
-  currentUserId: string
   data: {
-    rows: PersonalPostRow[]
+    rows: PostRow[]
     totalCount: number
     totalPages: number
     currentPage: number
@@ -72,52 +39,49 @@ type PersonalArchiveTabProps = {
     fromDate: string
     toDate: string
   }
-  movePostToTrash: (formData: FormData) => Promise<void>
-}
-
-function statusLabel(status: PersonalPostRow["editorialStatus"]) {
-  if (status === "DRAFT") return "Bản nháp"
-  if (status === "PENDING_PUBLISH") return "Chờ xuất bản"
-  if (status === "PUBLISHED") return "Đã xuất bản"
-  if (status === "REJECTED") return "Bị từ chối"
-  return "Chờ duyệt"
-}
+} & PostPermissions & PostActions
 
 export function PersonalArchiveTab({
   data,
   filters,
-  movePostToTrash,
-  canDeletePost,
-  currentUserId,
+  ...actionsAndPermissions
 }: PersonalArchiveTabProps) {
+  const router = useRouter()
+  const hasActiveFilters = Boolean(filters.query || filters.fromDate || filters.toDate)
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const params = new URLSearchParams()
+    formData.forEach((value, key) => {
+      if (typeof value === "string" && value) params.append(key, value)
+    })
+    router.replace(`/admin?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold">Lưu trữ cá nhân</p>
-        <Badge variant="outline" className="font-normal text-muted-foreground">
-          {data.totalCount.toLocaleString("vi-VN")} kết quả
-        </Badge>
-      </div>
       <form
         method="get"
-        className="grid gap-2 md:grid-cols-[minmax(0,1fr)_170px_160px_160px_auto_auto] md:items-center"
+        onSubmit={onSubmit}
+        className="sticky top-4 z-30 flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 shadow-sm"
       >
         <input type="hidden" name="tab" value="personal-archive" />
         <input type="hidden" name="personalPage" value="1" />
 
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
           <Input
             name="personalQ"
             defaultValue={filters.query}
-            placeholder="Tìm bài theo tiêu đề, slug, mô tả hoặc danh mục..."
-            className="pl-8"
+            placeholder="Tìm theo tiêu đề, slug, mô tả hoặc danh mục..."
+            className="h-8 pl-8 text-sm"
           />
         </div>
 
         <div className="relative">
-          <Funnel className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-          <Select name="personalStatus" defaultValue={filters.status} className="pl-8">
+          <Funnel className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+          <Select name="personalStatus" defaultValue={filters.status} className="h-8 w-auto min-w-44 pl-8 text-sm">
             <option value="all">Tất cả trạng thái</option>
             <option value="draft">Bản nháp</option>
             <option value="pending">Chờ duyệt</option>
@@ -128,156 +92,101 @@ export function PersonalArchiveTab({
         </div>
 
         <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
           <Input
             name="personalFrom"
             type="date"
             defaultValue={filters.fromDate}
-            className="pl-8"
+            className="h-8 w-auto pl-8 text-sm"
+            title="Từ ngày"
           />
         </div>
         <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-          <Input name="personalTo" type="date" defaultValue={filters.toDate} className="pl-8" />
+          <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
+          <Input
+            name="personalTo"
+            type="date"
+            defaultValue={filters.toDate}
+            className="h-8 w-auto pl-8 text-sm"
+            title="Đến ngày"
+          />
         </div>
 
-        <Button type="submit" variant="outline">
-          <Filter className="size-4" />
+        <Button type="submit" size="sm" className="h-8 gap-1.5 text-xs">
+          <Search className="size-3" />
           Lọc
         </Button>
-        <Link href="/admin?tab=personal-archive">
-          <Button type="button" variant="ghost">
-            <X className="size-4" />
+
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 text-xs text-zinc-500"
+            onClick={() => router.replace(`/admin?tab=personal-archive&personalStatus=${filters.status}`, { scroll: false })}
+          >
+            <X className="size-3" />
             Xóa lọc
           </Button>
-        </Link>
+        )}
       </form>
 
-      {data.rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Bạn chưa có bài viết nào.
-        </p>
-      ) : null}
+      <PostsTable posts={data.rows} {...actionsAndPermissions} />
 
-      {data.rows.map((post) => (
-        <div key={post.id} className="rounded-lg border p-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
-              {post.thumbnailUrl ? (
-                <Image
-                  src={post.thumbnailUrl}
-                  alt={post.title}
-                  width={80}
-                  height={56}
-                  className="h-14 w-20 rounded border object-cover"
-                />
-              ) : (
-                <div className="flex h-14 w-20 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
-                  No img
-                </div>
-              )}
-              <div>
-                <p className="font-semibold">{post.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  /{post.category.slug}/{post.slug}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Người viết: {post.author?.name || "Không rõ"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Người duyệt: {post.approver?.name || "Chưa duyệt"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Ngày đăng:{" "}
-                  {new Date(post.publishedAt).toLocaleString("vi-VN")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={
-                  post.editorialStatus === "PUBLISHED" ? "default" : "outline"
-                }
-              >
-                {statusLabel(post.editorialStatus)}
-              </Badge>
-            </div>
-          </div>
+      {data.totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3">
+          <p className="text-xs text-zinc-500">
+            Trang {data.currentPage}/{data.totalPages} ·{" "}
+            {data.totalCount.toLocaleString("vi-VN")} bài
+          </p>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Link href={`/admin/edit/${post.id}`}>
-              <Button type="button" size="sm" variant="secondary">
-                <Pencil className="size-4" />
-                Sửa bài
-              </Button>
-            </Link>
-            {post.isPublished ? (
-              <a
-                href={`/${post.category.slug}/${post.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button type="button" size="sm" variant="outline">
-                  <Eye className="size-4" />
-                  Xem bài viết
+          <div className="flex items-center gap-1">
+            {data.currentPage > 1 ? (
+              <Link href={`/admin?tab=personal-archive${filters.query ? `&personalQ=${encodeURIComponent(filters.query)}` : ""}${filters.status !== "all" ? `&personalStatus=${filters.status}` : ""}${filters.fromDate ? `&personalFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&personalTo=${encodeURIComponent(filters.toDate)}` : ""}&personalPage=${data.currentPage - 1}`}>
+                <Button size="icon" variant="outline" className="size-7">
+                  <ChevronLeft className="size-3.5" />
                 </Button>
-              </a>
+              </Link>
             ) : (
-              <a
-                href={`/admin/preview/${post.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button type="button" size="sm" variant="outline">
-                  <Eye className="size-4" />
-                  Xem trước
-                </Button>
-              </a>
+              <Button size="icon" variant="outline" className="size-7" disabled>
+                <ChevronLeft className="size-3.5" />
+              </Button>
             )}
-            {(canDeletePost || (post.author?.id === currentUserId && post.editorialStatus !== "PUBLISHED" && post.editorialStatus !== "PENDING_PUBLISH")) && (
-              <ConfirmActionForm
-                action={movePostToTrash}
-                fields={[
-                  { name: "postId", value: post.id },
-                  { name: "sourceTab", value: "personal-archive" },
-                ]}
-                confirmMessage="Chuyển bài viết này vào thùng rác?"
-              >
-                <PendingSubmitButton
-                  type="submit"
-                  size="sm"
-                  variant="destructive"
-                  pendingText="Đang chuyển..."
-                >
-                  <Trash2 className="size-4" />
-                  Chuyển vào thùng rác
-                </PendingSubmitButton>
-              </ConfirmActionForm>
+
+            <Pagination className="justify-start">
+              <PaginationContent className="gap-0.5">
+                {data.paginationItems.map((item, index) => (
+                  <PaginationItem key={`personal-page-${index}-${String(item)}`}>
+                    {item === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href={`/admin?tab=personal-archive${filters.query ? `&personalQ=${encodeURIComponent(filters.query)}` : ""}${filters.status !== "all" ? `&personalStatus=${filters.status}` : ""}${filters.fromDate ? `&personalFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&personalTo=${encodeURIComponent(filters.toDate)}` : ""}&personalPage=${item}`}
+                        isActive={item === data.currentPage}
+                        className="size-7 text-xs"
+                      >
+                        {item}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+              </PaginationContent>
+            </Pagination>
+
+            {data.currentPage < data.totalPages ? (
+              <Link href={`/admin?tab=personal-archive${filters.query ? `&personalQ=${encodeURIComponent(filters.query)}` : ""}${filters.status !== "all" ? `&personalStatus=${filters.status}` : ""}${filters.fromDate ? `&personalFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&personalTo=${encodeURIComponent(filters.toDate)}` : ""}&personalPage=${data.currentPage + 1}`}>
+                <Button size="icon" variant="outline" className="size-7">
+                  <ChevronRight className="size-3.5" />
+                </Button>
+              </Link>
+            ) : (
+              <Button size="icon" variant="outline" className="size-7" disabled>
+                <ChevronRight className="size-3.5" />
+              </Button>
             )}
           </div>
         </div>
-      ))}
-
-      {data.totalPages > 1 ? (
-        <Pagination className="justify-start">
-          <PaginationContent>
-            {data.paginationItems.map((item, index) => (
-              <PaginationItem key={`personal-page-${index}-${String(item)}`}>
-                {item === "ellipsis" ? (
-                  <PaginationEllipsis />
-                ) : (
-                  <PaginationLink
-                    href={`/admin?tab=personal-archive${filters.query ? `&personalQ=${encodeURIComponent(filters.query)}` : ""}${filters.status !== "all" ? `&personalStatus=${filters.status}` : ""}${filters.fromDate ? `&personalFrom=${encodeURIComponent(filters.fromDate)}` : ""}${filters.toDate ? `&personalTo=${encodeURIComponent(filters.toDate)}` : ""}&personalPage=${item}`}
-                    isActive={item === data.currentPage}
-                  >
-                    {item}
-                  </PaginationLink>
-                )}
-              </PaginationItem>
-            ))}
-          </PaginationContent>
-        </Pagination>
-      ) : null}
+      )}
     </div>
   )
 }

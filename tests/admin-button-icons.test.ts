@@ -43,9 +43,7 @@ describe("admin button icons", () => {
       "components/admin/settings-users-tab.tsx"
     )
 
-    expect(personalSource).toContain("Filter className")
-    expect(personalSource).toContain("Pencil className")
-    expect(personalSource).toContain("Trash2 className")
+    expect(personalSource).toContain("Search className")
 
     expect(trashSource).toContain("RotateCcw className")
     expect(trashSource).toContain("Trash2 className")

@@ -61,15 +61,20 @@ export async function getPersonalPostsData(activeTab: AdminTab, personalArchiveF
       views: true,
       penName: true,
       excerpt: true,
+      seoTitle: true,
+      seoDescription: true,
       seoKeywords: true,
       thumbnailUrl: true,
       editorialStatus: true,
       isPublished: true,
       isDraft: true,
+      isFeatured: true,
+      isTrending: true,
       createdAt: true,
       publishedAt: true,
       approvedAt: true,
       updatedAt: true,
+      scheduledPublishAt: true,
       author: {
         select: {
           id: true,
@@ -78,6 +83,13 @@ export async function getPersonalPostsData(activeTab: AdminTab, personalArchiveF
         },
       },
       approver: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      lastEditor: {
         select: {
           id: true,
           name: true,

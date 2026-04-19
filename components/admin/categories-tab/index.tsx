@@ -17,7 +17,7 @@ type CategoriesTabProps = {
   createCategory: (formData: FormData) => Promise<void>
   updateCategory: (formData: FormData) => Promise<void>
   reorderCategory: (formData: FormData) => Promise<void>
-  deleteCategory: (formData: FormData) => Promise<void>
+  deleteCategory: (formData: FormData) => Promise<{ toast: string } | void | undefined>
 }
 
 export function CategoriesTab({

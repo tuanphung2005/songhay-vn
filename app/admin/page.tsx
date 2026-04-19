@@ -91,10 +91,9 @@ type AdminPageProps = {
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const key = JSON.stringify(resolvedSearchParams || {})
 
   return (
-    <Suspense key={key} fallback={<AdminLoading />}>
+    <Suspense fallback={<AdminLoading />}>
       <AdminPageContent searchParams={resolvedSearchParams} />
     </Suspense>
   )
@@ -231,9 +230,35 @@ async function AdminPageContent({ searchParams }: { searchParams?: ResolvedSearc
           isAdmin={canSeeAllPosts}
           canDeletePost={can(currentUser.role, "delete-post")}
           currentUserId={currentUser.id}
+          canSubmitPendingReview={can(
+            currentUser.role,
+            "submit-pending-review"
+          )}
+          canSubmitPendingPublish={canSubmitPendingPublish(
+            currentUser.role
+          )}
+          canReviewPending={canApprovePendingReview(currentUser.role)}
+          canPublishNow={canPublishNow(currentUser.role)}
+          canEditDraft={canEditByStatus(currentUser.role, "DRAFT")}
+          canEditPendingReview={canEditByStatus(
+            currentUser.role,
+            "PENDING_REVIEW"
+          )}
+          canEditPendingPublish={canEditByStatus(
+            currentUser.role,
+            "PENDING_PUBLISH"
+          )}
+          canEditPublished={canEditByStatus(currentUser.role, "PUBLISHED")}
           data={personalPostsData}
           filters={personalArchiveFilters}
           movePostToTrash={movePostToTrash}
+          submitPostToPendingReview={submitPostToPendingReview}
+          promotePostToPendingPublish={promotePostToPendingPublish}
+          approvePendingPost={approvePendingPost}
+          rejectPendingPost={rejectPendingPost}
+          returnPostToDraft={returnPostToDraft}
+          returnPostToPendingReview={returnPostToPendingReview}
+          returnPostToPendingPublish={returnPostToPendingPublish}
         />
       ) : null}
       {activeTab === "history" ? (

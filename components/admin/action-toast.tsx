@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
-const TOAST_MESSAGES: Record<string, { title: string; description: string; type: "success" | "error" }> = {
+export const TOAST_MESSAGES: Record<string, { title: string; description: string; type: "success" | "error" }> = {
   category_created: {
     title: "Đã tạo chuyên mục",
     description: "Chuyên mục mới đã được lưu thành công.",
@@ -225,6 +225,17 @@ const TOAST_MESSAGES: Record<string, { title: string; description: string; type:
     description: "Bạn không thể xóa tài khoản này.",
     type: "error",
   },
+}
+
+export function showToastByKey(toastKey: string) {
+  const message = TOAST_MESSAGES[toastKey]
+  if (!message) return
+
+  if (message.type === "success") {
+    toast.success(message.title, { description: message.description })
+  } else {
+    toast.error(message.title, { description: message.description })
+  }
 }
 
 export function AdminActionToast() {

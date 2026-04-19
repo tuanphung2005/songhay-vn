@@ -139,13 +139,15 @@ export async function reorderCategory(formData: FormData) {
 
 export async function deleteCategory(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(can(currentUser.role, "delete-category"), "/admin?tab=categories&toast=post_action_forbidden")
+  if (!can(currentUser.role, "delete-category")) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const categoryId = String(formData.get("categoryId") || "")
   const moveToCategoryId = String(formData.get("moveToCategoryId") || "")
 
   if (!categoryId) {
-    redirect("/admin?tab=categories&toast=category_delete_failed")
+    return { toast: "category_delete_failed" }
   }
 
   const category = await prisma.category.findUnique({
@@ -154,12 +156,12 @@ export async function deleteCategory(formData: FormData) {
   })
 
   if (!category) {
-    redirect("/admin?tab=categories&toast=category_delete_failed")
+    return { toast: "category_delete_failed" }
   }
 
   if (category._count.posts > 0) {
     if (!moveToCategoryId || moveToCategoryId === categoryId) {
-      redirect("/admin?tab=categories&toast=category_delete_failed")
+      return { toast: "category_delete_failed" }
     }
 
     const targetCategory = await prisma.category.findUnique({
@@ -168,7 +170,7 @@ export async function deleteCategory(formData: FormData) {
     })
 
     if (!targetCategory) {
-      redirect("/admin?tab=categories&toast=category_delete_failed")
+      return { toast: "category_delete_failed" }
     }
 
     await prisma.$transaction([
@@ -189,5 +191,5 @@ export async function deleteCategory(formData: FormData) {
   revalidatePath(`/${category.slug}`)
   revalidateTag("categories")
   clearDataCache()
-  redirect("/admin?tab=categories&toast=category_deleted")
+  return { toast: "category_deleted" }
 }

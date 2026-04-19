@@ -32,16 +32,16 @@ describe("workflow edge cases coverage", () => {
     const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain(
-      'ensurePermission(can(currentUser.role, "submit-pending-review")'
+      'if (!can(currentUser.role, "submit-pending-review"))'
     )
     expect(source).toContain(
-      'redirect("/admin?tab=posts&postsStatus=all&toast=post_not_found")'
+      'return { toast: "post_not_found" }'
     )
     expect(source).toContain(
       "!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id"
     )
     expect(source).toContain(
-      'redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")'
+      'return { toast: "post_submitted_review" }'
     )
   })
 
@@ -49,7 +49,7 @@ describe("workflow edge cases coverage", () => {
     const source = readWorkspaceFile("app/admin/actions/workflow.ts")
 
     expect(source).toContain(
-      "ensurePermission(canApprovePendingReview(currentUser.role)"
+      "if (!(canApprovePendingReview(currentUser.role) || canSubmitPendingPublish(currentUser.role)))"
     )
     expect(source).toContain('editorialStatus: "PENDING_PUBLISH"')
     expect(source).toContain("approverId: currentUser.id")
@@ -68,7 +68,7 @@ describe("workflow edge cases coverage", () => {
     expect(source).toContain('editorialStatus: "DRAFT"')
     expect(source).toContain("isDraft: true")
     expect(source).toContain(
-      'redirect("/admin?tab=posts&postsStatus=draft&toast=post_returned_draft")'
+      'return { toast: "post_returned_draft" }'
     )
   })
 })

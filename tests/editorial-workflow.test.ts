@@ -63,6 +63,6 @@ describe("editorial workflow", () => {
     expect(postActionsSource).toContain("Lên duyệt")
     expect(postActionsSource).toContain("Về kho")
     expect(postActionsSource).toContain("Bỏ đăng")
-    expect(personalSource).toContain("statusLabel")
+    expect(personalSource).toContain("<PostsTable")
   })
 })

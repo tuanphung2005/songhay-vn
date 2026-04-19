@@ -17,5 +17,5 @@ export type CategoryManageRow = {
 export type CategoryActions = {
   updateCategory: (formData: FormData) => Promise<void>
   reorderCategory: (formData: FormData) => Promise<void>
-  deleteCategory: (formData: FormData) => Promise<void>
+  deleteCategory: (formData: FormData) => Promise<{ toast: string } | void | undefined>
 }

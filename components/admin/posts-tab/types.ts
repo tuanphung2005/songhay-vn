@@ -49,14 +49,14 @@ export type PostsData = {
 }
 
 export type PostActions = {
-  movePostToTrash: (formData: FormData) => Promise<void>
-  submitPostToPendingReview: (formData: FormData) => Promise<void>
-  promotePostToPendingPublish: (formData: FormData) => Promise<void>
-  approvePendingPost: (formData: FormData) => Promise<void>
-  rejectPendingPost: (formData: FormData) => Promise<void>
-  returnPostToDraft: (formData: FormData) => Promise<void>
-  returnPostToPendingReview: (formData: FormData) => Promise<void>
-  returnPostToPendingPublish: (formData: FormData) => Promise<void>
+  movePostToTrash: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  submitPostToPendingReview: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  promotePostToPendingPublish: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  approvePendingPost: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  rejectPendingPost: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  returnPostToDraft: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  returnPostToPendingReview: (formData: FormData) => Promise<{ toast: string } | void | undefined>
+  returnPostToPendingPublish: (formData: FormData) => Promise<{ toast: string } | void | undefined>
 }
 
 export type PostPermissions = {

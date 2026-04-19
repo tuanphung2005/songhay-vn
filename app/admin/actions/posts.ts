@@ -308,11 +308,8 @@ export async function movePostToTrash(formData: FormData) {
   const currentUser = await requireCmsUser()
 
   const postId = String(formData.get("postId") || "")
-  const sourceTabRaw = String(formData.get("sourceTab") || "").trim()
-  const sourceTab =
-    sourceTabRaw === "personal-archive" ? "personal-archive" : "posts"
   if (!postId) {
-    redirect(`/admin?tab=${sourceTab}&toast=post_action_failed`)
+    return { toast: "post_action_failed" }
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -330,11 +327,11 @@ export async function movePostToTrash(formData: FormData) {
   })
 
   if (!existingPost) {
-    redirect(`/admin?tab=${sourceTab}&toast=post_not_found`)
+    return { toast: "post_not_found" }
   }
 
   if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
-    redirect(`/admin?tab=${sourceTab}&toast=post_action_forbidden`)
+    return { toast: "post_action_forbidden" }
   }
 
   await prisma.post.update({
@@ -362,7 +359,7 @@ export async function movePostToTrash(formData: FormData) {
   revalidateTag("posts")
   revalidateTag("homepage")
   clearDataCache()
-  redirect(`/admin?tab=${sourceTab}&toast=post_moved_trash`)
+  return { toast: "post_moved_trash" }
 }
 
 export async function restorePostFromTrash(formData: FormData) {
@@ -370,7 +367,7 @@ export async function restorePostFromTrash(formData: FormData) {
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
-    redirect("/admin?tab=trash&toast=post_action_failed")
+    return { toast: "post_action_failed" }
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -382,11 +379,11 @@ export async function restorePostFromTrash(formData: FormData) {
   })
 
   if (!existingPost) {
-    redirect("/admin?tab=trash&toast=post_not_found")
+    return { toast: "post_not_found" }
   }
 
   if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
-    redirect("/admin?tab=trash&toast=post_action_forbidden")
+    return { toast: "post_action_forbidden" }
   }
 
   await prisma.post.update({
@@ -409,7 +406,7 @@ export async function restorePostFromTrash(formData: FormData) {
   revalidateTag("posts")
   revalidateTag("homepage")
   clearDataCache()
-  redirect("/admin?tab=trash&toast=post_restored")
+  return { toast: "post_restored" }
 }
 
 export async function deletePostPermanently(formData: FormData) {
@@ -417,7 +414,7 @@ export async function deletePostPermanently(formData: FormData) {
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
-    redirect("/admin?tab=trash&toast=post_action_failed")
+    return { toast: "post_action_failed" }
   }
 
   const existingPost = await prisma.post.findUnique({
@@ -429,11 +426,11 @@ export async function deletePostPermanently(formData: FormData) {
   })
 
   if (!existingPost) {
-    redirect("/admin?tab=trash&toast=post_not_found")
+    return { toast: "post_not_found" }
   }
 
   if (!canTrashOrDeletePost(currentUser.role, existingPost.authorId, currentUser.id, existingPost.editorialStatus)) {
-    redirect("/admin?tab=trash&toast=post_action_forbidden")
+    return { toast: "post_action_forbidden" }
   }
 
   await prisma.post.delete({ where: { id: postId } })
@@ -443,7 +440,7 @@ export async function deletePostPermanently(formData: FormData) {
   revalidateTag("posts")
   revalidateTag("homepage")
   clearDataCache()
-  redirect("/admin?tab=trash&toast=post_deleted_permanently")
+  return { toast: "post_deleted_permanently" }
 }
 export async function bulkUpdateStatus(formData: FormData) {
   const currentUser = await requireCmsUser()

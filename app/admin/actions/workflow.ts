@@ -21,7 +21,9 @@ import {
 
 export async function approvePendingPost(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
+  if (!canApprovePendingReview(currentUser.role)) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -73,16 +75,17 @@ export async function approvePendingPost(formData: FormData) {
   revalidateTag("posts")
   revalidateTag("homepage")
   clearDataCache()
-  redirect(
-    canPublishNow(currentUser.role)
-      ? "/admin?tab=posts&postsStatus=published&toast=post_approved"
-      : "/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish"
-  )
+  
+  return {
+    toast: canPublishNow(currentUser.role) ? "post_approved" : "post_submitted_publish"
+  }
 }
 
 export async function rejectPendingPost(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden")
+  if (!canApprovePendingReview(currentUser.role)) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -129,12 +132,14 @@ export async function rejectPendingPost(formData: FormData) {
   revalidatePath("/admin")
   revalidateTag("posts")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=rejected&toast=post_rejected")
+  return { toast: "post_rejected" }
 }
 
 export async function submitPostToPendingReview(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(can(currentUser.role, "submit-pending-review"), "/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+  if (!can(currentUser.role, "submit-pending-review")) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -147,11 +152,11 @@ export async function submitPostToPendingReview(formData: FormData) {
   })
 
   if (!existingPost) {
-    redirect("/admin?tab=posts&postsStatus=all&toast=post_not_found")
+    return { toast: "post_not_found" }
   }
 
   if (!canViewAllPosts(currentUser.role) && existingPost.authorId !== currentUser.id) {
-    redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+    return { toast: "post_action_forbidden" }
   }
 
   const updatedPost = await prisma.post.update({
@@ -178,15 +183,14 @@ export async function submitPostToPendingReview(formData: FormData) {
   revalidatePath("/admin")
   revalidateTag("posts")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_submitted_review")
+  return { toast: "post_submitted_review" }
 }
 
 export async function promotePostToPendingPublish(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(
-    canApprovePendingReview(currentUser.role) || canSubmitPendingPublish(currentUser.role),
-    "/admin?tab=posts&postsStatus=pending-review&toast=post_action_forbidden"
-  )
+  if (!(canApprovePendingReview(currentUser.role) || canSubmitPendingPublish(currentUser.role))) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -235,12 +239,14 @@ export async function promotePostToPendingPublish(formData: FormData) {
   revalidatePath("/admin")
   revalidateTag("posts")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_submitted_publish")
+  return { toast: "post_submitted_publish" }
 }
 
 export async function returnPostToPendingReview(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canApprovePendingReview(currentUser.role), "/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+  if (!canApprovePendingReview(currentUser.role)) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -277,12 +283,14 @@ export async function returnPostToPendingReview(formData: FormData) {
   revalidatePath("/admin")
   revalidateTag("posts")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=pending-review&toast=post_returned_review")
+  return { toast: "post_returned_review" }
 }
 
 export async function returnPostToPendingPublish(formData: FormData) {
   const currentUser = await requireCmsUser()
-  ensurePermission(canPublishNow(currentUser.role), "/admin?tab=posts&postsStatus=published&toast=post_action_forbidden")
+  if (!canPublishNow(currentUser.role)) {
+    return { toast: "post_action_forbidden" }
+  }
 
   const postId = String(formData.get("postId") || "")
   if (!postId) {
@@ -317,7 +325,7 @@ export async function returnPostToPendingPublish(formData: FormData) {
   revalidatePath("/admin")
   revalidateTag("posts")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=pending-publish&toast=post_returned_publish_queue")
+  return { toast: "post_returned_publish_queue" }
 }
 
 export async function returnPostToDraft(formData: FormData) {
@@ -334,12 +342,12 @@ export async function returnPostToDraft(formData: FormData) {
   })
 
   if (!existingPost) {
-    redirect("/admin?tab=posts&postsStatus=all&toast=post_not_found")
+    return { toast: "post_not_found" }
   }
 
   const canManageWorkflow = canApprovePendingReview(currentUser.role) || canPublishNow(currentUser.role)
   if (!canManageWorkflow && existingPost.authorId !== currentUser.id) {
-    redirect("/admin?tab=posts&postsStatus=all&toast=post_action_forbidden")
+    return { toast: "post_action_forbidden" }
   }
 
   const updatedPost = await prisma.post.update({
@@ -365,5 +373,5 @@ export async function returnPostToDraft(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   clearDataCache()
-  redirect("/admin?tab=posts&postsStatus=draft&toast=post_returned_draft")
+  return { toast: "post_returned_draft" }
 }

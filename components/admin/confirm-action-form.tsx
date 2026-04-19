@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, type ReactNode } from "react"
+import { showToastByKey } from "./action-toast"
 
 import {
   AlertDialog,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 type ConfirmActionFormProps = {
-  action: (formData: FormData) => void | Promise<void>
+  action: (formData: FormData) => void | Promise<any>
   confirmMessage: string
   children: ReactNode
   className?: string
@@ -42,7 +43,12 @@ export function ConfirmActionForm({ action, confirmMessage, children, className,
     <>
       <form
         ref={formRef}
-        action={action}
+        action={async (formData) => {
+          const result = await action(formData)
+          if (result && typeof result === "object" && "toast" in result && typeof result.toast === "string") {
+            showToastByKey(result.toast)
+          }
+        }}
         className={className}
         onSubmit={(event) => {
           if (bypassConfirmRef.current) {
