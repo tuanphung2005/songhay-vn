@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Youtube } from "lucide-react"
+import { Facebook } from "lucide-react"
 import { getNavCategories } from "@/lib/queries"
 
 type SiteFooterProps = {
@@ -23,25 +23,19 @@ function ThreadsIcon() {
 const socials = [
   {
     name: "Facebook",
-    href: "https://facebook.com",
+    href: "https://www.facebook.com/profile.php?id=61575740829845",
     icon: Facebook,
     buttonClass: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white",
   },
   {
-    name: "YouTube",
-    href: "https://youtube.com",
-    icon: Youtube,
-    buttonClass: "border-red-200 bg-red-50 text-red-700 hover:bg-red-700 hover:text-white",
-  },
-  {
     name: "TikTok",
-    href: "https://www.tiktok.com/@songhayvn",
+    href: "https://www.tiktok.com/@songhayvn24h?lang=vi-VN",
     icon: TikTokIcon,
     buttonClass: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-700 hover:text-white",
   },
   {
     name: "Threads",
-    href: "https://www.threads.com/@songhayvn",
+    href: "https://www.threads.com/@songhayvn24h",
     icon: ThreadsIcon,
     buttonClass: "border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-900 hover:text-white",
   },
@@ -72,7 +66,7 @@ export async function SiteFooter({ navCategories: propNavCategories }: SiteFoote
           <p className="text-2xl font-black text-zinc-900">Songhay.vn</p>
           <p className="text-sm font-semibold uppercase tracking-wide text-rose-700">Liên hệ quảng cáo</p>
           <p className="text-zinc-600">Đặt banner, booking bài PR, tài trợ chuyên mục và hợp tác nội dung thương hiệu.</p>
-          <div className="space-y-1.5 rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="space-y-1.5 border border-zinc-200 bg-white p-4">
             <p>
               Email: <a href="mailto:lienhesonghay@gmail.com" className="font-semibold text-rose-700">lienhesonghay@gmail.com</a>
             </p>

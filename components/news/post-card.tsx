@@ -68,7 +68,7 @@ export function PostCard({
             alt={title}
             fill
             className={cn(
-              "object-cover transition duration-500 group-hover:scale-105",
+              "object-cover",
               isOverlay && "brightness-90 transition-all duration-500 group-hover:brightness-100"
             )}
             loading="lazy"
