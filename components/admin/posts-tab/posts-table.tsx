@@ -165,10 +165,10 @@ export function PostsTable({ posts, ...rest }: PostsTableProps) {
                       alt={post.title}
                       width={84}
                       height={60}
-                      className="mt-0.5 h-[60px] w-[84px] shrink-0 rounded-md border border-zinc-200 object-cover"
+                      className="mt-0.5 h-[60px] w-[84px] shrink-0 border border-zinc-200 object-cover"
                     />
                   ) : (
-                    <div className="mt-0.5 flex h-[60px] w-[84px] shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
+                    <div className="mt-0.5 flex h-[60px] w-[84px] shrink-0 items-center justify-center border border-zinc-200 bg-zinc-100 text-[10px] font-medium text-zinc-400">
                       No img
                     </div>
                   )}

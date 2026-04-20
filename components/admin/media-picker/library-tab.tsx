@@ -112,13 +112,13 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
             <button
               key={asset.id}
               onClick={() => onSelect(asset)}
-              className="group relative aspect-square overflow-hidden rounded-xl border border-input bg-muted/20 hover:border-accent-foreground hover:ring-2 hover:ring-accent/20 transition-all shadow-sm"
+              className="group relative aspect-square overflow-hidden border border-input bg-muted/20 hover:border-accent-foreground hover:ring-2 hover:ring-accent/20 transition-all shadow-sm"
             >
               {asset.assetType === "IMAGE" ? (
                 <Image src={asset.url} alt={asset.displayName || asset.filename} width={200} height={200} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">
-                  <div className="mb-2 p-2 bg-muted rounded-lg text-muted-foreground group-hover:text-foreground group-hover:bg-muted/80 transition-colors">
+                  <div className="mb-2 p-2 bg-muted text-muted-foreground group-hover:text-foreground group-hover:bg-muted/80 transition-colors">
                     <VideoIcon className="h-6 w-6" />
                   </div>
                   <span className="line-clamp-2 text-[10px] font-bold text-muted-foreground group-hover:text-foreground">

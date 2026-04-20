@@ -134,7 +134,7 @@ export function UploadTab({
         {files.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[30vh] overflow-y-auto p-1">
             {previews.map((p, i) => (
-              <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-zinc-100 border shadow-sm group">
+              <div key={i} className="relative aspect-video overflow-hidden bg-zinc-100 border shadow-sm group">
                 {p.file.type.startsWith("video/") ? (
                   <video src={p.url} className="w-full h-full object-cover" />
                 ) : (

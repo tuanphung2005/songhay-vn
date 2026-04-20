@@ -327,7 +327,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
 
                 <button
                   type="button"
-                  className="mt-2 flex min-h-24 w-full items-center justify-center rounded border bg-muted/40 p-1 transition hover:border-zinc-400"
+                  className="mt-2 flex min-h-24 w-full items-center justify-center border bg-muted/40 p-1 transition hover:border-zinc-400"
                   onClick={() => setPreviewAsset(asset)}
                 >
                   {asset.assetType === "IMAGE" ? (
@@ -336,14 +336,14 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                       alt={asset.displayName || asset.filename}
                       width={200}
                       height={150}
-                      className="max-h-24 w-auto max-w-full rounded object-contain"
+                      className="max-h-24 w-auto max-w-full object-contain"
                     />
                   ) : (
                     <video
                       src={asset.url}
                       controls
                       preload="metadata"
-                      className="max-h-24 w-auto max-w-full rounded bg-black/80 object-contain"
+                      className="max-h-24 w-auto max-w-full bg-black/80 object-contain"
                     />
                   )}
                 </button>
@@ -413,21 +413,21 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </DialogHeader>
 
               {previewAsset ? (
-                <div className="max-h-[70vh] overflow-auto rounded border bg-zinc-50 p-2">
+                <div className="max-h-[70vh] overflow-auto border bg-zinc-50 p-2">
                   {previewAsset.assetType === "IMAGE" ? (
                     <Image
                       src={previewAsset.url}
                       alt={previewAsset.displayName || previewAsset.filename}
                       width={1200}
                       height={800}
-                      className="h-auto max-h-[65vh] w-full rounded object-contain"
+                      className="h-auto max-h-[65vh] w-full object-contain"
                     />
                   ) : (
                     <video
                       src={previewAsset.url}
                       controls
                       preload="metadata"
-                      className="h-auto max-h-[65vh] w-full rounded bg-black"
+                      className="h-auto max-h-[65vh] w-full bg-black"
                     />
                   )}
                 </div>

@@ -73,13 +73,13 @@ export function ThumbnailPicker({
         </Button>
       </div>
       {thumbnailUrl && (
-        <div className="mt-2 text-center bg-zinc-50 border rounded-lg p-2 relative group">
+        <div className="mt-2 text-center bg-zinc-50 border p-2 relative group">
           <Image
             src={thumbnailUrl}
             alt="Thumbnail preview"
             width={400}
             height={225}
-            className="h-auto max-h-48 mx-auto rounded object-contain"
+            className="h-auto max-h-48 mx-auto object-contain"
           />
           <div className="mt-2 flex justify-center gap-2">
             <Button

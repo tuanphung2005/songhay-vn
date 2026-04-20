@@ -74,10 +74,10 @@ export function PendingPostsTab({
                         alt={post.title}
                         width={64}
                         height={48}
-                        className="mt-0.5 h-12 w-16 rounded border object-cover"
+                        className="mt-0.5 h-12 w-16 border object-cover"
                       />
                     ) : (
-                      <div className="mt-0.5 flex h-12 w-16 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
+                      <div className="mt-0.5 flex h-12 w-16 items-center justify-center border bg-muted text-[11px] text-muted-foreground">
                         No img
                       </div>
                     )}

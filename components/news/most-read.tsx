@@ -27,7 +27,7 @@ export function MostRead({ posts }: MostReadProps) {
               width={120}
               height={70}
               loading="lazy"
-              className="w-24 aspect-[12/7] flex-shrink-0 rounded-sm object-cover"
+              className="w-24 aspect-[12/7] flex-shrink-0 object-cover"
             />
             <div className="flex-1 space-y-1">
               <Link

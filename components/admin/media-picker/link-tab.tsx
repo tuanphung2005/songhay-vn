@@ -62,7 +62,7 @@ export function LinkTab({ onSelect }: LinkTabProps) {
               <p className="text-[10px] text-muted-foreground font-medium px-1">Chèn ảnh hoặc video từ các nguồn bên ngoài (Cloudinary, Imgur, v.v.)</p>
             </div>
             {url && (
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/5 flex items-center justify-center border shadow-inner mt-4">
+              <div className="relative w-full aspect-video overflow-hidden bg-black/5 flex items-center justify-center border shadow-inner mt-4">
                 {assetType === "VIDEO" ? (
                   <video src={url} className="max-h-full max-w-full object-contain" controls />
                 ) : (

@@ -31,7 +31,7 @@ export function VideoMostWatched({ posts }: VideoMostWatchedProps) {
             href={`/${post.category.slug}/${post.slug}`}
             className="group block space-y-2"
           >
-            <div className="relative aspect-video overflow-hidden rounded-sm bg-zinc-100 border border-zinc-300">
+            <div className="relative aspect-video overflow-hidden bg-zinc-100 border border-zinc-300">
               <Image
                 src={post.thumbnailUrl || "/placeholder-news.svg"}
                 alt={post.title}

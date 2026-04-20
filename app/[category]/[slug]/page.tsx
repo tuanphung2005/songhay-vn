@@ -9,11 +9,11 @@ import { cache } from "react"
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 const RecommendedForYou = dynamic(
   () => import("@/components/news/recommended-for-you").then((mod) => mod.RecommendedForYou),
-  { loading: () => <div className="h-60 animate-pulse rounded-lg bg-zinc-100" /> }
+  { loading: () => <div className="h-60 animate-pulse bg-zinc-100" /> }
 )
 const VideoMostWatched = dynamic(
   () => import("@/components/news/video-most-watched").then((mod) => mod.VideoMostWatched),
-  { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
+  { loading: () => <div className="h-80 animate-pulse bg-zinc-100" /> }
 )
 import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 import { CommentForm } from "@/components/news/comment-form"

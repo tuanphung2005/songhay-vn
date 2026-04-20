@@ -155,10 +155,10 @@ export function TrashTab({
                     alt={post.title}
                     width={80}
                     height={56}
-                    className="h-14 w-20 rounded border object-cover"
+                    className="h-14 w-20 border object-cover"
                   />
                 ) : (
-                  <div className="flex h-14 w-20 items-center justify-center rounded border bg-muted text-[11px] text-muted-foreground">
+                  <div className="flex h-14 w-20 items-center justify-center border bg-muted text-[11px] text-muted-foreground">
                     No img
                   </div>
                 )}
