@@ -216,7 +216,7 @@ export function SeoKeywordPicker({
       </div>
 
       <p className="text-muted-foreground text-xs">
-        Chọn từ khóa có sẵn trong popup gợi ý. Nếu chưa có, nhấn dấu + để thêm tạm vào bài; hệ thống chỉ lưu vào DB khi bạn submit bài.
+        Chọn từ khóa có sẵn trong popup gợi ý. Nếu chưa có, nhấn dấu + để thêm tạm vào bài;
       </p>
     </div>
   )
