@@ -18,7 +18,7 @@ type LibraryTabProps = {
 export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [mediaType, setMediaType] = useState<"ALL" | "IMAGE" | "VIDEO">("ALL")
-  const [uploaderFilter, setUploaderFilter] = useState<string>(currentUserId || "all")
+  const [uploaderFilter, setUploaderFilter] = useState<string>("all")
   const [page, setPage] = useState(1)
   const pageSize = 12
 
@@ -44,6 +44,12 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
       return text.includes(search)
     })
   }, [mediaAssets, mediaType, uploaderFilter, searchTerm])
+
+  const uploaderLabel = useMemo(() => {
+    if (uploaderFilter === "all") return "Tất cả người đăng"
+    if (uploaderFilter === currentUserId) return "Của tôi"
+    return uploaders.find((u) => u.id === uploaderFilter)?.name || "Người đăng đã chọn"
+  }, [currentUserId, uploaderFilter, uploaders])
 
   const totalPages = Math.max(1, Math.ceil(filteredMedia.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -143,7 +149,7 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
               <p className="text-sm font-bold">Không tìm thấy media nào khớp.</p>
               <p className="text-xs text-muted-foreground">
                 Tổng số trong hệ thống: {mediaAssets.length}.
-                Đang lọc: {mediaType !== "ALL" ? mediaType : "Tất cả"} - {uploaderFilter === "all" ? "Tất cả" : "Của tôi"}
+                Đang lọc: {mediaType !== "ALL" ? mediaType : "Tất cả"} - {uploaderLabel}
               </p>
             </div>
           )}
