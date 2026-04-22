@@ -56,7 +56,7 @@ export function CategorySelector({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="subCategorySelect">Chuyên mục con (không bắt buộc)</Label>
+        <Label htmlFor="subCategorySelect">Chuyên mục con</Label>
         <Select
           id="subCategorySelect"
           name="subcategoryId"
