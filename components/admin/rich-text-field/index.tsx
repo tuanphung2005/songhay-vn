@@ -18,6 +18,26 @@ function toPlainText(html: string) {
     .trim()
 }
 
+type EditorDataProcessor = {
+  toView: (html: string) => unknown
+}
+
+type EditorDataApi = {
+  processor: EditorDataProcessor
+  toModel: (viewFragment: unknown) => unknown
+}
+
+type EditorModelApi = {
+  change: (callback: () => void) => void
+  insertContent: (fragment: unknown) => void
+}
+
+type EditorLike = {
+  data: EditorDataApi
+  model: EditorModelApi
+  getData: () => string
+}
+
 export function RichTextField({
   name,
   placeholder = "Nhập nội dung bài viết...",
@@ -28,32 +48,47 @@ export function RichTextField({
   const [mode, setMode] = useState<EditorMode>("classic")
   const [html, setHtml] = useState(defaultValue)
   const [showMediaPicker, setShowMediaPicker] = useState(false)
-  const editorRef = useRef<any>(null)
+  const editorRef = useRef<EditorLike | null>(null)
 
   const isEmpty = useMemo(() => toPlainText(html).length === 0, [html])
 
-  function insertMedia(asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }) {
-    const currentImgCount = (html.match(/<img /gi) || []).length
-    const currentVideoCount = (html.match(/<video /gi) || []).length
+  function buildMediaSnippet(asset: { assetType: "IMAGE" | "VIDEO"; url: string }, imageCount: number, videoCount: number) {
+    const caption = asset.assetType === "IMAGE" ? `Ảnh ${imageCount}.` : `Video ${videoCount}.`
+    return asset.assetType === "IMAGE"
+      ? `\n<figure class="image image-style-align-center" style="display: table; margin: 2em auto; text-align: center;">\n  <img src="${asset.url}" alt="${caption}" loading="lazy" />\n  <figcaption>${caption}</figcaption>\n</figure>\n<p>&nbsp;</p>\n`
+      : `\n<div class="video-wrap" style="text-align: center; margin: 2em auto;">\n  <video controls src="${asset.url}" title="${caption}" style="max-width: 100%; height: auto; display: inline-block;"></video>\n  <div class="video-caption" style="margin-top: 0.3em; font-size: 0.9em; color: #6b7280; font-style: italic; text-align: center;">${caption}</div>\n</div>\n<p>&nbsp;</p>\n`
+  }
 
-    const caption = asset.assetType === "IMAGE" ? `Ảnh ${currentImgCount + 1}.` : `Video ${currentVideoCount + 1}.`
+  function insertMediaBatch(assets: Array<{ assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }>) {
+    let currentImgCount = (html.match(/<img /gi) || []).length
+    let currentVideoCount = (html.match(/<video /gi) || []).length
 
-    const snippet =
-      asset.assetType === "IMAGE"
-        ? `\n<figure class="image image-style-align-center" style="display: table; margin: 2em auto; text-align: center;">\n  <img src="${asset.url}" alt="${caption}" loading="lazy" />\n  <figcaption>${caption}</figcaption>\n</figure>\n<p>&nbsp;</p>\n`
-        : `\n<div class="video-wrap" style="text-align: center; margin: 2em auto;">\n  <video controls src="${asset.url}" title="${caption}" style="max-width: 100%; height: auto; display: inline-block;"></video>\n  <div class="video-caption" style="margin-top: 0.3em; font-size: 0.9em; color: #6b7280; font-style: italic; text-align: center;">${caption}</div>\n</div>\n<p>&nbsp;</p>\n`
+    const snippet = assets.map((asset) => {
+      if (asset.assetType === "IMAGE") {
+        currentImgCount += 1
+      } else {
+        currentVideoCount += 1
+      }
+
+      return buildMediaSnippet(asset, currentImgCount, currentVideoCount)
+    }).join("")
 
     if (mode === "classic" && editorRef.current) {
-        const viewFragment = editorRef.current.data.processor.toView(snippet)
-        const modelFragment = editorRef.current.data.toModel(viewFragment)
-        editorRef.current.model.change((writer: any) => {
-           editorRef.current.model.insertContent(modelFragment)
-        })
-        setHtml(editorRef.current.getData())
+      const editor = editorRef.current
+      const viewFragment = editor.data.processor.toView(snippet)
+      const modelFragment = editor.data.toModel(viewFragment)
+      editor.model.change(() => {
+        editor.model.insertContent(modelFragment)
+      })
+      setHtml(editor.getData())
     } else {
-        setHtml((previous) => `${previous}${snippet}`)
+      setHtml((previous) => `${previous}${snippet}`)
     }
     setShowMediaPicker(false)
+  }
+
+  function insertMedia(asset: { assetType: "IMAGE" | "VIDEO"; url: string; filename: string; displayName: string | null }) {
+    insertMediaBatch([asset])
   }
 
   return (
@@ -108,8 +143,10 @@ export function RichTextField({
         isOpen={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
         onSelect={insertMedia}
+        onSelectMany={insertMediaBatch}
         mediaAssets={mediaAssets}
         currentUserId={currentUserId}
+        allowMultiple
       />
 
       {isEmpty && (

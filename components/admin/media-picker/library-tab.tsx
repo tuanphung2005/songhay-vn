@@ -3,19 +3,36 @@
 import Image from "next/image"
 import { useMemo, useState } from "react"
 import { MediaAsset } from "./types"
-import { Search, Image as ImageIcon, Video as VideoIcon, User, ChevronLeft, ChevronRight, Filter } from "lucide-react"
+import { Search, Image as ImageIcon, Video as VideoIcon, User, ChevronLeft, ChevronRight, Filter, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 type LibraryTabProps = {
   mediaAssets: MediaAsset[]
   currentUserId?: string
   onSelect: (asset: MediaAsset) => void
+  selectionMode?: "single" | "multiple"
+  selectedAssetIds?: string[]
+  onToggleSelect?: (asset: MediaAsset) => void
+  selectedCount?: number
+  onConfirmSelection?: () => void
+  onClearSelection?: () => void
 }
 
-export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabProps) {
+export function LibraryTab({
+  mediaAssets,
+  currentUserId,
+  onSelect,
+  selectionMode = "single",
+  selectedAssetIds = [],
+  onToggleSelect,
+  selectedCount = 0,
+  onConfirmSelection,
+  onClearSelection,
+}: LibraryTabProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [mediaType, setMediaType] = useState<"ALL" | "IMAGE" | "VIDEO">("ALL")
   const [uploaderFilter, setUploaderFilter] = useState<string>("all")
@@ -112,34 +129,50 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 min-h-[40vh]">
-          {pagedMedia.map((asset) => (
-            <button
-              key={asset.id}
-              onClick={() => onSelect(asset)}
-              className="group relative aspect-square overflow-hidden border border-input bg-muted/20 hover:border-accent-foreground hover:ring-2 hover:ring-accent/20 transition-all shadow-sm"
-            >
-              {asset.assetType === "IMAGE" ? (
-                <Image src={asset.url} alt={asset.displayName || asset.filename} width={200} height={200} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">
-                  <div className="mb-2 p-2 bg-muted text-muted-foreground group-hover:text-foreground group-hover:bg-muted/80 transition-colors">
-                    <VideoIcon className="h-6 w-6" />
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="grid min-h-full grid-cols-2 content-start gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {pagedMedia.map((asset) => {
+            const isSelected = selectedAssetIds.includes(asset.id)
+
+            return (
+              <button
+                key={asset.id}
+                type="button"
+                onClick={() => {
+                  if (selectionMode === "multiple") {
+                    onToggleSelect?.(asset)
+                    return
+                  }
+                  onSelect(asset)
+                }}
+                className={cn(
+                  "group relative aspect-square overflow-hidden border border-input bg-muted/20 shadow-sm transition-colors hover:border-zinc-300",
+                  isSelected && "border-zinc-900 ring-2 ring-zinc-900/20"
+                )}
+              >
+                {asset.assetType === "IMAGE" ? (
+                  <Image src={asset.url} alt={asset.displayName || asset.filename} width={200} height={200} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">
+                    <div className="mb-2 p-2 bg-muted text-muted-foreground transition-colors group-hover:bg-muted/80 group-hover:text-foreground">
+                      <VideoIcon className="h-6 w-6" />
+                    </div>
+                    <span className="line-clamp-2 text-[10px] font-bold text-muted-foreground group-hover:text-foreground">
+                      {asset.displayName || asset.filename}
+                    </span>
                   </div>
-                  <span className="line-clamp-2 text-[10px] font-bold text-muted-foreground group-hover:text-foreground">
-                    {asset.displayName || asset.filename}
-                  </span>
+                )}
+                <div className="absolute top-2 left-2 rounded bg-black/50 px-1.5 py-0.5 text-[8px] font-bold text-white backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
+                  {asset.uploader?.name || "Ẩn danh"}
                 </div>
-              )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-white text-xs font-bold px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/20">Chọn media</span>
-              </div>
-              <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[8px] text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                {asset.uploader?.name || "Ẩn danh"}
-              </div>
-            </button>
-          ))}
+                {selectionMode === "multiple" && isSelected ? (
+                  <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 text-white shadow-sm">
+                    <Check className="h-3.5 w-3.5" />
+                  </div>
+                ) : null}
+              </button>
+            )
+          })}
 
           {filteredMedia.length === 0 && (
             <div className="col-span-full flex min-h-[30vh] flex-col items-center justify-center text-muted-foreground space-y-3">
@@ -156,31 +189,65 @@ export function LibraryTab({ mediaAssets, currentUserId, onSelect }: LibraryTabP
         </div>
       </ScrollArea>
 
-      {filteredMedia.length > 0 && (
-        <div className="flex items-center justify-between border-t border-zinc-100 px-6 py-4 bg-zinc-50/50">
-          <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Trang {safePage} / {totalPages}</p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 font-bold gap-1.5"
-              disabled={safePage <= 1}
-              onClick={() => setPage((v) => Math.max(1, v - 1))}
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              Trước
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              className="h-8 font-bold gap-1.5 bg-zinc-900"
-              disabled={safePage >= totalPages}
-              onClick={() => setPage((v) => Math.min(totalPages, v + 1))}
-            >
-              Sau
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
+      {(filteredMedia.length > 0 || selectedCount > 0) && (
+        <div className="border-t border-zinc-100 bg-zinc-50/50 px-6 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Trang {safePage} / {totalPages}</p>
+              {selectionMode === "multiple" ? (
+                <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">
+                  Đã chọn {selectedCount}
+                </p>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 font-bold gap-1.5"
+                disabled={safePage <= 1}
+                onClick={() => setPage((v) => Math.max(1, v - 1))}
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                Trước
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className="h-8 font-bold gap-1.5 bg-zinc-900"
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((v) => Math.min(totalPages, v + 1))}
+              >
+                Sau
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
+
+          {selectionMode === "multiple" ? (
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={selectedCount === 0}
+                onClick={onClearSelection}
+              >
+                Bỏ chọn
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-zinc-900"
+                disabled={selectedCount === 0}
+                onClick={onConfirmSelection}
+              >
+                {selectedCount === 0 ? "Chèn media" : `Chèn ${selectedCount} media`}
+              </Button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>
