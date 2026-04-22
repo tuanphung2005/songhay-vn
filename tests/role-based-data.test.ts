@@ -41,6 +41,7 @@ describe("role-based data scoping", () => {
 
     expect(source).toContain("visibility: true")
     expect(source).toContain("displayName: true")
+    expect(source).toContain("attachMediaUsage")
   })
 
   test("media upload DELETE endpoint enforces ownership or elevated role", () => {

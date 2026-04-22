@@ -26,6 +26,7 @@ describe("admin preview route and config", () => {
 
   test("admin preview route renders full website layout with preview banner", () => {
     const source = readWorkspaceFile("app/admin/preview/[id]/page.tsx")
+    const shellSource = readWorkspaceFile("components/news/article-page-shell.tsx")
 
     // Must still be noindexed
     expect(source).toContain("index: false")
@@ -34,9 +35,10 @@ describe("admin preview route and config", () => {
     // Must require CMS auth
     expect(source).toContain("requireCmsUser")
 
-    // Renders real site layout
-    expect(source).toContain("SiteHeader")
-    expect(source).toContain("SiteFooter")
+    // Renders real site layout via shared shell
+    expect(source).toContain("ArticlePageShell")
+    expect(shellSource).toContain("SiteHeader")
+    expect(shellSource).toContain("SiteFooter")
 
     // Shows a preview banner
     expect(source).toContain("Chế độ xem trước")

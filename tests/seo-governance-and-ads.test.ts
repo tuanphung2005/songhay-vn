@@ -44,13 +44,17 @@ describe("seo governance and moderation", () => {
 describe("ads and indexing", () => {
   test("article and homepage render real Google Adsense slots", () => {
     const articleSource = readWorkspaceFile("app/[category]/[slug]/page.tsx")
+    const articleShellSource = readWorkspaceFile(
+      "components/news/article-page-shell.tsx"
+    )
     const homeSource = readWorkspaceFile("app/page.tsx")
     const adComponentSource = readWorkspaceFile(
       "components/news/ad-placeholder.tsx"
     )
     const htmlHelperSource = readWorkspaceFile("lib/html.ts")
 
-    expect(articleSource).toContain("AdPlaceholder")
+    expect(articleSource).toContain("ArticlePageShell")
+    expect(articleShellSource).toContain("AdPlaceholder")
     expect(homeSource).toContain("Top banner (Google AdSense)")
     expect(homeSource).toContain("Bottom page ad (Google AdSense)")
     expect(adComponentSource).toContain('className="adsbygoogle')

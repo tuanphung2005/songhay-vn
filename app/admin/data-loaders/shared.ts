@@ -1,4 +1,5 @@
 import { memoizeWithTtl } from "@/lib/data-cache"
+import { attachMediaUsage } from "@/lib/media-usage"
 import { prisma } from "@/lib/prisma"
 import { isPrismaSchemaMismatchError } from "@/lib/prisma-errors"
 import { startOfDay, toDayKey, toDayLabel } from "@/app/admin/data-helpers"
@@ -12,7 +13,7 @@ export async function getMediaLibraryData(activeTab: AdminTab) {
     return []
   }
 
-  return prisma.mediaAsset.findMany({
+  const rows = await prisma.mediaAsset.findMany({
     select: {
       id: true,
       assetType: true,
@@ -34,6 +35,24 @@ export async function getMediaLibraryData(activeTab: AdminTab) {
     orderBy: [{ uploadedAt: "desc" }],
     take: 200,
   })
+
+  if (activeTab !== "media-library") {
+    return rows
+  }
+
+  const defaultImageRows = rows
+    .filter((item) => item.assetType === "IMAGE")
+    .slice(0, 12)
+
+  const rowsWithUsage = await attachMediaUsage(defaultImageRows)
+  const usageById = new Map(
+    rowsWithUsage.map((item) => [item.id, item.usage])
+  )
+
+  return rows.map((item) => ({
+    ...item,
+    usage: usageById.get(item.id),
+  }))
 }
 
 export async function getPendingComments(activeTab: AdminTab) {

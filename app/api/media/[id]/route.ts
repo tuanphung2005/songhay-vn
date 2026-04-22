@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { authCookieName, decodeSession } from "@/lib/auth"
 import { deleteCloudinaryAsset } from "@/lib/cloudinary"
+import { getMediaUsageByUrl } from "@/lib/media-usage"
 import { canDeleteAnyMedia } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 
@@ -28,6 +29,8 @@ function readCookie(raw: string | null, name: string) {
 export async function DELETE(request: unknown, context: RouteContext) {
   const incomingRequest = request as Request
   const { id } = await context.params
+  const requestUrl = new URL(incomingRequest.url)
+  const forceDelete = requestUrl.searchParams.get("force") === "1"
 
   const token = readCookie(incomingRequest.headers.get("cookie"), authCookieName)
   const session = decodeSession(token)
@@ -43,6 +46,7 @@ export async function DELETE(request: unknown, context: RouteContext) {
       uploaderId: true,
       publicId: true,
       assetType: true,
+      url: true,
     },
   })
 
@@ -52,6 +56,11 @@ export async function DELETE(request: unknown, context: RouteContext) {
 
   if (!canDeleteAnyMedia(session.role) && asset.uploaderId !== session.userId) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  }
+
+  const usage = await getMediaUsageByUrl(asset.url)
+  if (usage.count > 0 && !forceDelete) {
+    return NextResponse.json({ error: "in_use", usage }, { status: 409 })
   }
 
   if (asset.publicId) {

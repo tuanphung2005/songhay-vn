@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { authCookieName, decodeSession } from "@/lib/auth"
 import { uploadVideoToCloudinary } from "@/lib/cloudinary"
+import { attachMediaUsage } from "@/lib/media-usage"
 import { prisma } from "@/lib/prisma"
 
 const MAX_VIDEO_UPLOAD_BYTES = 200 * 1024 * 1024
@@ -48,6 +49,7 @@ export async function GET(request: unknown) {
   const requestedPageSize = toPaging(url.searchParams.get("pageSize"), DEFAULT_PAGE_SIZE)
   const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE)
   const uploaderIdFilter = uploaderIdParam.length > 0 ? uploaderIdParam : ""
+  const includeUsage = url.searchParams.get("includeUsage") === "1"
 
   const where = {
     assetType: "VIDEO" as const,
@@ -94,6 +96,10 @@ export async function GET(request: unknown) {
     take: pageSize,
   })
 
+  const itemsWithUsage = includeUsage
+    ? await attachMediaUsage(items)
+    : items
+
   const uploaderOptions = await prisma.user.findMany({
     where: {
       mediaAssets: {
@@ -111,7 +117,7 @@ export async function GET(request: unknown) {
   })
 
   return NextResponse.json({
-    items,
+    items: itemsWithUsage,
     uploaderOptions,
     pagination: {
       totalCount,

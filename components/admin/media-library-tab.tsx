@@ -1,7 +1,6 @@
 "use client"
-
-/* eslint-disable @next/next/no-img-element */
 import Image from "next/image"
+import Link from "next/link"
 import { type FormEvent, useState } from "react"
 import { ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react"
 
@@ -30,6 +29,23 @@ import { Select } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UploadTab } from "./media-picker/upload-tab"
 
+type MediaUsageContext = "thumbnail" | "content" | "og-image"
+
+type MediaUsageItem = {
+  postId: string
+  title: string
+  slug: string
+  categorySlug: string | null
+  isDeleted: boolean
+  isLiveVisible: boolean
+  contexts: MediaUsageContext[]
+}
+
+type MediaUsageSummary = {
+  count: number
+  items: MediaUsageItem[]
+}
+
 type MediaAssetRow = {
   id: string
   assetType: "IMAGE" | "VIDEO"
@@ -45,6 +61,7 @@ type MediaAssetRow = {
     name: string
     email?: string
   }
+  usage?: MediaUsageSummary
 }
 
 type MediaLibraryTabProps = {
@@ -52,8 +69,72 @@ type MediaLibraryTabProps = {
   rows: MediaAssetRow[]
 }
 
+const MEDIA_LIBRARY_PAGE_SIZE = 12
+const EMPTY_MEDIA_USAGE: MediaUsageSummary = {
+  count: 0,
+  items: [],
+}
+
 function toMb(sizeBytes: number) {
   return `${(sizeBytes / (1024 * 1024)).toFixed(2)} MB`
+}
+
+function getAssetUsage(asset: MediaAssetRow | null | undefined) {
+  return asset?.usage || EMPTY_MEDIA_USAGE
+}
+
+function getUsageContextLabel(context: MediaUsageContext) {
+  if (context === "thumbnail") {
+    return "ảnh đại diện"
+  }
+
+  if (context === "og-image") {
+    return "OG image"
+  }
+
+  return "nội dung bài"
+}
+
+function getUsageContextSummary(usage: MediaUsageSummary) {
+  return [...new Set(usage.items.flatMap((item) => item.contexts))]
+    .map((context) => getUsageContextLabel(context))
+    .join(", ")
+}
+
+function getUsageItemSummary(item: MediaUsageItem) {
+  return item.contexts.map((context) => getUsageContextLabel(context)).join(", ")
+}
+
+function getUsagePreviewItems(usage: MediaUsageSummary) {
+  return usage.items.slice(0, 2)
+}
+
+function getPostPath(item: MediaUsageItem) {
+  if (!item.categorySlug) {
+    return `/${item.slug}`
+  }
+
+  return `/${item.categorySlug}/${item.slug}`
+}
+
+function getUsageItemHref(item: MediaUsageItem) {
+  if (item.isDeleted) {
+    return null
+  }
+
+  if (item.isLiveVisible && item.categorySlug) {
+    return getPostPath(item)
+  }
+
+  return `/admin/preview/${item.postId}`
+}
+
+function getUsageItemLinkLabel(item: MediaUsageItem) {
+  if (item.isDeleted) {
+    return "Bài trong thùng rác"
+  }
+
+  return item.isLiveVisible ? "Xem bài" : "Xem preview"
 }
 
 function getInitialUploaderOptions(rows: MediaAssetRow[]) {
@@ -74,23 +155,37 @@ function getInitialUploaderOptions(rows: MediaAssetRow[]) {
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "vi"))
 }
 
+function getRowsByFilterType(rows: MediaAssetRow[], filterType: "image" | "video") {
+  return rows.filter((item) =>
+    filterType === "video" ? item.assetType === "VIDEO" : item.assetType === "IMAGE"
+  )
+}
+
 export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
+  const initialFilterType: "image" | "video" = "image"
+  const initialRows = getRowsByFilterType(rows, initialFilterType)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
   const [previewAsset, setPreviewAsset] = useState<MediaAssetRow | null>(null)
-  const [filterType, setFilterType] = useState<"image" | "video">("image")
+  const [filterType, setFilterType] = useState<"image" | "video">(initialFilterType)
   const [uploaderFilter, setUploaderFilter] = useState("all")
   const [searchValue, setSearchValue] = useState("")
   const [page, setPage] = useState(1)
-  const [pageSize] = useState(12)
+  const pageSize = MEDIA_LIBRARY_PAGE_SIZE
   const [isLoading, setIsLoading] = useState(false)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalPages, setTotalPages] = useState(
+    Math.max(1, Math.ceil(initialRows.length / pageSize))
+  )
   const [uploaderOptions, setUploaderOptions] = useState<
     Array<{ id: string; name: string; email: string }>
   >(getInitialUploaderOptions(rows))
-  const [items, setItems] = useState<MediaAssetRow[]>(
-    rows.filter((item) => item.assetType === "IMAGE").slice(0, 12)
-  )
+  const [items, setItems] = useState<MediaAssetRow[]>(initialRows.slice(0, pageSize))
+  const deleteAsset =
+    deleteDialogId !== null
+      ? items.find((item) => item.id === deleteDialogId) || null
+      : null
+  const deleteAssetUsage = getAssetUsage(deleteAsset)
+  const deleteAssetUsageSummary = getUsageContextSummary(deleteAssetUsage)
 
   async function loadMedia(next: {
     filterType: "image" | "video"
@@ -113,6 +208,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       if (isAdmin && next.uploaderFilter !== "all") {
         params.set("uploaderId", next.uploaderFilter)
       }
+      params.set("includeUsage", "1")
 
       const endpoint =
         next.filterType === "video"
@@ -151,11 +247,37 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
 
   async function handleDelete(assetId: string) {
     setDeletingId(assetId)
+    let shouldCloseDialog = true
 
     try {
-      const response = await fetch(`/api/media/${assetId}`, {
+      const selectedAsset = items.find((item) => item.id === assetId)
+      const forceDelete = getAssetUsage(selectedAsset).count > 0
+      const response = await fetch(`/api/media/${assetId}${forceDelete ? "?force=1" : ""}`, {
         method: "DELETE",
       })
+
+      if (response.status === 409) {
+        const payload = (await response.json()) as {
+          error?: string
+          usage?: MediaUsageSummary
+        }
+
+        if (payload.usage) {
+          setItems((current) =>
+            current.map((item) =>
+              item.id === assetId
+                ? {
+                    ...item,
+                    usage: payload.usage,
+                  }
+                : item
+            )
+          )
+        }
+
+        shouldCloseDialog = false
+        return
+      }
 
       if (!response.ok) {
         window.location.assign(
@@ -176,7 +298,9 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       )
     } finally {
       setDeletingId(null)
-      setDeleteDialogId(null)
+      if (shouldCloseDialog) {
+        setDeleteDialogId(null)
+      }
     }
   }
 
@@ -304,30 +428,13 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
 
           <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {items.map((asset) => (
-              <div key={asset.id} className="rounded-lg border p-2">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="line-clamp-1 font-semibold">
-                      {asset.displayName || asset.filename}
-                    </p>
-                    <Badge variant="outline">
-                      {asset.assetType === "IMAGE" ? "Ảnh" : "Video"}
-                    </Badge>
-                    <Badge variant="outline">Shared</Badge>
-                  </div>
-                  <p className="line-clamp-1 text-xs text-muted-foreground">
-                    File: {asset.filename}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {asset.mimeType} · {toMb(asset.sizeBytes)} · bởi{" "}
-                    {asset.uploader.name} ·{" "}
-                    {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
-                  </p>
-                </div>
-
+              <div
+                key={asset.id}
+                className="flex flex-col rounded-lg border p-1.5 shadow-sm"
+              >
                 <button
                   type="button"
-                  className="mt-2 flex min-h-24 w-full items-center justify-center border bg-muted/40 p-1 transition hover:border-zinc-400"
+                  className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-1"
                   onClick={() => setPreviewAsset(asset)}
                 >
                   {asset.assetType === "IMAGE" ? (
@@ -336,19 +443,75 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                       alt={asset.displayName || asset.filename}
                       width={200}
                       height={150}
-                      className="max-h-24 w-auto max-w-full object-contain"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <video
                       src={asset.url}
                       controls
                       preload="metadata"
-                      className="max-h-24 w-auto max-w-full bg-black/80 object-contain"
+                      className="h-full w-full bg-black/80 object-contain"
                     />
                   )}
                 </button>
 
-                <div className="mt-2 flex justify-end">
+                <div className="mt-1.5 flex flex-1 flex-col gap-1">
+                  <div className="flex items-start gap-1.5">
+                    <p className="line-clamp-2 flex-1 text-sm font-semibold leading-5">
+                      {asset.displayName || asset.filename}
+                    </p>
+                    <Badge variant="outline" className="shrink-0">
+                      {asset.assetType === "IMAGE" ? "Ảnh" : "Video"}
+                    </Badge>
+                  </div>
+                  <p className="line-clamp-1 text-[11px] text-muted-foreground">
+                    {asset.filename}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {toMb(asset.sizeBytes)} · {asset.uploader.name} ·{" "}
+                    {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
+                  </p>
+                  {getAssetUsage(asset).count > 0 ? (
+                    <div className="rounded-md border border-amber-200 bg-amber-50/70 p-1.5">
+                      <p className="text-[11px] font-semibold text-amber-900">
+                        Đang dùng ở {getAssetUsage(asset).count} bài
+                      </p>
+                      {getUsagePreviewItems(getAssetUsage(asset)).map((item) => (
+                        <div key={item.postId} className="text-[11px] text-amber-900/90">
+                          {getUsageItemHref(item) ? (
+                            <Link
+                              href={getUsageItemHref(item) || "#"}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="line-clamp-1 font-medium underline underline-offset-2 hover:text-amber-950"
+                            >
+                              <span title={`${item.title} · ${getUsageItemSummary(item)}`}>
+                                {item.title}
+                              </span>
+                            </Link>
+                          ) : (
+                            <p
+                              className="line-clamp-1 font-medium"
+                              title={`${item.title} · ${getUsageItemSummary(item)}`}
+                            >
+                              {item.title}
+                            </p>
+                          )}
+                          <p className="line-clamp-1 text-[10px] text-amber-900/80">
+                            {getUsageItemSummary(item)} · {getUsageItemLinkLabel(item)}
+                          </p>
+                        </div>
+                      ))}
+                      {getAssetUsage(asset).count > getUsagePreviewItems(getAssetUsage(asset)).length ? (
+                        <p className="text-[11px] text-amber-900/75">
+                          +{getAssetUsage(asset).count - getUsagePreviewItems(getAssetUsage(asset)).length} bài khác
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-1.5 flex justify-end">
                   <Button
                     type="button"
                     size="sm"
@@ -368,13 +531,58 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             open={deleteDialogId !== null}
             onOpenChange={(open) => !open && setDeleteDialogId(null)}
           >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xóa media khỏi kho dữ liệu?</AlertDialogTitle>
+            <AlertDialogContent className="sm:max-w-xl">
+              <AlertDialogHeader className="place-items-start text-left">
+                <AlertDialogTitle>
+                  {deleteAssetUsage.count > 0
+                    ? "Media này đang được dùng trong bài viết"
+                    : "Xóa media khỏi kho dữ liệu?"}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác.
+                  {deleteAssetUsage.count > 0
+                    ? `Media "${deleteAsset?.displayName || deleteAsset?.filename || "đã chọn"}" đang được ${deleteAssetUsage.count} bài dùng ở ${deleteAssetUsageSummary}.`
+                    : "Hành động này sẽ xóa tệp media đã chọn và không thể hoàn tác."}
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              {deleteAssetUsage.count > 0 ? (
+                <div className="max-h-56 space-y-2 overflow-y-auto rounded-lg border bg-amber-50/60 p-3">
+                  {deleteAssetUsage.items.map((item) => (
+                    <div
+                      key={item.postId}
+                      className="rounded-md border bg-white/80 p-2"
+                    >
+                      {getUsageItemHref(item) ? (
+                        <Link
+                          href={getUsageItemHref(item) || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-700"
+                        >
+                          {item.title}
+                        </Link>
+                      ) : (
+                        <p className="text-sm font-semibold text-zinc-900">
+                          {item.title}
+                        </p>
+                      )}
+                      {item.isDeleted ? (
+                        <p className="text-[11px] text-muted-foreground">
+                          Bài đang nằm trong thùng rác
+                        </p>
+                      ) : null}
+                      <p className="text-xs text-muted-foreground">
+                        {item.isLiveVisible ? getPostPath(item) : `/admin/preview/${item.postId}`}
+                      </p>
+                      <p className="text-xs text-amber-900">
+                        Dùng ở:{" "}
+                        {item.contexts
+                          .map((context) => getUsageContextLabel(context))
+                          .join(", ")}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={deletingId !== null}>
                   Hủy
@@ -388,7 +596,11 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                     }
                   }}
                 >
-                  {deletingId !== null ? "Đang xóa..." : "Xóa"}
+                  {deletingId !== null
+                    ? "Đang xóa..."
+                    : deleteAssetUsage.count > 0
+                      ? "Vẫn xóa media"
+                      : "Xóa"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
