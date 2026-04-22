@@ -36,6 +36,7 @@ export function PostCard({
 }: PostCardProps) {
   const isOverlay = variant === "overlay"
   const isHorizontal = variant === "horizontal"
+  const hasComments = commentCount > 0
 
   return (
     <article
@@ -123,14 +124,14 @@ export function PostCard({
               className?.includes("lg:flex-col") && "lg:hidden"
             )}>
               <span className="text-primary font-bold">{categoryName}</span>
-              <span className="text-zinc-400">—</span>
-              <span className="text-zinc-500">
+              <span className="text-black">—</span>
+              <span className="text-black">
                 {date ? new Date(date).toLocaleDateString("vi-VN") : "Vừa xong"}
               </span>
-              {commentCount > 0 && (
+              {hasComments && (
                 <>
-                  <span className="text-zinc-400">—</span>
-                  <div className="flex items-center gap-1 text-zinc-500">
+                  <span className="text-black">—</span>
+                  <div className="flex items-center gap-1 text-black">
                     <MessageSquare className="size-3" />
                     <span>{commentCount}</span>
                   </div>
@@ -143,7 +144,7 @@ export function PostCard({
             <p
               className={cn(
                 "mt-2 line-clamp-2 text-sm leading-relaxed",
-                isOverlay ? "text-zinc-200" : isHorizontal ? "text-zinc-600 md:text-base lg:line-clamp-3" : "text-zinc-600",
+                isOverlay ? "text-zinc-200" : isHorizontal ? "text-black md:text-base lg:line-clamp-3" : "text-black",
                 // Hide excerpt on PC if forced to vertical and in a small space
                 className?.includes("lg:flex-col") && "lg:hidden"
               )}
@@ -152,18 +153,20 @@ export function PostCard({
             </p>
           )}
 
-          {!compact && (!isHorizontal || className?.includes("lg:flex-col")) && (
+          {!compact && (date || hasComments) && (!isHorizontal || className?.includes("lg:flex-col")) && (
             <div className={cn(
               "mt-3 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider",
-              isOverlay ? "text-zinc-300" : "text-zinc-400",
+              isOverlay ? "text-zinc-300" : "text-black",
               isHorizontal && "hidden lg:flex",
               !className?.includes("lg:flex-col") && isHorizontal && "hidden"
             )}>
               {date && <span>{new Date(date).toLocaleDateString("vi-VN")}</span>}
-              <div className="flex items-center gap-1">
-                <MessageSquare className="size-3" />
-                <span>{commentCount}</span>
-              </div>
+              {hasComments ? (
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="size-3" />
+                  <span>{commentCount}</span>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

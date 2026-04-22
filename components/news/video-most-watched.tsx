@@ -48,7 +48,7 @@ export function VideoMostWatched({ posts }: VideoMostWatchedProps) {
             <p className="line-clamp-2 text-sm font-bold leading-snug text-zinc-800 transition group-hover:text-rose-600">
               {post.title}
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-black">
               {post.views.toLocaleString("vi-VN")} lượt xem
             </p>
           </Link>

@@ -223,7 +223,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <p className="text-xl font-bold leading-relaxed text-zinc-950">
               {article.excerpt.trim()}
             </p>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-black">
               {new Date(article.publishedAt).toLocaleString("vi-VN")}
             </p>
           </header>
@@ -242,7 +242,7 @@ export default async function PostPage({ params }: PostPageProps) {
           />
 
           <div
-            className="article-content ck-content max-w-none text-zinc-800"
+            className="article-content ck-content max-w-none text-black"
             dangerouslySetInnerHTML={{ __html: articleHtml }}
           />
 
@@ -277,7 +277,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <section className="space-y-3 border border-zinc-200 bg-zinc-50 p-4">
             <h2 className="text-xl font-bold">Bình luận gần đây</h2>
             {article.comments.length === 0 ? (
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-black">
                 Chưa có bình luận hiển thị.
               </p>
             ) : (
@@ -287,7 +287,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   className="border border-zinc-200 bg-white p-3"
                 >
                   <p className="text-sm font-semibold">{comment.authorName}</p>
-                  <p className="text-sm text-zinc-700">{comment.content}</p>
+                  <p className="text-sm text-black">{comment.content}</p>
                 </div>
               ))
             )}

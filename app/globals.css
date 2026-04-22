@@ -142,7 +142,7 @@
     --ck-content-font-family: var(--font-serif);
     --ck-content-font-size: 1.25rem;
     --ck-content-line-height: 1.8;
-    @apply text-zinc-800;
+    @apply text-black;
     font-family: var(--ck-content-font-family);
     font-size: var(--ck-content-font-size);
     line-height: var(--ck-content-line-height);
@@ -174,7 +174,7 @@
     margin: 1.25rem 0 !important;
     border-left: 4px solid oklch(0.87 0 0) !important;
     padding-left: 1rem !important;
-    color: oklch(0.45 0 0) !important;
+    color: oklch(0 0 0) !important;
   }
 
   .article-content.ck-content table {
@@ -207,7 +207,7 @@
     margin-top: 0.25rem !important;
     text-align: center !important;
     font-size: 0.875rem !important;
-    color: oklch(0.55 0 0) !important;
+    color: oklch(0 0 0) !important;
     font-style: italic !important;
   }
 
