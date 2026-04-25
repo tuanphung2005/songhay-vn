@@ -7,7 +7,21 @@ function readWorkspaceFile(relativePath: string) {
 }
 
 describe("admin pending submit patterns", () => {
+  test("shared pending submit button has immediate lock and loading indicator", () => {
+    const pendingSubmitButton = readWorkspaceFile(
+      "components/admin/pending-submit-button.tsx"
+    )
+
+    expect(pendingSubmitButton).toContain("LoaderCircle")
+    expect(pendingSubmitButton).toContain("SUBMIT_GUARD_WINDOW_MS")
+    expect(pendingSubmitButton).toContain("event.preventDefault()")
+    expect(pendingSubmitButton).toContain("lastSubmitAtRef.current = now")
+    expect(pendingSubmitButton).toContain("form.reportValidity()")
+  })
+
   test("admin mutation tabs use shared pending submit button", () => {
+    const writeTab = readWorkspaceFile("components/admin/write-tab.tsx")
+    const editPage = readWorkspaceFile("app/admin/edit/[id]/page.tsx")
     const pendingPosts = readWorkspaceFile(
       "components/admin/pending-posts-tab.tsx"
     )
@@ -22,8 +36,11 @@ describe("admin pending submit patterns", () => {
       "components/admin/categories-tab/index.tsx"
     )
 
+    expect(writeTab).toContain("PendingSubmitButton")
+    expect(editPage).toContain("PendingSubmitButton")
     expect(pendingPosts).toContain("PendingSubmitButton")
     expect(posts).toContain("PendingSubmitButton")
+    expect(personalArchive).toContain("PostsTable")
     expect(trash).toContain("PendingSubmitButton")
     expect(categories).toContain("PendingSubmitButton")
   })

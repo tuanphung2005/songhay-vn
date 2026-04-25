@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-// @ts-ignore
+
 import { revalidatePath, revalidateTag } from "next/cache"
 import Link from "next/link"
 import type { Metadata } from "next"
@@ -8,6 +8,7 @@ import { ArrowLeft, Globe, Save, Send, SendToBack } from "lucide-react"
 
 import { RichTextField } from "@/components/admin/rich-text-field/index"
 import { SeoFields } from "@/components/admin/seo-fields"
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -380,64 +381,75 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
               <legend className="px-1 text-sm font-semibold">Thao tác xuất bản</legend>
               <div className="grid gap-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <Button
+                  <PendingSubmitButton
                     type="submit"
                     name="submitAction"
                     value="save-changes"
                     variant="outline"
                     size="lg"
+                    pendingText="Đang lưu..."
                   >
                     <Save className="size-4 mr-1.5" />
                     {post.editorialStatus === "DRAFT" ? "Lưu nháp" : "Cập nhật thay đổi"}
-                  </Button>
+                  </PendingSubmitButton>
                   <PreviewButton postId={post.id} />
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   {post.editorialStatus !== "DRAFT" && (post.editorialStatus !== "PUBLISHED" || canPublish) ? (
-                    <Button
+                    <PendingSubmitButton
                       type="submit"
                       name="submitAction"
                       value="save-draft"
                       variant="outline"
                       size="lg"
+                      pendingText="Đang chuyển về nháp..."
                     >
                       <Save className="size-4 mr-1.5" />
                       Chuyển về nháp
-                    </Button>
+                    </PendingSubmitButton>
                   ) : null}
 
-                  <Button
+                  <PendingSubmitButton
                     type="submit"
                     name="submitAction"
                     value="submit-review"
                     className="w-full"
                     variant="destructive"
                     size="lg"
+                    pendingText="Đang gửi duyệt..."
                   >
                     <Send className="size-4 mr-1.5" />
                     Gửi chờ duyệt
-                  </Button>
+                  </PendingSubmitButton>
 
                   {canSubmitPendingPublish(currentUser.role) ? (
-                    <Button
+                    <PendingSubmitButton
                       type="submit"
                       name="submitAction"
                       value="submit-publish"
                       className="w-full"
                       variant="secondary"
                       size="lg"
+                      pendingText="Đang chuyển kho..."
                     >
                       <SendToBack className="size-4 mr-1.5" />
                       Gửi chờ xuất bản
-                    </Button>
+                    </PendingSubmitButton>
                   ) : null}
 
                   {canPublish ? (
-                    <Button type="submit" name="submitAction" value="publish" className="w-full" size="lg">
+                    <PendingSubmitButton
+                      type="submit"
+                      name="submitAction"
+                      value="publish"
+                      className="w-full"
+                      size="lg"
+                      pendingText="Đang xuất bản..."
+                    >
                       <Globe className="size-4 mr-1.5" />
                       Xuất bản
-                    </Button>
+                    </PendingSubmitButton>
                   ) : null}
                 </div>
                 {canPublish && (
@@ -530,8 +542,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
                       defaultValue={
                         post.scheduledPublishAt
                           ? new Date(post.scheduledPublishAt.getTime() - post.scheduledPublishAt.getTimezoneOffset() * 60000)
-                              .toISOString()
-                              .slice(0, 16)
+                            .toISOString()
+                            .slice(0, 16)
                           : ""
                       }
                     />
