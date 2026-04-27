@@ -67,6 +67,7 @@ export function PostsFilterBar({
             name="postsAuthor"
             defaultValue={filters.authorId || "all"}
             className="h-8 w-auto min-w-44 pl-8 text-sm"
+            onChange={(e) => e.target.form?.requestSubmit()}
           >
             <option value="all">Tất cả tác giả</option>
             {filterOptions.authors.map((u) => (
@@ -86,6 +87,7 @@ export function PostsFilterBar({
           name="postsCategory"
           defaultValue={filters.categoryId || "all"}
           className="h-8 w-auto min-w-44 pl-8 text-sm"
+          onChange={(e) => e.target.form?.requestSubmit()}
         >
           <option value="all">Tất cả danh mục</option>
           {filterOptions.categories.map((category) => (
@@ -104,6 +106,7 @@ export function PostsFilterBar({
           defaultValue={filters.fromDate}
           className="h-8 w-auto pl-8 text-sm"
           title="Từ ngày"
+          onChange={(e) => e.target.form?.requestSubmit()}
         />
       </div>
       <div className="relative">
@@ -114,6 +117,7 @@ export function PostsFilterBar({
           defaultValue={filters.toDate}
           className="h-8 w-auto pl-8 text-sm"
           title="Đến ngày"
+          onChange={(e) => e.target.form?.requestSubmit()}
         />
       </div>
 

@@ -182,7 +182,7 @@ export function LibraryTab({
               <p className="text-sm font-bold">Không tìm thấy media nào khớp.</p>
               <p className="text-xs text-muted-foreground">
                 Tổng số trong hệ thống: {mediaAssets.length}.
-                Đang lọc: {mediaType !== "ALL" ? mediaType : "Tất cả"} - {uploaderLabel}
+                Đang lọc: {mediaType === "IMAGE" ? "Ảnh" : "Video"} - {uploaderLabel}
               </p>
             </div>
           )}

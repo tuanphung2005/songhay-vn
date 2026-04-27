@@ -101,7 +101,7 @@ export function TrashTab({
         {isAdmin ? (
           <div className="relative">
             <UserRound className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
-            <Select name="trashAuthor" defaultValue={filters.authorId || "all"} className="h-8 w-auto min-w-44 pl-8 text-sm">
+            <Select name="trashAuthor" defaultValue={filters.authorId || "all"} className="h-8 w-auto min-w-44 pl-8 text-sm" onChange={(e) => e.target.form?.requestSubmit()}>
               <option value="all">Tất cả người viết</option>
               {data.authorOptions.map((author) => (
                 <option key={author.id} value={author.id}>
@@ -116,11 +116,11 @@ export function TrashTab({
 
         <div className="relative">
           <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
-          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} className="h-8 w-auto pl-8 text-sm" title="Từ ngày" />
+          <Input name="trashFrom" type="date" defaultValue={filters.fromDate} className="h-8 w-auto pl-8 text-sm" title="Từ ngày" onChange={(e) => e.target.form?.requestSubmit()} />
         </div>
         <div className="relative">
           <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
-          <Input name="trashTo" type="date" defaultValue={filters.toDate} className="h-8 w-auto pl-8 text-sm" title="Đến ngày" />
+          <Input name="trashTo" type="date" defaultValue={filters.toDate} className="h-8 w-auto pl-8 text-sm" title="Đến ngày" onChange={(e) => e.target.form?.requestSubmit()} />
         </div>
 
         <Button type="submit" size="sm" className="h-8 gap-1.5 text-xs">

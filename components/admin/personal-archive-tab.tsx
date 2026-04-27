@@ -81,7 +81,7 @@ export function PersonalArchiveTab({
 
         <div className="relative">
           <Funnel className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
-          <Select name="personalStatus" defaultValue={filters.status} className="h-8 w-auto min-w-44 pl-8 text-sm">
+          <Select name="personalStatus" defaultValue={filters.status} className="h-8 w-auto min-w-44 pl-8 text-sm" onChange={(e) => e.target.form?.requestSubmit()}>
             <option value="all">Tất cả trạng thái</option>
             <option value="draft">Bản nháp</option>
             <option value="pending">Chờ duyệt</option>
@@ -99,6 +99,7 @@ export function PersonalArchiveTab({
             defaultValue={filters.fromDate}
             className="h-8 w-auto pl-8 text-sm"
             title="Từ ngày"
+            onChange={(e) => e.target.form?.requestSubmit()}
           />
         </div>
         <div className="relative">
@@ -109,6 +110,7 @@ export function PersonalArchiveTab({
             defaultValue={filters.toDate}
             className="h-8 w-auto pl-8 text-sm"
             title="Đến ngày"
+            onChange={(e) => e.target.form?.requestSubmit()}
           />
         </div>
 
