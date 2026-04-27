@@ -435,11 +435,11 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             {items.map((asset) => (
               <div
                 key={asset.id}
-                className="group relative flex flex-col rounded-lg border p-1.5 shadow-sm"
+                className="group relative flex aspect-4/3 overflow-hidden rounded-lg border shadow-sm"
               >
                 <button
                   type="button"
-                  className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-1"
+                  className="h-full w-full bg-muted/30"
                   onClick={() => setPreviewAsset(asset)}
                 >
                   {asset.assetType === "IMAGE" ? (
@@ -448,7 +448,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                       alt={asset.displayName || asset.filename}
                       width={200}
                       height={150}
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <video
@@ -467,7 +467,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   disabled={deletingId === asset.id}
                   aria-label={`Xóa ${asset.displayName || asset.filename}`}
                 >
-                  <Trash2 className="size-4" />
+                  <Trash2 className="size-4 text-white" />
                 </button>
               </div>
             ))}

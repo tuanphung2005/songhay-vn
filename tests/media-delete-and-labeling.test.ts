@@ -70,13 +70,13 @@ describe("media delete and labeling", () => {
     expect(schema).toContain("displayName String?")
     expect(dataSource).toContain("displayName: true")
     expect(editorSource).toContain("asset.displayName || asset.filename")
-    expect(editorSource).toContain('useState<"ALL" | "IMAGE" | "VIDEO">("ALL")')
+    expect(editorSource).toContain('useState<"IMAGE" | "VIDEO">("IMAGE")')
   })
 
   test("media library UI has filter/search and pagination controls", () => {
     const source = readWorkspaceFile("components/admin/media-library-tab.tsx")
 
-    expect(source).toContain('type MediaFilterType = "all" | "image" | "video"')
+    expect(source).toContain('type MediaFilterType = "image" | "video"')
     expect(source).toContain('const initialFilterType: MediaFilterType = "image"')
     expect(source).toContain('const [filterType, setFilterType] = useState<MediaFilterType>(initialFilterType)')
     expect(source).toContain("MEDIA_LIBRARY_PAGE_SIZE = 12")
@@ -85,7 +85,6 @@ describe("media delete and labeling", () => {
     expect(source).toContain("goToPage")
     expect(source).toContain("Lọc theo người upload")
     expect(source).toContain("uploaderFilter")
-    expect(source).toContain("Tất cả loại media")
     expect(source).toContain("sm:group-hover:opacity-100")
     expect(source).toContain("sm:group-focus-within:opacity-100")
     expect(source).toContain("<DialogContent")
@@ -95,7 +94,6 @@ describe("media delete and labeling", () => {
     expect(source).not.toContain('Badge variant="outline"')
     expect(source).toContain("/api/uploads/video")
     expect(source).toContain("/api/uploads/image")
-    expect(source).toContain("/api/uploads/all")
     expect(source).toContain("includeUsage")
     expect(source).toContain("Đang dùng ở")
     expect(source).toContain("getUsagePreviewItems")

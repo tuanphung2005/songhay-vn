@@ -52,7 +52,6 @@ describe("media library and editor picker", () => {
     expect(source).toContain("Đẩy lên Kho Media")
     expect(source).toContain("items.map")
     expect(source).toContain("Danh sách quy chuẩn")
-    expect(source).toContain("Tất cả loại media")
     expect(source).toContain("Đang dùng ở")
     expect(source).toContain("getUsagePreviewItems")
     expect(source).toContain("getUsageItemHref")
