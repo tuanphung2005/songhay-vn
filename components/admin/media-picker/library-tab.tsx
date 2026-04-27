@@ -34,7 +34,7 @@ export function LibraryTab({
   onClearSelection,
 }: LibraryTabProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [mediaType, setMediaType] = useState<"ALL" | "IMAGE" | "VIDEO">("ALL")
+  const [mediaType, setMediaType] = useState<"IMAGE" | "VIDEO">("IMAGE")
   const [uploaderFilter, setUploaderFilter] = useState<string>("all")
   const [page, setPage] = useState(1)
   const pageSize = 12
@@ -51,7 +51,7 @@ export function LibraryTab({
 
   const filteredMedia = useMemo(() => {
     return mediaAssets.filter((asset) => {
-      if (mediaType !== "ALL" && asset.assetType !== mediaType) return false
+      if (asset.assetType !== mediaType) return false
       if (uploaderFilter !== "all" && asset.uploader?.id !== uploaderFilter) return false
 
       const search = searchTerm.trim().toLowerCase()
@@ -67,6 +67,7 @@ export function LibraryTab({
     if (uploaderFilter === currentUserId) return "Của tôi"
     return uploaders.find((u) => u.id === uploaderFilter)?.name || "Người đăng đã chọn"
   }, [currentUserId, uploaderFilter, uploaders])
+
 
   const totalPages = Math.max(1, Math.ceil(filteredMedia.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -96,10 +97,9 @@ export function LibraryTab({
               value={mediaType}
               onChange={(e) => {
                 setPage(1)
-                setMediaType(e.target.value as "ALL" | "IMAGE" | "VIDEO")
+                setMediaType(e.target.value as "IMAGE" | "VIDEO")
               }}
             >
-              <option value="ALL">Tất cả loại</option>
               <option value="IMAGE">Ảnh</option>
               <option value="VIDEO">Video</option>
             </Select>

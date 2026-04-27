@@ -4,7 +4,6 @@ import Link from "next/link"
 import { type FormEvent, useState } from "react"
 import { ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -155,19 +154,21 @@ function getInitialUploaderOptions(rows: MediaAssetRow[]) {
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "vi"))
 }
 
-function getRowsByFilterType(rows: MediaAssetRow[], filterType: "image" | "video") {
+type MediaFilterType = "image" | "video"
+
+function getRowsByFilterType(rows: MediaAssetRow[], filterType: MediaFilterType) {
   return rows.filter((item) =>
     filterType === "video" ? item.assetType === "VIDEO" : item.assetType === "IMAGE"
   )
 }
 
 export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
-  const initialFilterType: "image" | "video" = "image"
+  const initialFilterType: MediaFilterType = "image"
   const initialRows = getRowsByFilterType(rows, initialFilterType)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
   const [previewAsset, setPreviewAsset] = useState<MediaAssetRow | null>(null)
-  const [filterType, setFilterType] = useState<"image" | "video">(initialFilterType)
+  const [filterType, setFilterType] = useState<MediaFilterType>(initialFilterType)
   const [uploaderFilter, setUploaderFilter] = useState("all")
   const [searchValue, setSearchValue] = useState("")
   const [page, setPage] = useState(1)
@@ -186,9 +187,11 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
       : null
   const deleteAssetUsage = getAssetUsage(deleteAsset)
   const deleteAssetUsageSummary = getUsageContextSummary(deleteAssetUsage)
+  const previewAssetUsage = getAssetUsage(previewAsset)
+  const previewAssetUsageSummary = getUsageContextSummary(previewAssetUsage)
 
   async function loadMedia(next: {
-    filterType: "image" | "video"
+    filterType: MediaFilterType
     searchValue: string
     page: number
     uploaderFilter: string
@@ -267,9 +270,9 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             current.map((item) =>
               item.id === assetId
                 ? {
-                    ...item,
-                    usage: payload.usage,
-                  }
+                  ...item,
+                  usage: payload.usage,
+                }
                 : item
             )
           )
@@ -304,7 +307,7 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
     }
   }
 
-  async function handleFilterChange(value: "image" | "video") {
+  async function handleFilterChange(value: MediaFilterType) {
     setFilterType(value)
     setPage(1)
     await loadMedia({ filterType: value, searchValue, page: 1, uploaderFilter })
@@ -365,7 +368,9 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                 value={filterType}
                 onChange={(event) => {
                   const nextType =
-                    event.target.value === "video" ? "video" : "image"
+                    event.target.value === "video"
+                      ? "video"
+                      : "image"
                   void handleFilterChange(nextType)
                 }}
               >
@@ -430,11 +435,11 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             {items.map((asset) => (
               <div
                 key={asset.id}
-                className="flex flex-col rounded-lg border p-1.5 shadow-sm"
+                className="group relative flex flex-col rounded-lg border p-1.5 shadow-sm"
               >
                 <button
                   type="button"
-                  className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-1"
+                  className="flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-1"
                   onClick={() => setPreviewAsset(asset)}
                 >
                   {asset.assetType === "IMAGE" ? (
@@ -455,74 +460,15 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
                   )}
                 </button>
 
-                <div className="mt-1.5 flex flex-1 flex-col gap-1">
-                  <div className="flex items-start gap-1.5">
-                    <p className="line-clamp-2 flex-1 text-sm font-semibold leading-5">
-                      {asset.displayName || asset.filename}
-                    </p>
-                    <Badge variant="outline" className="shrink-0">
-                      {asset.assetType === "IMAGE" ? "Ảnh" : "Video"}
-                    </Badge>
-                  </div>
-                  <p className="line-clamp-1 text-[11px] text-muted-foreground">
-                    {asset.filename}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {toMb(asset.sizeBytes)} · {asset.uploader.name} ·{" "}
-                    {new Date(asset.uploadedAt).toLocaleString("vi-VN")}
-                  </p>
-                  {getAssetUsage(asset).count > 0 ? (
-                    <div className="rounded-md border border-amber-200 bg-amber-50/70 p-1.5">
-                      <p className="text-[11px] font-semibold text-amber-900">
-                        Đang dùng ở {getAssetUsage(asset).count} bài
-                      </p>
-                      {getUsagePreviewItems(getAssetUsage(asset)).map((item) => (
-                        <div key={item.postId} className="text-[11px] text-amber-900/90">
-                          {getUsageItemHref(item) ? (
-                            <Link
-                              href={getUsageItemHref(item) || "#"}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="line-clamp-1 font-medium underline underline-offset-2 hover:text-amber-950"
-                            >
-                              <span title={`${item.title} · ${getUsageItemSummary(item)}`}>
-                                {item.title}
-                              </span>
-                            </Link>
-                          ) : (
-                            <p
-                              className="line-clamp-1 font-medium"
-                              title={`${item.title} · ${getUsageItemSummary(item)}`}
-                            >
-                              {item.title}
-                            </p>
-                          )}
-                          <p className="line-clamp-1 text-[10px] text-amber-900/80">
-                            {getUsageItemSummary(item)} · {getUsageItemLinkLabel(item)}
-                          </p>
-                        </div>
-                      ))}
-                      {getAssetUsage(asset).count > getUsagePreviewItems(getAssetUsage(asset)).length ? (
-                        <p className="text-[11px] text-amber-900/75">
-                          +{getAssetUsage(asset).count - getUsagePreviewItems(getAssetUsage(asset)).length} bài khác
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-1.5 flex justify-end">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setDeleteDialogId(asset.id)}
-                    disabled={deletingId === asset.id}
-                  >
-                    <Trash2 className="size-4" />
-                    {deletingId === asset.id ? "Đang xóa..." : "Xóa"}
-                  </Button>
-                </div>
+                <button
+                  type="button"
+                  className="absolute right-3 top-3 inline-flex size-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                  onClick={() => setDeleteDialogId(asset.id)}
+                  disabled={deletingId === asset.id}
+                  aria-label={`Xóa ${asset.displayName || asset.filename}`}
+                >
+                  <Trash2 className="size-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -610,7 +556,10 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
             open={previewAsset !== null}
             onOpenChange={(open) => !open && setPreviewAsset(null)}
           >
-            <DialogContent className="max-w-3xl">
+            <DialogContent
+              className="max-h-[90vh] overflow-hidden"
+              style={{ width: "min(92vw, 72rem)", maxWidth: "none" }}
+            >
               <DialogHeader>
                 <DialogTitle>
                   {previewAsset?.displayName ||
@@ -625,23 +574,96 @@ export function MediaLibraryTab({ isAdmin, rows }: MediaLibraryTabProps) {
               </DialogHeader>
 
               {previewAsset ? (
-                <div className="max-h-[70vh] overflow-auto border bg-zinc-50 p-2">
-                  {previewAsset.assetType === "IMAGE" ? (
-                    <Image
-                      src={previewAsset.url}
-                      alt={previewAsset.displayName || previewAsset.filename}
-                      width={1200}
-                      height={800}
-                      className="h-auto max-h-[65vh] w-full object-contain"
-                    />
-                  ) : (
-                    <video
-                      src={previewAsset.url}
-                      controls
-                      preload="metadata"
-                      className="h-auto max-h-[65vh] w-full bg-black"
-                    />
-                  )}
+                <div className="grid min-h-0 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
+                  <div className="relative h-[42vh] overflow-hidden rounded-lg border bg-zinc-50 p-2 sm:h-[52vh] lg:h-[56vh]">
+                    {previewAsset.assetType === "IMAGE" ? (
+                      <Image
+                        src={previewAsset.url}
+                        alt={previewAsset.displayName || previewAsset.filename}
+                        width={1200}
+                        height={800}
+                        className="h-full w-full object-contain"
+                        sizes="(max-width: 1024px) 100vw, 60vw"
+                      />
+                    ) : (
+                      <video
+                        src={previewAsset.url}
+                        controls
+                        preload="metadata"
+                        className="h-full w-full bg-black object-contain"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
+                    <div className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-2 lg:grid-cols-1">
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Tên hiển thị</p>
+                        <p className="text-sm font-medium text-zinc-900">{previewAsset.displayName || "Không đặt tên"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Tên file</p>
+                        <p className="wrap-break-word text-sm font-medium text-zinc-900">{previewAsset.filename}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Loại</p>
+                        <p className="text-sm font-medium text-zinc-900">{previewAsset.assetType === "IMAGE" ? "Ảnh" : "Video"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Visibility</p>
+                        <p className="text-sm font-medium text-zinc-900">{previewAsset.visibility === "SHARED" ? "Chia sẻ" : "Riêng tư"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Định dạng</p>
+                        <p className="text-sm font-medium text-zinc-900">{previewAsset.mimeType}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Dung lượng</p>
+                        <p className="text-sm font-medium text-zinc-900">{toMb(previewAsset.sizeBytes)}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Người tải</p>
+                        <p className="text-sm font-medium text-zinc-900">{previewAsset.uploader.name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Thời gian tải lên</p>
+                        <p className="text-sm font-medium text-zinc-900">{new Date(previewAsset.uploadedAt).toLocaleString("vi-VN")}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-amber-950">Đang dùng ở {previewAssetUsage.count} bài</p>
+                        {previewAssetUsageSummary ? <p className="text-xs text-amber-950/80">{previewAssetUsageSummary}</p> : null}
+                      </div>
+                      {previewAssetUsage.items.length > 0 ? (
+                        <div className="mt-3 max-h-44 space-y-2 overflow-y-auto">
+                          {getUsagePreviewItems(previewAssetUsage).map((item) => (
+                            <div key={item.postId} className="rounded-md border bg-white/80 p-2">
+                              {getUsageItemHref(item) ? (
+                                <Link
+                                  href={getUsageItemHref(item) || "#"}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="line-clamp-1 text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-700"
+                                >
+                                  {item.title}
+                                </Link>
+                              ) : (
+                                <p className="line-clamp-1 text-sm font-semibold text-zinc-900">{item.title}</p>
+                              )}
+                              <p className="text-xs text-muted-foreground">{getUsageItemSummary(item)} · {getUsageItemLinkLabel(item)}</p>
+                            </div>
+                          ))}
+                          {previewAssetUsage.count > getUsagePreviewItems(previewAssetUsage).length ? (
+                            <p className="text-xs text-amber-950/80">+{previewAssetUsage.count - getUsagePreviewItems(previewAssetUsage).length} bài khác</p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-amber-950/80">Media này chưa được dùng ở bài viết nào.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ) : null}
             </DialogContent>
