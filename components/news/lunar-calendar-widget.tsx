@@ -1,5 +1,6 @@
 "use client"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useMemo, useState } from "react"
@@ -61,7 +62,11 @@ function getLunarDateLabel(date: Date) {
   }
 }
 
-export function LunarCalendarWidget() {
+type LunarCalendarWidgetProps = {
+  loading?: boolean
+}
+
+export function LunarCalendarWidget({ loading }: LunarCalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const today = useMemo(() => new Date(), [])
 
@@ -116,62 +121,64 @@ export function LunarCalendarWidget() {
   }
 
   return (
-    <section className="border-t border-zinc-200 bg-white shadow-none">
-      <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-base font-bold text-zinc-800">Âm lịch - Dương lịch</h3>
+    <Skeleton name="lunar-calendar-widget" loading={loading}>
+      <section className="border-t border-zinc-200 bg-white shadow-none">
+        <h3 className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-base font-bold text-zinc-800">Âm lịch - Dương lịch</h3>
 
-      <div className="space-y-3 p-3">
-        <div className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-center">
-          <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
-            {isCurrentToday ? "Hôm nay" : ""}
-          </p>
-          <div className="mt-1 flex items-center justify-between">
-            <button
-              type="button"
-              aria-label="Ngày trước"
-              className="p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
-              onClick={() => moveDate(-1)}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <p className="text-base font-semibold capitalize text-zinc-700">
-              {weekdayLabel}, {shortDate}
+        <div className="space-y-3 p-3">
+          <div className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-center">
+            <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
+              {isCurrentToday ? "Hôm nay" : ""}
             </p>
-            <button
-              type="button"
-              aria-label="Ngày sau"
-              className="rounded-full p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
-              onClick={() => moveDate(1)}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-white p-3 text-center">
-          <div className="relative mx-auto h-40 w-40">
-            <Image
-              src="/widget_calendar_circle.png"
-              alt="Vòng tròn lịch âm"
-              width={176}
-              height={176}
-              className="h-full w-full object-contain"
-            />
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-              <p className="text-xl font-bold">Tháng {monthNumber}</p>
-              <p className="text-5xl leading-none font-black">{dayNumber}</p>
+            <div className="mt-1 flex items-center justify-between">
+              <button
+                type="button"
+                aria-label="Ngày trước"
+                className="p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
+                onClick={() => moveDate(-1)}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <p className="text-base font-semibold capitalize text-zinc-700">
+                {weekdayLabel}, {shortDate}
+              </p>
+              <button
+                type="button"
+                aria-label="Ngày sau"
+                className="rounded-full p-1 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-700"
+                onClick={() => moveDate(1)}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
           </div>
-          <p className="mt-3 text-sm font-semibold text-zinc-700">Ngày: {zodiacDay}, tháng: {zodiacMonth}</p>
-          <p className="mt-1 text-sm text-zinc-600">Âm lịch: {amLich}</p>
-        </div>
 
-        <div className="border-t border-zinc-200 bg-white p-3">
-          <p className="text-base font-bold text-zinc-700">Giờ Hoàng Đạo (giờ tốt)</p>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            {gioHoangDao}
-          </p>
+          <div className="rounded-lg bg-white p-3 text-center">
+            <div className="relative mx-auto h-40 w-40">
+              <Image
+                src="/widget_calendar_circle.png"
+                alt="Vòng tròn lịch âm"
+                width={176}
+                height={176}
+                className="h-full w-full object-contain"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <p className="text-xl font-bold">Tháng {monthNumber}</p>
+                <p className="text-5xl leading-none font-black">{dayNumber}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm font-semibold text-zinc-700">Ngày: {zodiacDay}, tháng: {zodiacMonth}</p>
+            <p className="mt-1 text-sm text-zinc-600">Âm lịch: {amLich}</p>
+          </div>
+
+          <div className="border-t border-zinc-200 bg-white p-3">
+            <p className="text-base font-bold text-zinc-700">Giờ Hoàng Đạo (giờ tốt)</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-600">
+              {gioHoangDao}
+            </p>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </Skeleton>
   )
 }

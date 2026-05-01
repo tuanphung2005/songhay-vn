@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { ShieldCheck } from "lucide-react"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
+
 import "ckeditor5/ckeditor5-content.css"
 import { getAdminSnapshot } from "@/app/admin/data-loaders/index"
 import { getVisibleTabs, OVERVIEW_TAB, POSTS_SUBMENU_TABS, type NavCountKey } from "@/app/admin/page-helpers"
@@ -152,8 +154,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </aside>
 
+
         <section className="space-y-4 p-4 md:p-6 xl:p-8">
-          {children}
+          <Skeleton name="admin-page" loading={false}>
+            {children}
+          </Skeleton>
         </section>
       </div>
     </main>

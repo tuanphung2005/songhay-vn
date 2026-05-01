@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
+
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCardList } from "@/components/news/post-card-list"
 import { SectionHeading } from "@/components/news/section-heading"
@@ -109,7 +111,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <Skeleton name="category-page" loading={false}>
+      <div className="min-h-screen bg-zinc-50">
       <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       <SiteHeader navCategories={navCategories} />
       <SiteMainContainer className="flex flex-col gap-5 py-6 md:py-6">
@@ -142,6 +145,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 
       <SiteFooter navCategories={navCategories} />
-    </div>
+      </div>
+    </Skeleton>
   )
 }

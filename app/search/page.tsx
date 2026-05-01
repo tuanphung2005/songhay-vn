@@ -1,6 +1,8 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
+
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCard } from "@/components/news/post-card"
 import { SectionHeading } from "@/components/news/section-heading"
@@ -88,7 +90,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const hasPagination = query.length > 0 && result.totalPages > 1
 
   return (
-    <div className="min-h-screen bg-white">
+    <Skeleton name="search-page" loading={false}>
+      <div className="min-h-screen bg-white">
       <SiteHeader navCategories={navCategories} defaultSearchQuery={query} />
 
       <SiteMainContainer className="flex flex-col gap-6 py-8">
@@ -171,6 +174,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </SiteMainContainer>
 
       <SiteFooter navCategories={navCategories} />
-    </div>
+      </div>
+    </Skeleton>
   )
 }

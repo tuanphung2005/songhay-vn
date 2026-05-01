@@ -17,13 +17,15 @@ import { getHomepageData, getNavCategories, type PostListItem, type CategoryWith
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, SITE_NAME, toAbsoluteUrl } from "@/lib/seo"
 import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
+
 const RecommendedForYou = dynamic(
   () => import("@/components/news/recommended-for-you").then((mod) => mod.RecommendedForYou),
-  { loading: () => <div className="h-60 animate-pulse rounded-lg bg-zinc-100" /> }
+  { loading: () => <Skeleton name="recommended-for-you" loading /> }
 )
 const VideoMostWatched = dynamic(
   () => import("@/components/news/video-most-watched").then((mod) => mod.VideoMostWatched),
-  { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
+  { loading: () => <Skeleton name="video-most-watched" loading /> }
 )
 
 export const revalidate = 3600
@@ -92,7 +94,8 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <Skeleton name="home-page" loading={false}>
+      <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <JsonLd data={homepageJsonLd} />
       <SiteHeader navCategories={navCategories} />
 
@@ -177,14 +180,14 @@ export default async function HomePage() {
             <AdPlaceholder label="Giữa các cụm nội dung (Google AdSense)" />
 
             {/* Engagement Sections */}
-            <Suspense fallback={<div className="h-60 animate-pulse rounded-lg bg-zinc-100" />}>
-              <RecommendedForYou posts={recommended} />
+            <Suspense fallback={null}>
+              <RecommendedForYou posts={recommended} loading={!recommended} />
             </Suspense>
             
             <AdPlaceholder label="Giữa đề xuất và video (Google AdSense)" />
             
-            <Suspense fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}>
-              <VideoMostWatched posts={mostWatched} />
+            <Suspense fallback={null}>
+              <VideoMostWatched posts={mostWatched} loading={!mostWatched} />
             </Suspense>
 
             <section className="space-y-6 pt-6 border-t border-zinc-200">
@@ -226,6 +229,7 @@ export default async function HomePage() {
       <SiteMainContainer as="div" className="pb-8">
         <AdPlaceholder label="Bottom page ad (Google AdSense)" />
       </SiteMainContainer>
-    </div>
+      </div>
+    </Skeleton>
   )
 }

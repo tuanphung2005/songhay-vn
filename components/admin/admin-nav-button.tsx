@@ -3,6 +3,8 @@
 import { Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
 import {
   FileEdit,
   FileSearch,
@@ -109,10 +111,11 @@ export function AdminNavButtonInner({ tab, count }: AdminNavButtonProps) {
   )
 }
 
+
 export function AdminNavButton({ tab, count }: AdminNavButtonProps) {
   return (
     <Suspense fallback={
-      <div className="h-10 w-full rounded-xl bg-zinc-100 animate-pulse" />
+      <Skeleton name="admin-nav-button" loading />
     }>
       <AdminNavButtonInner tab={tab} count={count} />
     </Suspense>

@@ -3,6 +3,7 @@ import dynamic from "next/dynamic"
 import Image from "next/image"
 import Link from "next/link"
 
+import { Skeleton } from "@/components/ui/boneyard-skeleton"
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { ClientSideWidgets } from "@/components/news/client-side-widgets"
 import { CommentForm } from "@/components/news/comment-form"
@@ -54,7 +55,7 @@ const RecommendedForYou = dynamic(
     import("@/components/news/recommended-for-you").then(
       (mod) => mod.RecommendedForYou
     ),
-  { loading: () => <div className="h-60 animate-pulse rounded-lg bg-zinc-100" /> }
+  { ssr: true, loading: () => <Skeleton name="recommended-for-you" loading /> }
 )
 
 const VideoMostWatched = dynamic(
@@ -62,7 +63,7 @@ const VideoMostWatched = dynamic(
     import("@/components/news/video-most-watched").then(
       (mod) => mod.VideoMostWatched
     ),
-  { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
+  { ssr: true, loading: () => <Skeleton name="video-most-watched" loading /> }
 )
 
 type ArticlePageShellProps = {
@@ -140,7 +141,8 @@ export function ArticlePageShell({
   commentFormMode = "live",
 }: ArticlePageShellProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <Skeleton name="article-page" loading={false}>
+      <div className="min-h-screen bg-white">
       {topBanner}
       <SiteHeader navCategories={navCategories} />
       {showViewTracker ? <ViewTracker postId={article.id} /> : null}
@@ -254,9 +256,9 @@ export function ArticlePageShell({
             {renderCommentForm(commentFormMode, article.id)}
 
             <Suspense
-              fallback={<div className="h-60 animate-pulse rounded-lg bg-zinc-100" />}
+              fallback={null}
             >
-              <RecommendedForYou posts={recommendedPosts} />
+              <RecommendedForYou posts={recommendedPosts} loading={!recommendedPosts} />
             </Suspense>
 
             {showAds ? (
@@ -264,9 +266,9 @@ export function ArticlePageShell({
             ) : null}
 
             <Suspense
-              fallback={<div className="h-80 animate-pulse rounded-lg bg-zinc-100" />}
+              fallback={null}
             >
-              <VideoMostWatched posts={mostWatchedVideos} />
+              <VideoMostWatched posts={mostWatchedVideos} loading={!mostWatchedVideos} />
             </Suspense>
 
             <section className="space-y-4">
@@ -357,6 +359,7 @@ export function ArticlePageShell({
       </SiteMainContainer>
 
       <SiteFooter navCategories={navCategories} />
-    </div>
+      </div>
+    </Skeleton>
   )
 }
