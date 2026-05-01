@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { revalidatePath, revalidateTag } from "next/cache"
 import { clearDataCache } from "@/lib/data-cache"
+import { revalidatePost } from "@/app/admin/actions-helpers"
 
 export async function GET(
   request: unknown,
@@ -55,14 +55,10 @@ export async function GET(
     })
 
     // Revalidate paths for all published posts
-    postsToPublish.forEach(post => {
-      revalidatePath(`/${post.category.slug}`)
-      revalidatePath(`/${post.category.slug}/${post.slug}`)
-    })
+    for (const post of postsToPublish) {
+      await revalidatePost(post.slug, post.category?.slug)
+    }
     
-    revalidatePath("/")
-    revalidateTag("posts")
-    revalidateTag("homepage")
     clearDataCache()
 
     return NextResponse.json({ 

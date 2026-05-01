@@ -40,7 +40,7 @@ import {
   sortCategoriesByTree,
   uniquePostSlug,
 } from "@/app/admin/edit/[id]/helpers"
-import { logPostHistory } from "@/app/admin/actions-helpers"
+import { logPostHistory, revalidatePost } from "@/app/admin/actions-helpers"
 
 export const revalidate = 0
 export const metadata: Metadata = {
@@ -278,14 +278,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       snapshotContent: content,
     })
 
-    revalidatePath("/")
-    revalidatePath("/admin")
-    revalidatePath(`/${currentPost.category.slug}`)
-    revalidatePath(`/${updatedPost.category.slug}`)
-    revalidatePath(`/${currentPost.category.slug}/${currentPost.slug}`)
-    revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
-    revalidateTag("posts")
-    revalidateTag("homepage")
+    await revalidatePost(updatedPost.slug, updatedPost.category?.slug)
     clearDataCache()
     if (isDraft) {
       redirect("/admin?tab=personal-archive&toast=post_saved_draft")
