@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma"
 import {
   ensurePermission,
   logPostHistory,
+  revalidatePost,
 } from "@/app/admin/actions-helpers"
 
 export async function approvePendingPost(formData: FormData) {
@@ -32,7 +33,7 @@ export async function approvePendingPost(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, title: true, editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) return
@@ -70,12 +71,9 @@ export async function approvePendingPost(formData: FormData) {
     })
   }
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
-  
+
   return {
     toast: canPublishNow(currentUser.role) ? "post_approved" : "post_submitted_publish"
   }
@@ -94,7 +92,7 @@ export async function rejectPendingPost(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, title: true, editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) return
@@ -129,8 +127,7 @@ export async function rejectPendingPost(formData: FormData) {
     })
   }
 
-  revalidatePath("/admin")
-  revalidateTag("posts")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_rejected" }
 }
@@ -148,7 +145,7 @@ export async function submitPostToPendingReview(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, editorialStatus: true },
+    select: { authorId: true, editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) {
@@ -179,9 +176,7 @@ export async function submitPostToPendingReview(formData: FormData) {
     toStatus: updatedPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_submitted_review" }
 }
@@ -199,7 +194,7 @@ export async function promotePostToPendingPublish(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, title: true, editorialStatus: true },
+    select: { authorId: true, title: true, editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) return
@@ -235,9 +230,7 @@ export async function promotePostToPendingPublish(formData: FormData) {
     })
   }
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_submitted_publish" }
 }
@@ -255,7 +248,7 @@ export async function returnPostToPendingReview(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { editorialStatus: true },
+    select: { editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) return
@@ -279,9 +272,7 @@ export async function returnPostToPendingReview(formData: FormData) {
     toStatus: updatedPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_returned_review" }
 }
@@ -299,7 +290,7 @@ export async function returnPostToPendingPublish(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { editorialStatus: true },
+    select: { editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) return
@@ -321,9 +312,7 @@ export async function returnPostToPendingPublish(formData: FormData) {
     toStatus: updatedPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_returned_publish_queue" }
 }
@@ -338,7 +327,7 @@ export async function returnPostToDraft(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true, editorialStatus: true },
+    select: { authorId: true, editorialStatus: true, slug: true, category: { select: { slug: true } } },
   })
 
   if (!existingPost) {
@@ -370,8 +359,7 @@ export async function returnPostToDraft(formData: FormData) {
     toStatus: updatedPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_returned_draft" }
 }

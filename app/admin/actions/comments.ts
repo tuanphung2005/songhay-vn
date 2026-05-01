@@ -7,7 +7,7 @@ import { requireCmsUser } from "@/lib/auth"
 import { clearDataCache } from "@/lib/data-cache"
 import { can } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
-import { ensurePermission } from "@/app/admin/actions-helpers"
+import { ensurePermission, revalidatePost } from "@/app/admin/actions-helpers"
 
 export async function moderateComment(formData: FormData) {
   const currentUser = await requireCmsUser()
@@ -20,6 +20,11 @@ export async function moderateComment(formData: FormData) {
     redirect("/admin?tab=comments&toast=comment_action_failed")
   }
 
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { post: { select: { slug: true, category: { select: { slug: true } } } } },
+  })
+
   if (action === "approve") {
     await prisma.comment.update({ where: { id: commentId }, data: { isApproved: true } })
   }
@@ -28,6 +33,10 @@ export async function moderateComment(formData: FormData) {
     await prisma.comment.delete({ where: { id: commentId } })
   }
 
+  if (comment?.post) {
+    await revalidatePost(comment.post.slug, comment.post.category?.slug)
+  }
+  
   revalidatePath("/admin")
   clearDataCache()
   redirect(`/admin?tab=comments&toast=${action === "approve" ? "comment_approved" : "comment_deleted"}`)

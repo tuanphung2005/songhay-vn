@@ -25,6 +25,7 @@ import {
   resolveEditorialFromSubmitAction,
   uniquePostSlug,
   logPostHistory,
+  revalidatePost,
 } from "@/app/admin/actions-helpers"
 
 export async function createPost(formData: FormData) {
@@ -116,6 +117,7 @@ export async function createPost(formData: FormData) {
       publishedAt: isPublished ? new Date() : undefined,
       thumbnailUrl,
     },
+    include: { category: true }
   })
 
   await syncPostSeoKeywords(post.id, keywordIds)
@@ -130,10 +132,7 @@ export async function createPost(formData: FormData) {
     snapshotContent: post.content,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost(post.slug, post.category?.slug)
   clearDataCache()
   if (editorialStatus === "DRAFT") {
     redirect("/admin?tab=personal-archive&toast=post_saved_draft")
@@ -295,12 +294,7 @@ export async function updatePostFlags(formData: FormData) {
     actionType: "UPDATED",
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidatePath(`/${updatedPost.category.slug}`)
-  revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost(updatedPost.slug, updatedPost.category?.slug)
   clearDataCache()
 }
 
@@ -352,12 +346,7 @@ export async function movePostToTrash(formData: FormData) {
     fromStatus: existingPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidatePath(`/${existingPost.category.slug}`)
-  revalidatePath(`/${existingPost.category.slug}/${existingPost.slug}`)
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_moved_trash" }
 }
@@ -401,10 +390,7 @@ export async function restorePostFromTrash(formData: FormData) {
     toStatus: existingPost.editorialStatus,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost()
   clearDataCache()
   return { toast: "post_restored" }
 }
@@ -435,10 +421,7 @@ export async function deletePostPermanently(formData: FormData) {
 
   await prisma.post.delete({ where: { id: postId } })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost()
   clearDataCache()
   return { toast: "post_deleted_permanently" }
 }
@@ -457,10 +440,7 @@ export async function bulkUpdateStatus(formData: FormData) {
     data: { editorialStatus: status, isPublished: status === "PUBLISHED", isDraft: status === "DRAFT" }
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost()
   clearDataCache()
 }
 
@@ -468,7 +448,7 @@ export async function bulkTrashPosts(formData: FormData) {
   const currentUser = await requireCmsUser()
   const postIdsRaw = String(formData.get("postIds") || "")
   const postIds = postIdsRaw.split(",").filter(Boolean)
-  
+
   if (postIds.length === 0) return
 
   // Need to ensure user has permission for all these posts (simplification for brevity)
@@ -477,10 +457,7 @@ export async function bulkTrashPosts(formData: FormData) {
     data: { isDeleted: true, deletedAt: new Date() }
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost()
   clearDataCache()
 }
 
@@ -528,11 +505,8 @@ export async function restorePostVersion(formData: FormData) {
     snapshotContent: historyLog.snapshotContent,
   })
 
-  revalidatePath("/")
-  revalidatePath("/admin")
-  revalidateTag("posts")
-  revalidateTag("homepage")
+  await revalidatePost(existingPost.slug)
   clearDataCache()
-  
+
   redirect("/admin?tab=history&toast=post_restored")
 }

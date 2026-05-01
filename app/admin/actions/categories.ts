@@ -38,7 +38,7 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath("/")
   revalidatePath("/admin")
-  revalidateTag("categories")
+  revalidateTag("categories", "max")
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_created")
 }
@@ -82,7 +82,7 @@ export async function updateCategory(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${existingCategory.slug}`)
   revalidatePath(`/${slug}`)
-  revalidateTag("categories")
+  revalidateTag("categories", "max")
   clearDataCache()
   redirect("/admin?tab=categories&toast=category_updated")
 }
@@ -132,7 +132,7 @@ export async function reorderCategory(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath(`/${currentItem.slug}`)
   revalidatePath(`/${targetItem.slug}`)
-  revalidateTag("categories")
+  revalidateTag("categories", "max")
   clearDataCache()
   redirect(`/admin?tab=categories&toast=category_reordered&moved=${currentItem.id}&direction=${direction}`)
 }
@@ -189,7 +189,7 @@ export async function deleteCategory(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   revalidatePath(`/${category.slug}`)
-  revalidateTag("categories")
+  revalidateTag("categories", "max")
   clearDataCache()
   return { toast: "category_deleted" }
 }

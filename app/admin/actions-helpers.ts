@@ -131,3 +131,22 @@ export async function logPostHistory({
     },
   })
 }
+
+import { revalidateTag, revalidatePath } from "next/cache"
+
+export async function revalidatePost(slug?: string, categorySlug?: string) {
+  if (slug) revalidateTag(`post:${slug}`, "max")
+  if (categorySlug) {
+    revalidateTag(`category:${categorySlug}`, "max")
+    revalidatePath(`/${categorySlug}`)
+    if (slug) revalidatePath(`/${categorySlug}/${slug}`)
+  }
+  revalidateTag("homepage", "max")
+  revalidateTag("latest-by-category", "max")
+  revalidateTag("trending-posts", "max")
+  revalidateTag("search-results", "max")
+  revalidateTag("recommended-posts", "max")
+  revalidateTag("most-watched-videos", "max")
+  revalidatePath("/")
+  revalidatePath("/admin")
+}

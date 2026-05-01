@@ -65,7 +65,7 @@ export const getHomepageData = cache(async () => {
       return { heroSlots, mostRead, latest, recommended, mostWatched }
     },
     ["homepage-data-v3"],
-    { revalidate: 60, tags: ["homepage", "posts"] }
+    { revalidate: 60, tags: ["homepage"] }
   )()
 })
 
@@ -92,7 +92,7 @@ export const getPostsByCategory = cache(async (categorySlug: string) => {
       })
     },
     [`posts-by-category:${categorySlug}`],
-    { revalidate: 300, tags: ["posts", "categories"] }
+    { revalidate: 300, tags: ["category-posts", `category:${categorySlug}`] }
   )()
 })
 
@@ -139,7 +139,7 @@ export const searchPublishedPosts = cache(async (query: string, limit = 24) => {
       })
     },
     [`search-published-posts:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safeLimit}`],
-    { revalidate: 300, tags: ["posts"] }
+    { revalidate: 300, tags: ["search-results"] }
   )()
 })
 
@@ -213,7 +213,7 @@ export const getPublishedSearchResults = cache(
         }
       },
       [`search-published-results:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safePage}:${safePageSize}`],
-      { revalidate: 300, tags: ["posts"] }
+      { revalidate: 300, tags: ["search-results"] }
     )()
   }
 )
@@ -246,7 +246,7 @@ export const searchPublishedPostSuggestions = cache(async (query: string, limit 
       })
     },
     [`search-published-suggestions:${normalizedQuery.toLocaleLowerCase("vi-VN")}:${safeLimit}`],
-    { revalidate: 300, tags: ["posts"] }
+    { revalidate: 300, tags: ["search-results"] }
   )()
 })
 
@@ -283,7 +283,7 @@ export const getPostByCategoryAndSlug = cache(async (categorySlug: string, slug:
       })
     },
     [`post-by-category-and-slug:${categorySlug}:${slug}`],
-    { revalidate: 600, tags: ["posts"] }
+    { revalidate: 600, tags: ["post-detail", `post:${slug}`] }
   )()
 })
 
@@ -308,7 +308,7 @@ export const getRelatedPosts = cache(async (postId: string, categoryId: string, 
       })
     },
     [`related-posts:${postId}:${categoryId}:${limit}`],
-    { revalidate: 600, tags: ["posts"] }
+    { revalidate: 600, tags: ["related-posts", `category:${categoryId}`] }
   )()
 })
 
@@ -332,7 +332,7 @@ export const getTrendingPosts = cache(async () => {
       })
     },
     ["trending-posts"],
-    { revalidate: 300, tags: ["posts"] }
+    { revalidate: 300, tags: ["trending-posts"] }
   )()
 })
 
@@ -356,7 +356,7 @@ export const getMostWatchedVideos = cache(async (limit = 4) => {
       })
     },
     [`most-watched-videos:${limit}`],
-    { revalidate: 3600, tags: ["posts"] }
+    { revalidate: 3600, tags: ["most-watched-videos"] }
   )()
 })
 
@@ -393,7 +393,7 @@ export const getRecommendedPosts = cache(
         })
       },
       [cacheKey],
-      { revalidate: 300, tags: ["posts"] }
+      { revalidate: 300, tags: ["recommended-posts"] }
     )()
   }
 )
@@ -483,7 +483,7 @@ export const getLatestByCategory = cache(async (perCategory = 4, categoriesLimit
       return categoriesWithPosts.filter((cat) => cat.posts.length > 0)
     },
     [`latest-by-category:${perCategory}:${categoriesLimit}`],
-    { revalidate: 300, tags: ["posts", "categories"] }
+    { revalidate: 300, tags: ["latest-by-category"] }
   )()
 })
 
