@@ -9,7 +9,7 @@ import { SiteMainContainer } from "@/components/news/site-main-container"
 import { SiteHeader } from "@/components/news/site-header"
 import { getNavCategories, getPublishedSearchResults, type SearchResultItem } from "@/lib/queries"
 
-export const revalidate = 3600
+export const revalidate = 300
 
 type SearchPageProps = {
   searchParams?: Promise<{

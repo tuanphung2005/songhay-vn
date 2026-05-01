@@ -156,5 +156,4 @@ export async function revalidatePost(slug?: string, categorySlug?: string) {
   // @ts-ignore
   revalidateTag("most-watched-videos", "max")
   revalidatePath("/")
-  revalidatePath("/admin")
 }

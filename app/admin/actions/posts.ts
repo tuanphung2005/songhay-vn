@@ -1,7 +1,5 @@
 "use server"
 
-// @ts-ignore
-import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { requireCmsUser } from "@/lib/auth"
@@ -233,7 +231,6 @@ export async function createPostForPreview(
     snapshotContent: post.content,
   })
 
-  revalidatePath("/admin")
   return { postId: post.id }
 }
 
@@ -364,6 +361,8 @@ export async function restorePostFromTrash(formData: FormData) {
     select: {
       authorId: true,
       editorialStatus: true,
+      slug: true,
+      category: { select: { slug: true } },
     },
   })
 
@@ -390,7 +389,7 @@ export async function restorePostFromTrash(formData: FormData) {
     toStatus: existingPost.editorialStatus,
   })
 
-  await revalidatePost()
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_restored" }
 }
@@ -408,6 +407,8 @@ export async function deletePostPermanently(formData: FormData) {
     select: {
       authorId: true,
       editorialStatus: true,
+      slug: true,
+      category: { select: { slug: true } },
     },
   })
 
@@ -421,7 +422,7 @@ export async function deletePostPermanently(formData: FormData) {
 
   await prisma.post.delete({ where: { id: postId } })
 
-  await revalidatePost()
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
   return { toast: "post_deleted_permanently" }
 }
@@ -435,12 +436,19 @@ export async function bulkUpdateStatus(formData: FormData) {
   // Basic permission check (could be refined per post)
   if (!canPublishNow(currentUser.role) && status === "PUBLISHED") return
 
+  const posts = await prisma.post.findMany({
+    where: { id: { in: postIds } },
+    select: { slug: true, category: { select: { slug: true } } },
+  })
+
   await prisma.post.updateMany({
     where: { id: { in: postIds } },
     data: { editorialStatus: status, isPublished: status === "PUBLISHED", isDraft: status === "DRAFT" }
   })
 
-  await revalidatePost()
+  for (const post of posts) {
+    await revalidatePost(post.slug, post.category?.slug)
+  }
   clearDataCache()
 }
 
@@ -451,13 +459,20 @@ export async function bulkTrashPosts(formData: FormData) {
 
   if (postIds.length === 0) return
 
+  const posts = await prisma.post.findMany({
+    where: { id: { in: postIds } },
+    select: { slug: true, category: { select: { slug: true } } },
+  })
+
   // Need to ensure user has permission for all these posts (simplification for brevity)
   await prisma.post.updateMany({
     where: { id: { in: postIds } },
     data: { isDeleted: true, deletedAt: new Date() }
   })
 
-  await revalidatePost()
+  for (const post of posts) {
+    await revalidatePost(post.slug, post.category?.slug)
+  }
   clearDataCache()
 }
 
@@ -476,6 +491,7 @@ export async function restorePostVersion(formData: FormData) {
 
   const existingPost = await prisma.post.findUnique({
     where: { id: historyLog.postId },
+    include: { category: { select: { slug: true } } },
   })
 
   if (!existingPost) {
@@ -505,7 +521,7 @@ export async function restorePostVersion(formData: FormData) {
     snapshotContent: historyLog.snapshotContent,
   })
 
-  await revalidatePost(existingPost.slug)
+  await revalidatePost(existingPost.slug, existingPost.category?.slug)
   clearDataCache()
 
   redirect("/admin?tab=history&toast=post_restored")
