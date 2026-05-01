@@ -43,7 +43,7 @@ export function SearchIconPopup({ defaultValue }: SearchIconPopupProps) {
         aria-label={open ? "Đóng tìm kiếm" : "Tìm kiếm"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="h-10 w-10 rounded-full text-zinc-600 transition hover:bg-zinc-100 hover:text-red-700 focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="h-10 w-10 rounded-full text-white transition hover:bg-white/10 md:text-zinc-600 md:hover:bg-zinc-100 md:hover:text-red-700 focus-visible:ring-0 focus-visible:ring-offset-0"
       >
         {open ? <X className="size-5" /> : <Search className="size-5" />}
       </Button>
