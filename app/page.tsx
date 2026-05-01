@@ -26,7 +26,6 @@ const VideoMostWatched = dynamic(
   { loading: () => <div className="h-80 animate-pulse rounded-lg bg-zinc-100" /> }
 )
 
-export const revalidate = 3600
 
 const siteUrl = getSiteUrl()
 const canonicalUrl = siteUrl

@@ -63,14 +63,12 @@ declare module "next/navigation" {
 declare module "next/cache" {
   export const revalidatePath: (path: string) => void
   export const revalidateTag: (tag: string) => void
-  export const unstable_cache: <T extends (...args: any[]) => Promise<any>>(
-    cb: T,
-    keyParts?: string[],
-    options?: {
-      revalidate?: number | false
-      tags?: string[]
-    }
-  ) => T
+  export const cacheTag: (...tags: string[]) => void
+  export const cacheLife: (profile: string | {
+    stale?: number
+    revalidate?: number
+    expire?: number
+  }) => void
 }
 
 declare module "next/server" {
@@ -78,6 +76,7 @@ declare module "next/server" {
   export const NextResponse: {
     json: (body: unknown, init?: ResponseInit) => Response
   }
+  export const connection: () => Promise<void>
 }
 
 declare module "next/headers" {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 
 type GoodDayByAgeToolProps = {
   showUtilityLinks?: boolean
@@ -40,16 +40,16 @@ function diffYears(birthDate: Date, targetDate: Date) {
 export function GoodDayByAgeTool({ showUtilityLinks = false }: GoodDayByAgeToolProps = {}) {
   void showUtilityLinks
 
-  const defaultBirthDate = useMemo(() => toInputDate(new Date(1998, 0, 1)), [])
-  const defaultTargetDate = useMemo(() => {
+  const defaultBirthDate = "1998-01-01"
+  const [birthDate, setBirthDate] = useState(defaultBirthDate)
+  const [targetDate, setTargetDate] = useState("")
+  const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
-    return toInputDate(tomorrow)
+    setTargetDate(toInputDate(tomorrow))
   }, [])
-
-  const [birthDate, setBirthDate] = useState(defaultBirthDate)
-  const [targetDate, setTargetDate] = useState(defaultTargetDate)
-  const [submitted, setSubmitted] = useState(false)
 
   const result = useMemo(() => {
     const birth = new Date(birthDate)

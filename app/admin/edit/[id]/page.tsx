@@ -42,7 +42,7 @@ import {
 } from "@/app/admin/edit/[id]/helpers"
 import { logPostHistory, revalidatePost } from "@/app/admin/actions-helpers"
 
-export const revalidate = 0
+
 export const metadata: Metadata = {
   title: "Chỉnh sửa bài viết",
   robots: {

@@ -58,7 +58,7 @@ import {
 import { Activity, FolderKanban, MessageSquareMore, Newspaper } from "lucide-react"
 import AdminLoading from "./loading"
 
-export const revalidate = 0
+
 
 type ResolvedSearchParams = {
   tab?: string

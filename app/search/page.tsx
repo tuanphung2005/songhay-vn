@@ -1,5 +1,7 @@
+import { connection } from "next/server"
 import Link from "next/link"
 import type { Metadata } from "next"
+import { Suspense } from "react"
 
 import { AdPlaceholder } from "@/components/news/ad-placeholder"
 import { PostCard } from "@/components/news/post-card"
@@ -8,8 +10,6 @@ import { SiteFooter } from "@/components/news/site-footer"
 import { SiteMainContainer } from "@/components/news/site-main-container"
 import { SiteHeader } from "@/components/news/site-header"
 import { getNavCategories, getPublishedSearchResults, type SearchResultItem } from "@/lib/queries"
-
-export const revalidate = 300
 
 type SearchPageProps = {
   searchParams?: Promise<{
@@ -66,7 +66,34 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
   }
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
+function SearchSkeleton() {
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="h-16 w-full animate-pulse bg-zinc-100" />
+      <SiteMainContainer className="flex flex-col gap-6 py-8">
+        <div className="h-32 w-full animate-pulse bg-zinc-100" />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="flex flex-col gap-6">
+            <div className="h-8 w-48 animate-pulse bg-zinc-100" />
+            <div className="h-6 w-full animate-pulse bg-zinc-100" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="h-64 w-full animate-pulse rounded bg-zinc-100" />
+              <div className="h-64 w-full animate-pulse rounded bg-zinc-100" />
+              <div className="h-64 w-full animate-pulse rounded bg-zinc-100" />
+            </div>
+          </section>
+          <aside className="flex flex-col gap-4">
+            <div className="h-64 w-full animate-pulse bg-zinc-100" />
+            <div className="h-64 w-full animate-pulse bg-zinc-100" />
+          </aside>
+        </div>
+      </SiteMainContainer>
+    </div>
+  )
+}
+
+async function SearchContent({ searchParams }: SearchPageProps) {
+  await connection()
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const query = normalizeQuery(resolvedSearchParams?.q)
   const page = toPositiveInt(resolvedSearchParams?.page)
@@ -172,5 +199,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       <SiteFooter navCategories={navCategories} />
     </div>
+  )
+}
+
+export default function SearchPage({ searchParams }: SearchPageProps) {
+  return (
+    <Suspense fallback={<SearchSkeleton />}>
+      <SearchContent searchParams={searchParams} />
+    </Suspense>
   )
 }

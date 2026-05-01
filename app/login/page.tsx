@@ -1,6 +1,8 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+import { Suspense } from "react"
+import { connection } from "next/server"
 
 import { clearSessionCookie, setSessionCookie } from "@/lib/auth"
 import { verifyPassword } from "@/lib/password"
@@ -20,7 +22,27 @@ type LoginPageProps = {
   searchParams?: Promise<{ admin?: string; error?: string }>
 }
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+function LoginSkeleton() {
+  return (
+    <SiteMainContainer className="flex min-h-[70vh] items-center justify-center py-10">
+      <section className="w-full max-w-md space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <header className="space-y-1">
+          <div className="h-4 w-24 animate-pulse rounded bg-zinc-200" />
+          <div className="h-8 w-48 animate-pulse rounded bg-zinc-200" />
+          <div className="h-5 w-32 animate-pulse rounded bg-zinc-200" />
+        </header>
+        <div className="space-y-3">
+          <div className="h-16 w-full animate-pulse rounded bg-zinc-100" />
+          <div className="h-16 w-full animate-pulse rounded bg-zinc-100" />
+          <div className="h-10 w-full animate-pulse rounded bg-zinc-200" />
+        </div>
+      </section>
+    </SiteMainContainer>
+  )
+}
+
+async function LoginContent({ searchParams }: LoginPageProps) {
+  await connection()
   const resolvedSearchParams = searchParams ? await searchParams : undefined
 
   if (resolvedSearchParams?.admin !== "1") {
@@ -92,5 +114,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Link>
       </section>
     </SiteMainContainer>
+  )
+}
+
+export default function LoginPage({ searchParams }: LoginPageProps) {
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginContent searchParams={searchParams} />
+    </Suspense>
   )
 }
