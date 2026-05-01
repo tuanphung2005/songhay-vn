@@ -121,8 +121,13 @@
     @apply border-border outline-ring/50;
   }
 
+  html,
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   html {
@@ -140,12 +145,15 @@
 @layer components {
   .article-content.ck-content {
     --ck-content-font-family: var(--font-serif);
-    --ck-content-font-size: 1.25rem;
+    --ck-content-font-size: 1.15rem;
     --ck-content-line-height: 1.8;
     @apply text-black;
     font-family: var(--ck-content-font-family);
     font-size: var(--ck-content-font-size);
     line-height: var(--ck-content-line-height);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   .article-content.ck-content :is(h1, h2, h3, h4) {

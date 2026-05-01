@@ -157,7 +157,7 @@ export function ArticlePageShell({
             </div>
           ) : null}
 
-          <article className="mx-auto flex w-full max-w-xl flex-col gap-6 font-serif">
+          <article className="mx-auto flex w-full max-w-xl flex-col gap-6 overflow-hidden font-serif break-words">
             {metadataNodes}
             <header className="flex flex-col gap-3">
               <Link
