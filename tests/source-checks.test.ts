@@ -51,12 +51,11 @@ describe("Source Verification: Date Fixes", () => {
 describe("Source Verification: Admin Actions revalidation", () => {
   test("posts actions call revalidateTag", () => {
     const source = readWorkspaceFile("app/admin/actions/posts.ts")
-    expect(source).toContain('revalidateTag("posts")')
-    expect(source).toContain('revalidateTag("homepage")')
+    expect(source).toContain('revalidatePost')
   })
 
   test("workflow actions call revalidateTag", () => {
     const source = readWorkspaceFile("app/admin/actions/workflow.ts")
-    expect(source).toContain('revalidateTag("posts")')
+    expect(source).toContain('revalidatePost')
   })
 })

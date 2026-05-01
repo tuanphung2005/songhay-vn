@@ -135,17 +135,25 @@ export async function logPostHistory({
 import { revalidateTag, revalidatePath } from "next/cache"
 
 export async function revalidatePost(slug?: string, categorySlug?: string) {
+  // @ts-ignore - Next.js 15+ requires "max" but typings might be outdated
   if (slug) revalidateTag(`post:${slug}`, "max")
   if (categorySlug) {
+    // @ts-ignore
     revalidateTag(`category:${categorySlug}`, "max")
     revalidatePath(`/${categorySlug}`)
     if (slug) revalidatePath(`/${categorySlug}/${slug}`)
   }
+  // @ts-ignore
   revalidateTag("homepage", "max")
+  // @ts-ignore
   revalidateTag("latest-by-category", "max")
+  // @ts-ignore
   revalidateTag("trending-posts", "max")
+  // @ts-ignore
   revalidateTag("search-results", "max")
+  // @ts-ignore
   revalidateTag("recommended-posts", "max")
+  // @ts-ignore
   revalidateTag("most-watched-videos", "max")
   revalidatePath("/")
   revalidatePath("/admin")
