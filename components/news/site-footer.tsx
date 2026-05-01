@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Facebook } from "lucide-react"
 import { getNavCategories } from "@/lib/queries"
+import { Button } from "@/components/ui/button"
 
 type SiteFooterProps = {
   navCategories?: Awaited<ReturnType<typeof getNavCategories>>
@@ -25,19 +26,16 @@ const socials = [
     name: "Facebook",
     href: "https://www.facebook.com/profile.php?id=61575740829845",
     icon: Facebook,
-    buttonClass: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white",
   },
   {
     name: "TikTok",
     href: "https://www.tiktok.com/@songhayvn24h?lang=vi-VN",
     icon: TikTokIcon,
-    buttonClass: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-700 hover:text-white",
   },
   {
     name: "Threads",
     href: "https://www.threads.com/@songhayvn24h",
     icon: ThreadsIcon,
-    buttonClass: "border-zinc-300 bg-zinc-100 text-zinc-800 hover:bg-zinc-900 hover:text-white",
   },
 ]
 
@@ -88,16 +86,22 @@ export async function SiteFooter({ navCategories: propNavCategories }: SiteFoote
           <p className="text-sm font-semibold uppercase tracking-wide text-zinc-700">Kết nối với Songhay</p>
           <div className="flex flex-wrap items-center gap-3">
             {socials.map((social) => (
-              <Link
+              <Button
                 key={social.name}
-                href={social.href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={social.name}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${social.buttonClass}`}
+                variant="outline"
+                size="icon"
+                asChild
+                className="rounded-full shadow-none bg-white text-zinc-700 hover:text-rose-700 hover:border-rose-200 hover:bg-rose-50"
               >
-                <social.icon />
-              </Link>
+                <Link
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={social.name}
+                >
+                  <social.icon />
+                </Link>
+              </Button>
             ))}
           </div>
           <p className="text-sm text-zinc-600">Theo dõi để nhận tin nổi bật, video mới và chương trình hợp tác truyền thông.</p>
@@ -106,3 +110,4 @@ export async function SiteFooter({ navCategories: propNavCategories }: SiteFoote
     </footer>
   )
 }
+
