@@ -16,11 +16,9 @@ export async function POST(
     select: { slug: true, category: { select: { slug: true } } }
   })
 
-  // Revalidate tags and path to make the view count update visible
-  revalidateTag("posts")
-  if (updatedPost.category?.slug) {
-    revalidatePath(`/${updatedPost.category.slug}/${updatedPost.slug}`)
-  }
+  // Note: We deliberately do NOT revalidate the cache here.
+  // Revalidating on every view defeats the purpose of ISR and causes massive cache writes.
+  // The view count will naturally update when the page is revalidated via Time-based ISR or edits.
 
   return NextResponse.json({ ok: true })
 }
