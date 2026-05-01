@@ -129,14 +129,18 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        <AdsenseHydrator />
+        <Suspense fallback={null}>
+          <AdsenseHydrator />
+        </Suspense>
         <TooltipProvider>
           <Suspense fallback={null}>
             <ScrollToTopOnRouteChange />
           </Suspense>
           <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
           {children}
-          <FloatingGiftButton />
+          <Suspense fallback={null}>
+            <FloatingGiftButton />
+          </Suspense>
           <Toaster />
         </TooltipProvider>
       </body>

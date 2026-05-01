@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse, connection } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { clearDataCache } from "@/lib/data-cache"
 import { revalidatePost } from "@/app/admin/actions-helpers"
@@ -7,6 +7,7 @@ export async function GET(
   request: unknown,
   context: { params: Promise<{}> }
 ) {
+  await connection()
   const req = request as Request
   try {
     const authHeader = req.headers.get("authorization")

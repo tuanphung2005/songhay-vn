@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  cacheComponents: true,
   experimental: {
     serverActions: {
       // Media uploads are handled by a Server Action in /admin, so raise the default 1MB limit.

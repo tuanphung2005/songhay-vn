@@ -17,7 +17,7 @@ import {
   getTrendingPosts,
 } from "@/lib/queries"
 
-export const revalidate = 0
+
 export const metadata: Metadata = {
   title: "Xem trước bài viết",
   robots: { index: false, follow: false },

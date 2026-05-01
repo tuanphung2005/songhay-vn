@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import { connection } from "next/server"
 import { ShieldCheck } from "lucide-react"
+import { Suspense } from "react"
 
 import "ckeditor5/ckeditor5-content.css"
 import { getAdminSnapshot } from "@/app/admin/data-loaders/index"
@@ -22,7 +24,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+async function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+  await connection()
   const currentUser = await requireCmsUser()
   const canManageSettings = can(currentUser.role, "create-category")
 
@@ -157,5 +160,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </section>
       </div>
     </main>
+  )
+}
+
+function AdminLayoutSkeleton() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-100">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-rose-600 border-t-transparent" />
+        <p className="text-sm font-medium text-zinc-600">Đang tải bảng điều khiển...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<AdminLayoutSkeleton />}>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
   )
 }

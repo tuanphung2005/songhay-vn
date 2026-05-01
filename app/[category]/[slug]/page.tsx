@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { cache } from "react"
 
 import { ArticlePageShell } from "@/components/news/article-page-shell"
 import { JsonLd } from "@/components/seo/json-ld"
@@ -21,12 +20,6 @@ import {
 import { buildAutoSeoDescription, buildAutoSeoTitle } from "@/lib/post-seo"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
-export const revalidate = 3600
-
-const getPost = cache(async (category: string, slug: string) =>
-  getPostByCategoryAndSlug(category, slug)
-)
-
 type PostPageProps = {
   params: Promise<{ category: string; slug: string }>
 }
@@ -45,7 +38,7 @@ export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
   const { category, slug } = await params
-  const post = await getPost(category, slug)
+  const post = await getPostByCategoryAndSlug(category, slug)
   const siteUrl = getSiteUrl()
 
   if (!post) {
@@ -104,7 +97,7 @@ export async function generateMetadata({
 export default async function PostPage({ params }: PostPageProps) {
   const { category, slug } = await params
   const [post, navCategories] = await Promise.all([
-    getPost(category, slug),
+    getPostByCategoryAndSlug(category, slug),
     getNavCategories(),
   ])
 

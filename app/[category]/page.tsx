@@ -12,7 +12,6 @@ import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd"
 import { getCategoryBySlug, getPostsByCategory, getAllCategorySlugs, getNavCategories } from "@/lib/queries"
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, toAbsoluteUrl } from "@/lib/seo"
 
-export const revalidate = 3600
 
 type CategoryPageProps = {
   params: Promise<{ category: string }>
